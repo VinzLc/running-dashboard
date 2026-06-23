@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏃 Running Dashboard — Anaïs & Vincent</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <h1>🏃 Running Dashboard</h1>
+    <p class="subtitle">Suivi des sessions de course — <span class="anais">Anaïs</span> &amp; <span class="vincent">Vincent</span></p>
+  </header>
+
+  <main>
+    <!-- Cartes récap par personne -->
+    <section class="cards" id="summaryCards"></section>
+
+    <!-- Graphique d'évolution -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Évolution</h2>
+        <div class="metric-switch" id="metricSwitch"></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="evolutionChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Mini-graphiques comparatifs -->
+    <section class="panel">
+      <h2>Comparaison globale</h2>
+      <div class="chart-wrap">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Tableau détaillé -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Détail des séances</h2>
+        <div class="filter-switch" id="filterSwitch"></div>
+      </div>
+      <div class="table-wrap">
+        <table id="runsTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Coureur</th>
+              <th>Distance</th>
+              <th>Durée</th>
+              <th>Allure</th>
+              <th>FC moy.</th>
+              <th>Cadence</th>
+              <th>Cal. actives</th>
+              <th>Dénivelé</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Données Apple Fitness · <span id="totalRuns"></span> séances · Généré avec ❤️</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
