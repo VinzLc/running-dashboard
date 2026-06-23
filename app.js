@@ -2,6 +2,10 @@
 
 const RUNNERS = Object.keys(RUNS);
 
+// Coureurs actuellement affichés (pilote cartes, graphiques et tableau).
+// Par défaut : tous.
+let viewRunners = [...RUNNERS];
+
 // ---------- Helpers ----------
 const fmtPace = (sec) => {
   const m = Math.floor(sec / 60);
@@ -35,7 +39,7 @@ const ALL_DATES = [...new Set(RUNNERS.flatMap((n) => RUNS[n].map((r) => r.date))
 // ---------- Cartes récap ----------
 function renderCards() {
   const el = document.getElementById("summaryCards");
-  el.innerHTML = RUNNERS.map((name) => {
+  el.innerHTML = viewRunners.map((name) => {
     const runs = RUNS[name];
     const color = RUNNER_COLORS[name];
     const totalKm = sum(runs.map((r) => r.distance));
@@ -63,11 +67,13 @@ function renderCards() {
 
 // ---------- Graphique d'évolution ----------
 let evoChart;
-function renderEvolution(metricKey) {
+let currentMetric = "distance";
+function renderEvolution(metricKey = currentMetric) {
+  currentMetric = metricKey;
   const metric = METRICS[metricKey];
   const ctx = document.getElementById("evolutionChart");
 
-  const datasets = RUNNERS.map((name) => {
+  const datasets = viewRunners.map((name) => {
     const byDate = Object.fromEntries(RUNS[name].map((r) => [r.date, metric.get(r)]));
     return {
       label: name,
@@ -134,6 +140,7 @@ function renderMetricSwitch() {
 }
 
 // ---------- Radar comparatif (moyennes normalisées) ----------
+let radarChart;
 function renderRadar() {
   const ctx = document.getElementById("radarChart");
   const axes = [
@@ -152,7 +159,7 @@ function renderRadar() {
     bounds[a.key] = { min: Math.min(...vals), max: Math.max(...vals) };
   });
 
-  const datasets = RUNNERS.map((name) => ({
+  const datasets = viewRunners.map((name) => ({
     label: name,
     data: axes.map((a) => {
       const m = avg(RUNS[name].map((r) => r[a.key]));
@@ -167,7 +174,8 @@ function renderRadar() {
     pointBackgroundColor: RUNNER_COLORS[name],
   }));
 
-  new Chart(ctx, {
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(ctx, {
     type: "radar",
     data: { labels: axes.map((a) => a.label), datasets },
     options: {
@@ -192,10 +200,9 @@ function renderRadar() {
 }
 
 // ---------- Tableau ----------
-function renderTable(filter = "all") {
+function renderTable() {
   const tbody = document.querySelector("#runsTable tbody");
-  let rows = RUNNERS.flatMap((name) => RUNS[name].map((r) => ({ ...r, name })));
-  if (filter !== "all") rows = rows.filter((r) => r.name === filter);
+  let rows = viewRunners.flatMap((name) => RUNS[name].map((r) => ({ ...r, name })));
   rows.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
 
   tbody.innerHTML = rows
@@ -216,17 +223,26 @@ function renderTable(filter = "all") {
     .join("");
 }
 
-function renderFilterSwitch() {
-  const el = document.getElementById("filterSwitch");
+// ---------- Sélecteur global de coureur ----------
+function applyRunnerFilter(value) {
+  viewRunners = value === "all" ? [...RUNNERS] : [value];
+  renderCards();
+  renderEvolution();
+  renderRadar();
+  renderTable();
+}
+
+function renderRunnerFilter() {
+  const el = document.getElementById("runnerFilter");
   const opts = [["all", "Tous"], ...RUNNERS.map((n) => [n, n])];
   el.innerHTML = opts
-    .map(([k, label], i) => `<button data-filter="${k}" class="${i === 0 ? "active" : ""}">${label}</button>`)
+    .map(([k, label], i) => `<button data-runner="${k}" class="${i === 0 ? "active" : ""}">${label}</button>`)
     .join("");
   el.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => {
       el.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      renderTable(btn.dataset.filter);
+      applyRunnerFilter(btn.dataset.runner);
     });
   });
 }
@@ -235,10 +251,10 @@ function renderFilterSwitch() {
 Chart.defaults.color = "#98989d";
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
+renderRunnerFilter();
 renderCards();
 renderMetricSwitch();
 renderEvolution("distance");
 renderRadar();
-renderFilterSwitch();
 renderTable();
 document.getElementById("totalRuns").textContent = sum(RUNNERS.map((n) => RUNS[n].length));

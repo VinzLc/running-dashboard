@@ -46,6 +46,13 @@ main {
   padding: 0 16px 60px;
 }
 
+/* Barre de filtre global */
+.runner-filter-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
 /* Cartes récap */
 .cards {
   display: grid;
