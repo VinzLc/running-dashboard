@@ -14,6 +14,7 @@ const RUNS = {
     { date: "2026-06-14", duration: 1868, distance: 4.05, activeCal: 287, totalCal: 342, elevation: 10, cadence: 126, paceSec: 461, hr: 138 },
     { date: "2026-06-20", duration: 2124, distance: 4.63, activeCal: 334, totalCal: 396, elevation: 7,  cadence: 127, paceSec: 458, hr: 139 },
     { date: "2026-06-23", duration: 2053, distance: 4.55, activeCal: 327, totalCal: 387, elevation: 6,  cadence: 129, paceSec: 451, hr: 143 },
+    { date: "2026-06-26", duration: 2180, distance: 4.84, activeCal: 346, totalCal: 410, elevation: 6,  cadence: 131, paceSec: 450, hr: 142 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
