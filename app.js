@@ -1,4 +1,4 @@
-/* global Chart, RUNS, RUNNER_COLORS */
+/* global Chart, RUNS, RUNNER_COLORS, ANALYSES */
 
 const RUNNERS = Object.keys(RUNS);
 
@@ -199,6 +199,72 @@ function renderRadar() {
   });
 }
 
+// ---------- Insights objectifs (calculés sur chaque coureur séparément) ----------
+// Pour chaque séance : la séance précédente du même coureur + drapeaux record.
+const INSIGHTS = (() => {
+  const meta = {};
+  RUNNERS.forEach((name) => {
+    const sorted = [...RUNS[name]].sort((a, b) => a.date.localeCompare(b.date));
+    meta[name] = {};
+    let bestPace = Infinity;
+    let longest = -Infinity;
+    sorted.forEach((r, i) => {
+      meta[name][r.date] = {
+        prev: i > 0 ? sorted[i - 1] : null,
+        isPacePR: i > 0 && r.paceSec < bestPace,
+        isDistPR: i > 0 && r.distance > longest,
+      };
+      bestPace = Math.min(bestPace, r.paceSec);
+      longest = Math.max(longest, r.distance);
+    });
+  });
+  return meta;
+})();
+
+// Puce d'écart vs séance précédente. good : true=vert, false=orange, null=neutre.
+function deltaChip(label, value, fmt, good) {
+  if (Math.abs(value) < 1e-9) return `<span class="delta-chip flat">${label} =</span>`;
+  const arrow = value > 0 ? "▲" : "▼";
+  const cls = good === null ? "flat" : good ? "good" : "bad";
+  return `<span class="delta-chip ${cls}">${label} ${arrow} ${fmt(Math.abs(value))}</span>`;
+}
+
+function analysisHtml(r) {
+  const m = INSIGHTS[r.name][r.date];
+  const a = (typeof ANALYSES !== "undefined" && ANALYSES[r.name]) ? ANALYSES[r.name][r.date] : null;
+
+  let deltas;
+  if (m.prev) {
+    const dPace = r.paceSec - m.prev.paceSec; // < 0 = plus rapide
+    const dDist = r.distance - m.prev.distance;
+    const dHr = r.hr - m.prev.hr;
+    deltas =
+      deltaChip("Allure", dPace, (v) => Math.round(v) + " s/km", dPace < 0) +
+      deltaChip("Distance", dDist, (v) => v.toFixed(2) + " km", dDist > 0) +
+      deltaChip("FC", dHr, (v) => Math.round(v) + " bpm", null);
+  } else {
+    deltas = `<span class="delta-chip flat">Première séance — référence de départ</span>`;
+  }
+
+  const prBadges =
+    (m.isPacePR ? `<span class="pr">🏅 Record d'allure</span>` : "") +
+    (m.isDistPR ? `<span class="pr">🏅 Record de distance</span>` : "");
+
+  const trend = a ? a.trend : "flat";
+  const verdict = a ? a.verdict : "Analyse à venir";
+  const text = a ? a.text : "Analyse non disponible pour cette séance.";
+
+  return `
+    <div class="analysis">
+      <div class="analysis-head">
+        <span class="verdict trend-${trend}">${verdict}</span>
+        ${prBadges}
+      </div>
+      <div class="delta-row">${m.prev ? '<span class="delta-label">vs séance précédente :</span>' : ""}${deltas}</div>
+      <p class="coach">${text}</p>
+    </div>`;
+}
+
 // ---------- Tableau ----------
 function renderTable() {
   const tbody = document.querySelector("#runsTable tbody");
@@ -206,10 +272,11 @@ function renderTable() {
   rows.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
 
   tbody.innerHTML = rows
-    .map(
-      (r) => `
-      <tr>
-        <td>${fmtDate(r.date)}</td>
+    .map((r) => {
+      const key = `${r.name}__${r.date}`;
+      return `
+      <tr class="run-row" data-key="${key}" aria-expanded="false">
+        <td><span class="chevron">▸</span> ${fmtDate(r.date)}</td>
         <td><span class="badge"><span class="dot" style="background:${RUNNER_COLORS[r.name]}"></span>${r.name}</span></td>
         <td>${r.distance.toFixed(2)} km</td>
         <td>${fmtDuration(r.duration)}</td>
@@ -218,8 +285,11 @@ function renderTable() {
         <td>${r.cadence} spm</td>
         <td>${r.activeCal} cal</td>
         <td>${r.elevation} m</td>
-      </tr>`
-    )
+      </tr>
+      <tr class="analysis-row" data-key="${key}">
+        <td colspan="9">${analysisHtml(r)}</td>
+      </tr>`;
+    })
     .join("");
 }
 
@@ -258,3 +328,13 @@ renderEvolution("distance");
 renderRadar();
 renderTable();
 document.getElementById("totalRuns").textContent = sum(RUNNERS.map((n) => RUNS[n].length));
+
+// Déploiement de l'analyse au clic sur une ligne (délégation : survit aux re-render)
+document.querySelector("#runsTable tbody").addEventListener("click", (e) => {
+  const row = e.target.closest(".run-row");
+  if (!row) return;
+  const open = row.classList.toggle("open");
+  row.setAttribute("aria-expanded", String(open));
+  const detail = row.parentElement.querySelector(`.analysis-row[data-key="${CSS.escape(row.dataset.key)}"]`);
+  if (detail) detail.classList.toggle("open", open);
+});

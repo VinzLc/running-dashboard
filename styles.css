@@ -101,6 +101,7 @@ main {
   margin-bottom: 12px;
 }
 .panel-head h2 { margin: 0; }
+.hint { color: var(--text-dim); font-size: 12px; }
 
 /* Boutons de switch */
 .metric-switch, .filter-switch {
@@ -149,6 +150,86 @@ tbody tr:last-child { border-bottom: none; }
   gap: 6px;
   font-weight: 600;
 }
+
+/* Lignes dépliables — analyse IA */
+.run-row { cursor: pointer; transition: background 0.15s; }
+.run-row:hover td { background: rgba(255,255,255,0.035); }
+.run-row.open td { background: rgba(255,255,255,0.05); }
+.chevron {
+  display: inline-block;
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-right: 3px;
+  transition: transform 0.2s;
+}
+.run-row.open .chevron { transform: rotate(90deg); }
+
+.analysis-row { display: none; }
+.analysis-row.open { display: table-row; }
+.analysis-row > td {
+  padding: 0 10px 16px;
+  position: sticky;
+  left: 0;
+}
+.analysis {
+  width: min(660px, calc(100vw - 56px));
+  background: var(--surface-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 16px 18px;
+  text-align: left;
+  white-space: normal;
+}
+.analysis-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.verdict {
+  font-weight: 700;
+  font-size: 14px;
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+.trend-up    { background: rgba(48,209,88,0.16);  color: var(--green); }
+.trend-flat  { background: rgba(10,132,255,0.16); color: #5ea9ff; }
+.trend-down  { background: rgba(255,159,10,0.16); color: #ff9f0a; }
+.trend-start { background: rgba(255,255,255,0.1); color: var(--text-dim); }
+.pr {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,214,10,0.15);
+  color: var(--yellow);
+}
+.delta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 13px;
+}
+.delta-label { font-size: 12px; color: var(--text-dim); margin-right: 2px; }
+.delta-chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-dim);
+}
+.delta-chip.good { color: var(--green); }
+.delta-chip.bad  { color: #ff9f0a; }
+.coach {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.coach::before { content: "🧠 "; }
 
 footer {
   text-align: center;

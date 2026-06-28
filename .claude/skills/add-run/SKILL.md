@@ -39,11 +39,26 @@ Ajoute l'objet à la fin du tableau du bon coureur (`RUNS.Vincent` ou `RUNS["Ana
 { date: "2026-06-28", duration: 2286, distance: 5.15, activeCal: 367, totalCal: 434, elevation: 10, cadence: 132, paceSec: 443, hr: 144 },
 ```
 
-## 4. Bumper le cache-busting (OBLIGATOIRE)
+## 4. Rédiger l'analyse « coach » (OBLIGATOIRE)
+
+Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'objet `ANALYSES` de `data.js` (`ANALYSES[coureur][date]`). Ajoute une entrée pour la nouvelle séance :
+
+```js
+"2026-06-28": { trend: "up", verdict: "Premier 5 km 🎉",
+  text: "..." },
+```
+
+- **Compare uniquement aux séances précédentes du MÊME coureur** (jamais Vincent vs Anaïs). Regarde l'historique de la personne dans `RUNS` : allure, distance, FC, cadence, durée.
+- **`trend`** : `"up"` (vrai progrès), `"flat"` (stable ou séance volontairement facile / reprise), `"down"` (en retrait), `"start"` (toute première séance de la personne).
+- **`verdict`** : titre court accrocheur (ex. « Record d'allure », « Reprise après coupure »).
+- **`text`** : 2-3 phrases, ton d'un coach bienveillant qui constate les progrès. Cite des chiffres réels et les écarts vs séances précédentes. Garde en tête le contexte : Vincent 30 ans, Anaïs 29 ans, 9 ans de muscu chacun mais **très novices en cardio** (souligne l'adaptation aérobie, FC qui baisse à effort égal, distance/allure qui montent, records, etc.).
+- Les écarts chiffrés vs séance précédente et les badges « Record » sont calculés automatiquement en JS — pas besoin de les mettre dans le texte, mais tu peux les commenter.
+
+## 5. Bumper le cache-busting (OBLIGATOIRE)
 
 Dans `index.html`, incrémente le numéro `?v=N` sur **les trois** références (`styles.css`, `data.js`, `app.js`) — sinon le navigateur sert l'ancienne version et l'UI ne se met pas à jour.
 
-## 5. Commit & push
+## 6. Commit & push
 
 Commit et push systématiquement, sans demander :
 
