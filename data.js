@@ -25,6 +25,7 @@ const RUNS = {
     { date: "2026-06-09", duration: 1895, distance: 3.66, activeCal: 169, totalCal: 207, elevation: 6,  cadence: 126, paceSec: 517, hr: 124 },
     { date: "2026-06-14", duration: 1868, distance: 3.87, activeCal: 177, totalCal: 215, elevation: 12, cadence: 126, paceSec: 482, hr: 125 },
     { date: "2026-06-20", duration: 2123, distance: 4.47, activeCal: 206, totalCal: 249, elevation: 9,  cadence: 130, paceSec: 474, hr: 127 },
+    { date: "2026-06-28", duration: 2285, distance: 4.86, activeCal: 233, totalCal: 280, elevation: 8,  cadence: 131, paceSec: 470, hr: 129 },
   ],
 };
 
@@ -79,5 +80,7 @@ const ANALYSES = {
       text: "Record d'allure : 8'02\"/km, soit 35 s/km de mieux que la séance précédente, ta meilleure performance jusqu'ici. Et tout ça à FC quasi inchangée (125 bpm) : le même effort te fait désormais aller bien plus vite. L'adaptation cardio porte ses fruits." },
     "2026-06-20": { trend: "up", verdict: "Sous 8' et cap des 4 km",
       text: "Double cap franchi : ta première sortie sous les 8'/km (7'54\") et ton record de distance (4,47 km, +0,6 km d'un coup). Plus de 35 min d'effort, 206 cal. Distance et vitesse progressent ensemble — pour un cardio parti de novice, la marche est nette." },
+    "2026-06-28": { trend: "up", verdict: "Double record",
+      text: "Double record d'un coup : 4,86 km (ta plus longue distance) à 7'50\"/km (ta meilleure allure, 4 s/km de mieux que le 20 juin). Et tout ça pour seulement 129 bpm de moyenne, à peine plus qu'avant : tu cours désormais plus loin ET plus vite sans que le cœur s'emballe. Le cap des 5 km est à portée." },
   },
 };
