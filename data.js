@@ -16,6 +16,7 @@ const RUNS = {
     { date: "2026-06-23", duration: 2053, distance: 4.55, activeCal: 327, totalCal: 387, elevation: 6,  cadence: 129, paceSec: 451, hr: 143 },
     { date: "2026-06-26", duration: 2180, distance: 4.84, activeCal: 346, totalCal: 410, elevation: 6,  cadence: 131, paceSec: 450, hr: 142 },
     { date: "2026-06-28", duration: 2286, distance: 5.15, activeCal: 367, totalCal: 434, elevation: 10, cadence: 132, paceSec: 443, hr: 144 },
+    { date: "2026-07-01", duration: 2113, distance: 4.85, activeCal: 351, totalCal: 413, elevation: 8,  cadence: 134, paceSec: 435, hr: 149 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -64,6 +65,8 @@ const ANALYSES = {
       text: "Tout proche des 5 km : 4,84 km, record de distance, à 7'30\"/km (record d'allure égalé) et meilleure cadence (131 spm). Distance et vitesse continuent de monter ensemble. Le palier des 5 km est à portée de main." },
     "2026-06-28": { trend: "up", verdict: "Premier 5 km 🎉",
       text: "Le voilà, ton premier 5 km : 5,15 km en 7'23\"/km, record sur les deux tableaux ! En six semaines tu es passé de 3,7 km à 8'25\" à un vrai 5K à 7'23\". Pour un cardio parti de zéro, c'est une progression remarquable — ton fond musculaire a clairement accéléré l'adaptation." },
+    "2026-07-01": { trend: "up", verdict: "Record d'allure",
+      text: "Nouveau record d'allure : 7'15\"/km, soit 8 s/km de mieux que ton précédent meilleur (7'23\"). Sur une distance un peu plus courte (4,85 km), tu as clairement mis le gaz — FC à 149 bpm, ta plus haute, et cadence record de 134 spm. Après ton premier 5 km, tu travailles maintenant la vitesse : les deux se complètent parfaitement." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
