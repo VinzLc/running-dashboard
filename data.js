@@ -17,6 +17,7 @@ const RUNS = {
     { date: "2026-06-26", duration: 2180, distance: 4.84, activeCal: 346, totalCal: 410, elevation: 6,  cadence: 131, paceSec: 450, hr: 142 },
     { date: "2026-06-28", duration: 2286, distance: 5.15, activeCal: 367, totalCal: 434, elevation: 10, cadence: 132, paceSec: 443, hr: 144 },
     { date: "2026-07-01", duration: 2113, distance: 4.85, activeCal: 351, totalCal: 413, elevation: 8,  cadence: 134, paceSec: 435, hr: 149 },
+    { date: "2026-07-05", duration: 2157, distance: 4.88, activeCal: 343, totalCal: 407, elevation: 9,  cadence: 131, paceSec: 442, hr: 138 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -27,6 +28,7 @@ const RUNS = {
     { date: "2026-06-14", duration: 1868, distance: 3.87, activeCal: 177, totalCal: 215, elevation: 12, cadence: 126, paceSec: 482, hr: 125 },
     { date: "2026-06-20", duration: 2123, distance: 4.47, activeCal: 206, totalCal: 249, elevation: 9,  cadence: 130, paceSec: 474, hr: 127 },
     { date: "2026-06-28", duration: 2285, distance: 4.86, activeCal: 233, totalCal: 280, elevation: 8,  cadence: 131, paceSec: 470, hr: 129 },
+    { date: "2026-07-05", duration: 2146, distance: 4.47, activeCal: 211, totalCal: 254, elevation: 5,  cadence: 130, paceSec: 480, hr: 130 },
   ],
 };
 
@@ -67,6 +69,8 @@ const ANALYSES = {
       text: "Le voilà, ton premier 5 km : 5,15 km en 7'23\"/km, record sur les deux tableaux ! En six semaines tu es passé de 3,7 km à 8'25\" à un vrai 5K à 7'23\". Pour un cardio parti de zéro, c'est une progression remarquable — ton fond musculaire a clairement accéléré l'adaptation." },
     "2026-07-01": { trend: "up", verdict: "Record d'allure",
       text: "Nouveau record d'allure : 7'15\"/km, soit 8 s/km de mieux que ton précédent meilleur (7'23\"). Sur une distance un peu plus courte (4,85 km), tu as clairement mis le gaz — FC à 149 bpm, ta plus haute, et cadence record de 134 spm. Après ton premier 5 km, tu travailles maintenant la vitesse : les deux se complètent parfaitement." },
+    "2026-07-05": { trend: "flat", verdict: "Séance en aisance",
+      text: "Retour à une allure plus tranquille (7'22\"/km) sur une distance quasi identique (4,88 km) à ton record du 1er juillet — mais avec 11 bpm de moins (138 contre 149). C'est le signe qu'après ta séance de vitesse, tu as sagement levé le pied : le cœur encaisse un effort proche pour un coût cardiaque bien moindre, preuve que l'adaptation continue même les jours plus faciles." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
@@ -85,5 +89,7 @@ const ANALYSES = {
       text: "Double cap franchi : ta première sortie sous les 8'/km (7'54\") et ton record de distance (4,47 km, +0,6 km d'un coup). Plus de 35 min d'effort, 206 cal. Distance et vitesse progressent ensemble — pour un cardio parti de novice, la marche est nette." },
     "2026-06-28": { trend: "up", verdict: "Double record",
       text: "Double record d'un coup : 4,86 km (ta plus longue distance) à 7'50\"/km (ta meilleure allure, 4 s/km de mieux que le 20 juin). Et tout ça pour seulement 129 bpm de moyenne, à peine plus qu'avant : tu cours désormais plus loin ET plus vite sans que le cœur s'emballe. Le cap des 5 km est à portée." },
+    "2026-07-05": { trend: "down", verdict: "Petit coup de mou",
+      text: "Séance plus difficile : distance en retrait (4,47 km contre 4,86 km) et allure ralentie (8'00\"/km contre 7'50\"), pour une FC quasi identique (130 bpm). Après deux belles sorties records, ce genre de petit passage à vide est normal — le corps encaisse et régule sa charge d'entraînement. Rien d'inquiétant, la tendance de fond reste très positive." },
   },
 };
