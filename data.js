@@ -18,6 +18,7 @@ const RUNS = {
     { date: "2026-06-28", duration: 2286, distance: 5.15, activeCal: 367, totalCal: 434, elevation: 10, cadence: 132, paceSec: 443, hr: 144 },
     { date: "2026-07-01", duration: 2113, distance: 4.85, activeCal: 351, totalCal: 413, elevation: 8,  cadence: 134, paceSec: 435, hr: 149 },
     { date: "2026-07-05", duration: 2157, distance: 4.88, activeCal: 343, totalCal: 407, elevation: 9,  cadence: 131, paceSec: 442, hr: 138 },
+    { date: "2026-07-07", duration: 2242, distance: 5.17, activeCal: 369, totalCal: 434, elevation: 6,  cadence: 134, paceSec: 433, hr: 148 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -71,6 +72,8 @@ const ANALYSES = {
       text: "Nouveau record d'allure : 7'15\"/km, soit 8 s/km de mieux que ton précédent meilleur (7'23\"). Sur une distance un peu plus courte (4,85 km), tu as clairement mis le gaz — FC à 149 bpm, ta plus haute, et cadence record de 134 spm. Après ton premier 5 km, tu travailles maintenant la vitesse : les deux se complètent parfaitement." },
     "2026-07-05": { trend: "flat", verdict: "Séance en aisance",
       text: "Retour à une allure plus tranquille (7'22\"/km) sur une distance quasi identique (4,88 km) à ton record du 1er juillet — mais avec 11 bpm de moins (138 contre 149). C'est le signe qu'après ta séance de vitesse, tu as sagement levé le pied : le cœur encaisse un effort proche pour un coût cardiaque bien moindre, preuve que l'adaptation continue même les jours plus faciles." },
+    "2026-07-07": { trend: "up", verdict: "Double record !",
+      text: "Grosse séance : nouveau record de distance (5,17 km, ton premier vrai dépassement du 5K) ET nouveau record d'allure (7'13\"/km, 2 s/km de mieux que ton précédent record) dans la même sortie. FC à 148 bpm, cadence au sommet (134 spm) — tu as clairement tout donné (effort ressenti « Hard »). Deux semaines après ton premier 5 km, tu cours maintenant plus loin ET plus vite en même temps : la progression s'accélère." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
