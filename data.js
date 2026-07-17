@@ -20,6 +20,7 @@ const RUNS = {
     { date: "2026-07-05", duration: 2157, distance: 4.88, activeCal: 343, totalCal: 407, elevation: 9,  cadence: 131, paceSec: 442, hr: 138 },
     { date: "2026-07-07", duration: 2242, distance: 5.17, activeCal: 369, totalCal: 434, elevation: 6,  cadence: 134, paceSec: 433, hr: 148 },
     { date: "2026-07-10", duration: 1969, distance: 4.70, activeCal: 343, totalCal: 400, elevation: 6,  cadence: 137, paceSec: 419, hr: 143 },
+    { date: "2026-07-17", duration: 2228, distance: 5.39, activeCal: 389, totalCal: 455, elevation: 10, cadence: 136, paceSec: 413, hr: 148 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -77,6 +78,8 @@ const ANALYSES = {
       text: "Grosse séance : nouveau record de distance (5,17 km, ton premier vrai dépassement du 5K) ET nouveau record d'allure (7'13\"/km, 2 s/km de mieux que ton précédent record) dans la même sortie. FC à 148 bpm, cadence au sommet (134 spm) — tu as clairement tout donné (effort ressenti « Hard »). Deux semaines après ton premier 5 km, tu cours maintenant plus loin ET plus vite en même temps : la progression s'accélère." },
     "2026-07-10": { trend: "up", verdict: "Record d'allure... en mode facile",
       text: "Le plus bluffant : nouveau record d'allure (6'59\"/km, 14 s/km de mieux que ton précédent record de mardi), sous la barre symbolique des 7'/km, mais avec un effort ressenti « Moderate » (contre « Hard » la dernière fois) et une FC plus basse (143 contre 148). Cadence record aussi (137 spm). Ce qui était une allure à fond il y a encore quelques semaines devient une allure confortable — c'est exactement la marque d'une vraie adaptation cardio." },
+    "2026-07-17": { trend: "up", verdict: "Encore un double record",
+      text: "Après une semaine de pause, tu reviens avec un double record : plus longue distance à ce jour (5,39 km) ET meilleure allure (6'53\"/km, 6 s/km de mieux que ton record du 10 juillet). Le tout ressenti « Moderate » malgré une FC à 148 bpm sur plus de 37 minutes d'effort. Deux mois après tes débuts à 3,7 km en 8'25\", tu enchaînes les sorties où distance et vitesse montent ensemble — la marge de progression est loin d'être épuisée." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
