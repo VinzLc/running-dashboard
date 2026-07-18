@@ -32,6 +32,8 @@ const RUNS = {
     { date: "2026-06-20", duration: 2123, distance: 4.47, activeCal: 206, totalCal: 249, elevation: 9,  cadence: 130, paceSec: 474, hr: 127 },
     { date: "2026-06-28", duration: 2285, distance: 4.86, activeCal: 233, totalCal: 280, elevation: 8,  cadence: 131, paceSec: 470, hr: 129 },
     { date: "2026-07-05", duration: 2146, distance: 4.47, activeCal: 211, totalCal: 254, elevation: 5,  cadence: 130, paceSec: 480, hr: 130 },
+    { date: "2026-07-10", duration: 1969, distance: 4.22, activeCal: 200, totalCal: 240, elevation: 9,  cadence: 133, paceSec: 467, hr: 125 },
+    { date: "2026-07-17", duration: 2234, distance: 4.80, activeCal: 234, totalCal: 280, elevation: 9,  cadence: 130, paceSec: 465, hr: 136 },
   ],
 };
 
@@ -100,5 +102,9 @@ const ANALYSES = {
       text: "Double record d'un coup : 4,86 km (ta plus longue distance) à 7'50\"/km (ta meilleure allure, 4 s/km de mieux que le 20 juin). Et tout ça pour seulement 129 bpm de moyenne, à peine plus qu'avant : tu cours désormais plus loin ET plus vite sans que le cœur s'emballe. Le cap des 5 km est à portée." },
     "2026-07-05": { trend: "down", verdict: "Petit coup de mou",
       text: "Séance plus difficile : distance en retrait (4,47 km contre 4,86 km) et allure ralentie (8'00\"/km contre 7'50\"), pour une FC quasi identique (130 bpm). Après deux belles sorties records, ce genre de petit passage à vide est normal — le corps encaisse et régule sa charge d'entraînement. Rien d'inquiétant, la tendance de fond reste très positive." },
+    "2026-07-10": { trend: "up", verdict: "Record d'allure au petit matin",
+      text: "Le coup de mou du 5 juillet est déjà oublié : record d'allure à 7'47\"/km (3 s/km de mieux que ton précédent record du 28 juin), et surtout avec une FC de seulement 125 bpm, bien plus basse que tes dernières sorties à 129-130. Courir plus vite avec un cœur plus calme, c'est la définition même de l'adaptation aérobie. La cadence record (133 spm) montre aussi une foulée qui s'affine." },
+    "2026-07-17": { trend: "up", verdict: "Encore un record d'allure",
+      text: "Deuxième record d'allure d'affilée : 7'45\"/km, sur une distance bien plus longue que la semaine dernière (4,80 km, tout proche de ton record de 4,86 km). Tu tiens maintenant ta meilleure allure sur quasi 5 km — il y a un mois, elle n'était possible que sur des sorties plus courtes. La FC monte logiquement à 136 bpm avec le volume, mais le cap des 5 km à cette allure est clairement à ta portée." },
   },
 };
