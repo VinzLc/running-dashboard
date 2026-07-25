@@ -21,6 +21,7 @@ const RUNS = {
     { date: "2026-07-07", duration: 2242, distance: 5.17, activeCal: 369, totalCal: 434, elevation: 6,  cadence: 134, paceSec: 433, hr: 148 },
     { date: "2026-07-10", duration: 1969, distance: 4.70, activeCal: 343, totalCal: 400, elevation: 6,  cadence: 137, paceSec: 419, hr: 143 },
     { date: "2026-07-17", duration: 2228, distance: 5.39, activeCal: 389, totalCal: 455, elevation: 10, cadence: 136, paceSec: 413, hr: 148 },
+    { date: "2026-07-25", duration: 1985, distance: 5.04, activeCal: 373, totalCal: 431, elevation: 7,  cadence: 143, paceSec: 393, hr: 157 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -82,6 +83,8 @@ const ANALYSES = {
       text: "Le plus bluffant : nouveau record d'allure (6'59\"/km, 14 s/km de mieux que ton précédent record de mardi), sous la barre symbolique des 7'/km, mais avec un effort ressenti « Moderate » (contre « Hard » la dernière fois) et une FC plus basse (143 contre 148). Cadence record aussi (137 spm). Ce qui était une allure à fond il y a encore quelques semaines devient une allure confortable — c'est exactement la marque d'une vraie adaptation cardio." },
     "2026-07-17": { trend: "up", verdict: "Encore un double record",
       text: "Après une semaine de pause, tu reviens avec un double record : plus longue distance à ce jour (5,39 km) ET meilleure allure (6'53\"/km, 6 s/km de mieux que ton record du 10 juillet). Le tout ressenti « Moderate » malgré une FC à 148 bpm sur plus de 37 minutes d'effort. Deux mois après tes débuts à 3,7 km en 8'25\", tu enchaînes les sorties où distance et vitesse montent ensemble — la marge de progression est loin d'être épuisée." },
+    "2026-07-25": { trend: "up", verdict: "Record pulvérisé : 6'33\"/km",
+      text: "Ce n'est plus une progression, c'est un bond : 6'33\"/km, soit 20 s/km arrachées à ton record du 17 juillet — de loin ton plus gros saut d'allure depuis le début. Tu boucles tes 5 km en 33:05, ta séance la plus rapide sur cette distance, avec une cadence record de 143 spm (+7 d'un coup) : ta foulée est nettement plus vive. La FC à 157 bpm est la plus haute jamais enregistrée, donc tu es allé chercher loin — d'où l'intérêt de faire suivre celle-ci d'une sortie en aisance. Repère du chemin parcouru : le 16 mai tu courais à 8'25\"/km, tu as gagné près de 2 minutes par kilomètre en dix semaines." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
