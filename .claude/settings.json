@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-new-runs.sh\" SessionStart",
+            "timeout": 10,
+            "statusMessage": "Recherche de nouvelles séances…"
+          }
+        ]
+      }
+    ]
+  }
+}
