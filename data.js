@@ -36,6 +36,7 @@ const RUNS = {
     { date: "2026-07-05", duration: 2146, distance: 4.47, activeCal: 211, totalCal: 254, elevation: 5,  cadence: 130, paceSec: 480, hr: 130 },
     { date: "2026-07-10", duration: 1969, distance: 4.22, activeCal: 200, totalCal: 240, elevation: 9,  cadence: 133, paceSec: 467, hr: 125 },
     { date: "2026-07-17", duration: 2234, distance: 4.80, activeCal: 234, totalCal: 280, elevation: 9,  cadence: 130, paceSec: 465, hr: 136 },
+    { date: "2026-07-29", duration: 1947, distance: 4.48, activeCal: 225, totalCal: 265, elevation: 5,  cadence: 138, paceSec: 434, hr: 142 },
   ],
 };
 
@@ -112,5 +113,7 @@ const ANALYSES = {
       text: "Le coup de mou du 5 juillet est déjà oublié : record d'allure à 7'47\"/km (3 s/km de mieux que ton précédent record du 28 juin), et surtout avec une FC de seulement 125 bpm, bien plus basse que tes dernières sorties à 129-130. Courir plus vite avec un cœur plus calme, c'est la définition même de l'adaptation aérobie. La cadence record (133 spm) montre aussi une foulée qui s'affine." },
     "2026-07-17": { trend: "up", verdict: "Encore un record d'allure",
       text: "Deuxième record d'allure d'affilée : 7'45\"/km, sur une distance bien plus longue que la semaine dernière (4,80 km, tout proche de ton record de 4,86 km). Tu tiens maintenant ta meilleure allure sur quasi 5 km — il y a un mois, elle n'était possible que sur des sorties plus courtes. La FC monte logiquement à 136 bpm avec le volume, mais le cap des 5 km à cette allure est clairement à ta portée." },
+    "2026-07-29": { trend: "up", verdict: "Énorme bond : 7'14\"/km",
+      text: "Ton plus gros saut d'allure depuis le début : 7'14\"/km, soit 31 s/km arrachées à ton record du 17 juillet — après des progrès qui se comptaient en 3 ou 4 secondes, tu viens de franchir une marche entière. La cadence explose au passage (138 spm, +5 sur ton précédent record) : c'est là qu'est venue la vitesse, une foulée bien plus vive plutôt que des enjambées forcées. La FC à 142 bpm est la plus haute que tu aies enregistrée et la distance est volontairement plus courte (4,48 km) : c'était une séance de vitesse assumée, à faire suivre d'une sortie en aisance. Le chemin parcouru fait plaisir à voir — le 17 mai tu courais à 8'13\"/km, tu as gagné près d'une minute par kilomètre en dix semaines." },
   },
 };
