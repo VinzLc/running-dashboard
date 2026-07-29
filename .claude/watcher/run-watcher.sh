@@ -16,6 +16,14 @@ set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 0
 cd "$root" || exit 0
 
+# L'authentification de Claude Code lit le trousseau login.keychain-db, dont
+# l'entrée est indexée sur le nom de compte pris dans $USER. Sans USER, le
+# binaire répond « Not logged in · Please run /login » et l'analyse échoue
+# silencieusement. launchd fournit bien USER, mais on le rétablit par sécurité
+# pour tout autre contexte d'appel (cron, sudo, environnement scrubbé).
+[ -n "${USER:-}" ] || USER="$(id -un)"
+export USER
+
 log="$root/.claude/watcher/watcher.log"
 say() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$log"; }
 
@@ -90,6 +98,12 @@ find_cli() {
   local c newest=""
   c="$(command -v claude 2>/dev/null)"
   if [ -n "$c" ] && [ -x "$c" ]; then printf '%s' "$c"; return 0; fi
+  # launchd donne un PATH réduit à /usr/bin:/bin:/usr/sbin:/sbin, donc un CLI
+  # autonome installé ailleurs échappe à « command -v » : on regarde les
+  # emplacements habituels avant de se rabattre sur l'extension VS Code.
+  for c in "$HOME/.local/bin/claude" /opt/homebrew/bin/claude /usr/local/bin/claude; do
+    [ -x "$c" ] && { printf '%s' "$c"; return 0; }
+  done
   for c in "$HOME"/.vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude; do
     [ -x "$c" ] || continue
     if [ -z "$newest" ] || [ "$c" -nt "$newest" ]; then newest="$c"; fi
