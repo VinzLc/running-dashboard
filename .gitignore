@@ -1,3 +1,9 @@
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Sorties du watcher launchd : la skill add-run fait « git add -A », donc sans
+# ces règles les logs et le verrou finiraient committés par le watcher lui-même.
+.claude/watcher/watcher.log
+.claude/watcher/launchd.log
+.claude/watcher/.lock/
