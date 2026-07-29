@@ -11,6 +11,18 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-new-runs.sh\" UserPromptSubmit",
+            "timeout": 10,
+            "statusMessage": "Recherche de nouvelles séances…"
+          }
+        ]
+      }
     ]
   }
 }
