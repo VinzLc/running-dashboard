@@ -23,6 +23,7 @@ const RUNS = {
     { date: "2026-07-17", duration: 2228, distance: 5.39, activeCal: 389, totalCal: 455, elevation: 10, cadence: 136, paceSec: 413, hr: 148 },
     { date: "2026-07-25", duration: 1985, distance: 5.04, activeCal: 373, totalCal: 431, elevation: 7,  cadence: 143, paceSec: 393, hr: 157 },
     { date: "2026-07-29", duration: 1944, distance: 5.01, activeCal: 372, totalCal: 428, elevation: 3,  cadence: 142, paceSec: 388, hr: 153 },
+    { date: "2026-08-01", duration: 1926, distance: 5.01, activeCal: 376, totalCal: 432, elevation: 3,  cadence: 142, paceSec: 384, hr: 157 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -37,6 +38,7 @@ const RUNS = {
     { date: "2026-07-10", duration: 1969, distance: 4.22, activeCal: 200, totalCal: 240, elevation: 9,  cadence: 133, paceSec: 467, hr: 125 },
     { date: "2026-07-17", duration: 2234, distance: 4.80, activeCal: 234, totalCal: 280, elevation: 9,  cadence: 130, paceSec: 465, hr: 136 },
     { date: "2026-07-29", duration: 1947, distance: 4.48, activeCal: 225, totalCal: 265, elevation: 5,  cadence: 138, paceSec: 434, hr: 142 },
+    { date: "2026-08-01", duration: 1978, distance: 4.57, activeCal: 226, totalCal: 266, elevation: 2,  cadence: 138, paceSec: 432, hr: 144 },
   ],
 };
 
@@ -89,6 +91,8 @@ const ANALYSES = {
       text: "Ce n'est plus une progression, c'est un bond : 6'33\"/km, soit 20 s/km arrachées à ton record du 17 juillet — de loin ton plus gros saut d'allure depuis le début. Tu boucles tes 5 km en 33:05, ta séance la plus rapide sur cette distance, avec une cadence record de 143 spm (+7 d'un coup) : ta foulée est nettement plus vive. La FC à 157 bpm est la plus haute jamais enregistrée, donc tu es allé chercher loin — d'où l'intérêt de faire suivre celle-ci d'une sortie en aisance. Repère du chemin parcouru : le 16 mai tu courais à 8'25\"/km, tu as gagné près de 2 minutes par kilomètre en dix semaines." },
     "2026-07-29": { trend: "up", verdict: "Nouveau record… ressenti « Easy »",
       text: "La séance la plus parlante depuis tes débuts : encore un record d'allure (6'28\"/km, 5 s/km de mieux que le 25 juillet) et ton 5 km le plus rapide à ce jour (32:24), mais cette fois avec un effort ressenti « Easy » et une FC en baisse (153 contre 157 bpm). Aller plus vite en se fatiguant moins, c'est le signal d'adaptation le plus net qu'on puisse avoir. Ta cadence se stabilise à un haut niveau (142 spm) : la foulée vive du 25 juillet n'était pas un accident, elle est devenue ta norme. Deux mois et demi après tes 8'25\"/km du 16 mai, ton allure de course facile est désormais plus rapide que ton allure maximale de juin." },
+    "2026-08-01": { trend: "up", verdict: "Trois records d'allure d'affilée",
+      text: "Troisième record consécutif : 6'24\"/km, 4 s/km de mieux que le 29 juillet, sur exactement la même distance (5,01 km) — 18 secondes de moins sur le chrono, ton 5 km le plus rapide à ce jour (32:06). Les gains se resserrent après le bond de 20 s/km du 25 juillet, et c'est plutôt bon signe : tu n'es plus en phase de rattrapage, tu grattes des secondes sur une base déjà solide. Seul point à surveiller, la FC remonte à 157 bpm (contre 153) alors que le ressenti reste « Easy » — trois séances rapides en une semaine, ça mérite une sortie franchement lente pour laisser l'adaptation se fixer." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
@@ -115,5 +119,7 @@ const ANALYSES = {
       text: "Deuxième record d'allure d'affilée : 7'45\"/km, sur une distance bien plus longue que la semaine dernière (4,80 km, tout proche de ton record de 4,86 km). Tu tiens maintenant ta meilleure allure sur quasi 5 km — il y a un mois, elle n'était possible que sur des sorties plus courtes. La FC monte logiquement à 136 bpm avec le volume, mais le cap des 5 km à cette allure est clairement à ta portée." },
     "2026-07-29": { trend: "up", verdict: "Énorme bond : 7'14\"/km",
       text: "Ton plus gros saut d'allure depuis le début : 7'14\"/km, soit 31 s/km arrachées à ton record du 17 juillet — après des progrès qui se comptaient en 3 ou 4 secondes, tu viens de franchir une marche entière. La cadence explose au passage (138 spm, +5 sur ton précédent record) : c'est là qu'est venue la vitesse, une foulée bien plus vive plutôt que des enjambées forcées. La FC à 142 bpm est la plus haute que tu aies enregistrée et la distance est volontairement plus courte (4,48 km) : c'était une séance de vitesse assumée, à faire suivre d'une sortie en aisance. Le chemin parcouru fait plaisir à voir — le 17 mai tu courais à 8'13\"/km, tu as gagné près d'une minute par kilomètre en dix semaines." },
+    "2026-08-01": { trend: "up", verdict: "Le bond du 29 juillet confirmé",
+      text: "La question après ton énorme saut du 29 juillet était : est-ce que ça tient ? Réponse oui — nouveau record d'allure à 7'12\"/km (2 s/km de mieux), et cette fois sur une distance plus longue (4,57 km contre 4,48). Tenir sa meilleure allure sur plus de terrain, c'est la vraie preuve qu'un progrès s'est installé plutôt qu'un bon jour isolé. La cadence reste calée à 138 spm et la FC bouge à peine (144 contre 142) : ta foulée vive est devenue automatique. Tes splits racontent bien la séance — départ à 6'51\", puis stabilisation autour de 7'12-7'26\" : tu es partie un peu vite, essaie de lisser sur la prochaine, tu finiras plus fraîche." },
   },
 };
