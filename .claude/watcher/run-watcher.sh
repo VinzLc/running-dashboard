@@ -3,6 +3,9 @@
 # Si une capture n'est pas encore intégrée au dashboard, lance Claude Code en
 # headless pour la traiter via la skill add-run — sans intervention humaine.
 #
+# En cas d'échec, réessaie quelques fois puis notifie : launchd ne relance rien
+# de lui-même, et un échec silencieux laisse la séance non traitée.
+#
 # Pourquoi launchd et pas un hook Claude Code : aucun événement de hook ne
 # surveille le système de fichiers. Les hooks ne peuvent réagir qu'au démarrage
 # d'une session ou à l'envoi d'un message ; launchd, lui, réagit au dépôt du
@@ -46,7 +49,7 @@ if ! mkdir "$lock" 2>/dev/null; then
     exit 0
   fi
 fi
-trap 'rm -rf "$lock" 2>/dev/null' EXIT
+trap 'rm -rf "$lock" ${out:+"$out"} 2>/dev/null' EXIT
 
 # --- Dossiers des coureurs --------------------------------------------------
 # Le « ï » d'Anaïs peut être encodé en NFC ou NFD : on passe par un glob.
@@ -117,10 +120,7 @@ cli="$(find_cli)" || { say "ERREUR : binaire claude introuvable, abandon"; exit 
 # --- Lancer l'analyse -------------------------------------------------------
 prompt='Une ou plusieurs captures Apple Fitness viennent d'"'"'être déposées dans Vincent/ ou Anaïs/ et ne sont pas encore intégrées au dashboard. Lance la skill add-run (outil Skill, skill: "add-run") et suis-la jusqu'"'"'au bout, y compris le commit et le push. Le dossier détermine le coureur. Ne demande aucune confirmation : personne ne lit cette session.'
 
-# Allowlist volontairement étroite : de quoi lire les captures, éditer les
-# fichiers du dashboard et publier — rien d'autre. Pas de bypass global.
 say "séance(s) manquante(s) détectée(s), lancement de l'analyse"
-say "--- début session claude ($cli) ---"
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
   say "DRY_RUN=1 : commande non exécutée"
@@ -128,21 +128,70 @@ if [ "${DRY_RUN:-0}" = "1" ]; then
   exit 0
 fi
 
-"$cli" -p "$prompt" \
-  --permission-mode acceptEdits \
-  --allowedTools \
-    "Skill" "Read" "Edit" "Write" "Glob" "Grep" \
-    "Bash(git status:*)" "Bash(git add:*)" "Bash(git commit:*)" \
-    "Bash(git push:*)" "Bash(git log:*)" "Bash(git ls-files:*)" \
-    "Bash(node --check:*)" \
-  >>"$log" 2>&1
-status=$?
+# Personne ne lit watcher.log : une panne doit se voir à l'écran, sinon la
+# séance reste sur le carreau jusqu'à ce qu'un humain ouvre une session.
+notify() {
+  /usr/bin/osascript -e "display notification \"$2\" with title \"$1\"" >/dev/null 2>&1
+}
 
-printf '\n' >>"$log"
-if [ "$status" -eq 0 ]; then
-  say "--- session terminée (succès) ---"
-else
-  say "--- session terminée EN ERREUR (code $status) ---"
+# --- Tentatives -------------------------------------------------------------
+# launchd ne relance rien après un échec : WatchPaths ne se redéclenche qu'au
+# prochain dépôt de fichier. Une panne passagère — jeton OAuth expiré au mauvais
+# moment, réseau absent — suffit donc à perdre la séance. D'où les reprises
+# espacées, seul filet de sécurité automatique dont on dispose ici.
+#
+# Allowlist volontairement étroite : de quoi lire les captures, éditer les
+# fichiers du dashboard et publier — rien d'autre. Pas de bypass global.
+out="$(mktemp)"
+status=1
+attempt=0
+
+for delay in 0 60 180; do
+  attempt=$((attempt + 1))
+
+  if [ "$delay" -gt 0 ]; then
+    say "nouvelle tentative dans ${delay} s"
+    sleep "$delay"
+    # Une session interactive a pu traiter la séance pendant l'attente : inutile
+    # de repasser derrière elle.
+    if [ -z "$("$root/.claude/hooks/detect-new-runs.sh" Watcher 2>/dev/null)" ]; then
+      say "séance déjà traitée entre-temps, plus rien à faire"
+      status=0
+      break
+    fi
+  fi
+
+  say "--- début session claude (tentative $attempt, $cli) ---"
+  "$cli" -p "$prompt" \
+    --permission-mode acceptEdits \
+    --allowedTools \
+      "Skill" "Read" "Edit" "Write" "Glob" "Grep" \
+      "Bash(git status:*)" "Bash(git add:*)" "Bash(git commit:*)" \
+      "Bash(git push:*)" "Bash(git log:*)" "Bash(git ls-files:*)" \
+      "Bash(node --check:*)" \
+    >"$out" 2>&1
+  status=$?
+
+  cat "$out" >>"$log"
+  printf '\n' >>"$log"
+
+  if [ "$status" -eq 0 ]; then
+    say "--- session terminée (succès, tentative $attempt) ---"
+    break
+  fi
+  say "--- tentative $attempt EN ERREUR (code $status) ---"
+done
+
+if [ "$status" -ne 0 ]; then
+  # L'échec d'authentification est le seul qui demande une action humaine :
+  # il ne sert à rien de le confondre avec une panne d'analyse ordinaire.
+  if grep -qiE 'authenticate|OAuth|not logged in' "$out" 2>/dev/null; then
+    reason="authentification refusée. Ouvre une session Claude Code, ou installe un jeton longue durée (claude setup-token)."
+  else
+    reason="échec de l'analyse (code $status). Voir .claude/watcher/watcher.log."
+  fi
+  say "ABANDON après $attempt tentative(s) : $reason"
+  notify "Dashboard course — séance non traitée" "$reason"
 fi
 
-exit 0
+exit "$status"
