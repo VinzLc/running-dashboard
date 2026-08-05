@@ -131,7 +131,34 @@ fi
 # Personne ne lit watcher.log : une panne doit se voir à l'écran, sinon la
 # séance reste sur le carreau jusqu'à ce qu'un humain ouvre une session.
 notify() {
-  /usr/bin/osascript -e "display notification \"$2\" with title \"$1\"" >/dev/null 2>&1
+  # Le texte finit interpolé dans un littéral AppleScript : un guillemet ou un
+  # antislash dans un message de commit suffirait à casser la commande, et la
+  # notification serait perdue sans un mot dans le log.
+  local title body
+  title="$(printf '%s' "$1" | tr -d '"\\')"
+  body="$(printf '%s' "$2" | tr -d '"\\')"
+  /usr/bin/osascript -e "display notification \"$body\" with title \"$title\"" >/dev/null 2>&1
+}
+
+# Le succès est silencieux par construction : launchd exécute ce script en
+# tâche de fond et Claude tourne en headless, donc rien ne s'ouvre à l'écran.
+# Sans ce signal, le seul moyen de savoir qu'une séance est passée est d'ouvrir
+# watcher.log — autant l'annoncer.
+announce_success() {
+  local head_after subjects
+  head_after="$(git rev-parse HEAD 2>/dev/null)"
+  if [ -n "$head_before" ] && [ -n "$head_after" ] && [ "$head_before" != "$head_after" ]; then
+    # Les messages de commit de la skill add-run se lisent déjà comme un
+    # résumé (« Add Vincent run for 2026-08-05 »), inutile d'en fabriquer un.
+    subjects="$(git log --format='%s' "$head_before..$head_after" 2>/dev/null | paste -sd '; ' -)"
+    notify "Dashboard course — séance ajoutée" "${subjects:-dashboard mis à jour}"
+  else
+    # Session réussie mais historique inchangé : la séance était déjà traitée,
+    # ou l'analyse s'est arrêtée sans rien écrire. Le dire tel quel plutôt que
+    # d'annoncer un ajout qui n'a pas eu lieu.
+    say "session en succès mais aucun commit ajouté"
+    notify "Dashboard course" "Session terminée sans nouveau commit."
+  fi
 }
 
 # --- Tentatives -------------------------------------------------------------
@@ -145,6 +172,9 @@ notify() {
 out="$(mktemp)"
 status=1
 attempt=0
+# Repère pris avant la première tentative : c'est lui qui dira, à la fin, ce
+# que la session a réellement ajouté à l'historique.
+head_before="$(git rev-parse HEAD 2>/dev/null)"
 
 for delay in 0 60 180; do
   attempt=$((attempt + 1))
@@ -177,6 +207,7 @@ for delay in 0 60 180; do
 
   if [ "$status" -eq 0 ]; then
     say "--- session terminée (succès, tentative $attempt) ---"
+    announce_success
     break
   fi
   say "--- tentative $attempt EN ERREUR (code $status) ---"
