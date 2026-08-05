@@ -24,6 +24,7 @@ const RUNS = {
     { date: "2026-07-25", duration: 1985, distance: 5.04, activeCal: 373, totalCal: 431, elevation: 7,  cadence: 143, paceSec: 393, hr: 157 },
     { date: "2026-07-29", duration: 1944, distance: 5.01, activeCal: 372, totalCal: 428, elevation: 3,  cadence: 142, paceSec: 388, hr: 153 },
     { date: "2026-08-01", duration: 1926, distance: 5.01, activeCal: 376, totalCal: 432, elevation: 3,  cadence: 142, paceSec: 384, hr: 157 },
+    { date: "2026-08-05", duration: 1881, distance: 5.01, activeCal: 375, totalCal: 430, elevation: 2,  cadence: 147, paceSec: 375, hr: 159 },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -93,6 +94,8 @@ const ANALYSES = {
       text: "La séance la plus parlante depuis tes débuts : encore un record d'allure (6'28\"/km, 5 s/km de mieux que le 25 juillet) et ton 5 km le plus rapide à ce jour (32:24), mais cette fois avec un effort ressenti « Easy » et une FC en baisse (153 contre 157 bpm). Aller plus vite en se fatiguant moins, c'est le signal d'adaptation le plus net qu'on puisse avoir. Ta cadence se stabilise à un haut niveau (142 spm) : la foulée vive du 25 juillet n'était pas un accident, elle est devenue ta norme. Deux mois et demi après tes 8'25\"/km du 16 mai, ton allure de course facile est désormais plus rapide que ton allure maximale de juin." },
     "2026-08-01": { trend: "up", verdict: "Trois records d'allure d'affilée",
       text: "Troisième record consécutif : 6'24\"/km, 4 s/km de mieux que le 29 juillet, sur exactement la même distance (5,01 km) — 18 secondes de moins sur le chrono, ton 5 km le plus rapide à ce jour (32:06). Les gains se resserrent après le bond de 20 s/km du 25 juillet, et c'est plutôt bon signe : tu n'es plus en phase de rattrapage, tu grattes des secondes sur une base déjà solide. Seul point à surveiller, la FC remonte à 157 bpm (contre 153) alors que le ressenti reste « Easy » — trois séances rapides en une semaine, ça mérite une sortie franchement lente pour laisser l'adaptation se fixer." },
+    "2026-08-05": { trend: "up", verdict: "Quatrième record d'affilée : 6'15\"/km",
+      text: "Quatre records consécutifs, et pas le plus petit : 6'15\"/km, 9 s/km de mieux que le 1er août sur exactement la même distance (5,01 km) — ton 5 km passe sous les 31:30 (31:21), soit 45 secondes gagnées en quatre jours. La cadence signe un nouveau sommet à 147 spm (+5 d'un coup), et c'est bien là que la vitesse est allée se chercher : une foulée plus vive, pas des enjambées plus longues. Un bémol quand même, le même que la dernière fois en plus marqué : la FC monte encore, 159 bpm, ta plus haute jamais enregistrée, et tu n'as toujours pas placé la sortie lente que je te suggérais. Quatre séances rapides d'affilée, ça finit par se payer — la prochaine, vise franchement l'aisance (autour de 7'/km, FC sous 145). Ça ne cassera rien de ce que tu as construit, au contraire : c'est ce qui permettra au record suivant d'arriver." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
