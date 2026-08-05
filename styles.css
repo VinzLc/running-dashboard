@@ -46,11 +46,50 @@ main {
   padding: 0 16px 60px;
 }
 
-/* Barre de filtre global */
-.runner-filter-bar {
+/* Barre de filtres globaux (coureur, distance) */
+.filter-bar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  align-items: flex-end;
+  gap: 12px 24px;
   margin-bottom: 24px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* Filtre sans séance : carte, tableau ou graphique restés vides */
+.empty-note {
+  margin: 0;
+  padding: 18px 4px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.runner-card.empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* .chart-wrap est en position: relative — la note se pose sur le canvas vide. */
+.chart-wrap .empty-note {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
 }
 
 /* Cartes récap */

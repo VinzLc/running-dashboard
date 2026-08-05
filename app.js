@@ -6,6 +6,41 @@ const RUNNERS = Object.keys(RUNS);
 // Par défaut : tous.
 let viewRunners = [...RUNNERS];
 
+// ---------- Filtre de distance ----------
+// Comparer ce qui est comparable : une séance appartient au seau de son
+// kilométrage entier (5,39 km → « 5 km »), et tout ce qui est sous 5 km tient
+// dans un seul seau — à ce stade, un 3,7 km et un 4,8 km relèvent de la même
+// mise en route. Par défaut, aucun filtre.
+const ANY_DISTANCE = "all";
+const SUB_5 = "sub5";
+let viewBucket = ANY_DISTANCE;
+
+const bucketOf = (r) => (r.distance < 5 ? SUB_5 : String(Math.floor(r.distance)));
+
+// Les seaux proposés sont déduits des données, pas écrits en dur : le jour où
+// un premier 6 km tombe, le bouton apparaît de lui-même — et en attendant,
+// aucun bouton ne renvoie vers un graphique vide.
+const DISTANCE_BUCKETS = (() => {
+  const present = new Set(RUNNERS.flatMap((n) => RUNS[n].map(bucketOf)));
+  const buckets = [];
+  if (present.delete(SUB_5)) buckets.push({ key: SUB_5, label: "Moins de 5 km" });
+  [...present]
+    .map(Number)
+    .sort((a, b) => a - b)
+    .forEach((km) => buckets.push({ key: String(km), label: `${km} km` }));
+  return buckets;
+})();
+
+const bucketLabel = (key) => (DISTANCE_BUCKETS.find((b) => b.key === key) || {}).label || "";
+
+// Séances d'un coureur, filtre de distance appliqué.
+const runsOf = (name) =>
+  viewBucket === ANY_DISTANCE ? RUNS[name] : RUNS[name].filter((r) => bucketOf(r) === viewBucket);
+
+// Certaines combinaisons ne contiennent aucune séance — Anaïs n'a pas encore
+// couru 5 km — et un graphique vide n'explique rien de lui-même.
+const emptyMessage = () => `Aucune séance de ${bucketLabel(viewBucket).toLowerCase()} pour l'instant.`;
+
 // ---------- Helpers ----------
 const fmtPace = (sec) => {
   const m = Math.floor(sec / 60);
@@ -39,15 +74,40 @@ const METRICS = {
     desc: "Durée totale de la séance (temps de course), en minutes et secondes." },
 };
 
-// Axe temps commun (toutes les dates, triées)
-const ALL_DATES = [...new Set(RUNNERS.flatMap((n) => RUNS[n].map((r) => r.date)))].sort();
+// Axe temps commun aux séances affichées, trié. Recalculé à chaque rendu :
+// garder les dates des séances filtrées étirerait l'axe sur du vide.
+const visibleDates = () =>
+  [...new Set(viewRunners.flatMap((n) => runsOf(n).map((r) => r.date)))].sort();
+
+// Message affiché par-dessus un graphique sans donnée (ou retiré si data revient).
+function setChartEmpty(canvasId, message) {
+  const wrap = document.getElementById(canvasId).parentElement;
+  let note = wrap.querySelector(".empty-note");
+  if (!message) {
+    if (note) note.remove();
+    return;
+  }
+  if (!note) {
+    note = document.createElement("p");
+    note.className = "empty-note";
+    wrap.appendChild(note);
+  }
+  note.textContent = message;
+}
 
 // ---------- Cartes récap ----------
 function renderCards() {
   const el = document.getElementById("summaryCards");
   el.innerHTML = viewRunners.map((name) => {
-    const runs = RUNS[name];
+    const runs = runsOf(name);
     const color = RUNNER_COLORS[name];
+    if (!runs.length) {
+      return `
+      <div class="runner-card empty">
+        <h3><span class="dot" style="background:${color}"></span>${name}</h3>
+        <p class="empty-note">${emptyMessage()}</p>
+      </div>`;
+    }
     const totalKm = sum(runs.map((r) => r.distance));
     const avgPace = avg(runs.map((r) => r.paceSec));
     const avgHr = avg(runs.map((r) => r.hr));
@@ -82,11 +142,16 @@ function renderEvolution(metricKey = currentMetric) {
   const descEl = document.getElementById("metricDesc");
   if (descEl) descEl.textContent = metric.desc;
 
-  const datasets = viewRunners.map((name) => {
-    const byDate = Object.fromEntries(RUNS[name].map((r) => [r.date, metric.get(r)]));
+  const dates = visibleDates();
+  setChartEmpty("evolutionChart", dates.length ? "" : emptyMessage());
+
+  // Un coureur sans séance dans le filtre courant n'est pas tracé plutôt que
+  // tracé vide : une entrée de légende sans courbe se lit comme un bug.
+  const datasets = viewRunners.filter((name) => runsOf(name).length).map((name) => {
+    const byDate = Object.fromEntries(runsOf(name).map((r) => [r.date, metric.get(r)]));
     return {
       label: name,
-      data: ALL_DATES.map((d) => (d in byDate ? byDate[d] : null)),
+      data: dates.map((d) => (d in byDate ? byDate[d] : null)),
       borderColor: RUNNER_COLORS[name],
       backgroundColor: RUNNER_COLORS[name] + "33",
       borderWidth: 2.5,
@@ -100,7 +165,7 @@ function renderEvolution(metricKey = currentMetric) {
 
   const cfg = {
     type: "line",
-    data: { labels: ALL_DATES.map(fmtDate), datasets },
+    data: { labels: dates.map(fmtDate), datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -135,17 +200,7 @@ function renderEvolution(metricKey = currentMetric) {
 }
 
 function renderMetricSwitch() {
-  const el = document.getElementById("metricSwitch");
-  el.innerHTML = Object.entries(METRICS)
-    .map(([k, m], i) => `<button data-metric="${k}" class="${i === 0 ? "active" : ""}">${m.label}</button>`)
-    .join("");
-  el.querySelectorAll("button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      el.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderEvolution(btn.dataset.metric);
-    });
-  });
+  buildSwitch("metricSwitch", Object.entries(METRICS).map(([k, m]) => [k, m.label]), renderEvolution);
 }
 
 // ---------- Radar comparatif (moyennes normalisées) ----------
@@ -161,17 +216,23 @@ function renderRadar() {
     { key: "duration", label: "Endurance", higher: true },
   ];
 
-  // bornes globales pour normaliser 0..100
+  // Bornes de normalisation prises sur les deux coureurs, mais dans le filtre
+  // de distance courant : à 5 km, c'est aux 5 km d'en face qu'on se compare.
+  // Elles ne dépendent pas de viewRunners, sinon isoler un coureur le
+  // repousserait mécaniquement à 100 sur chaque axe.
   const bounds = {};
   axes.forEach((a) => {
-    const vals = RUNNERS.flatMap((n) => RUNS[n].map((r) => r[a.key]));
+    const vals = RUNNERS.flatMap((n) => runsOf(n).map((r) => r[a.key]));
     bounds[a.key] = { min: Math.min(...vals), max: Math.max(...vals) };
   });
 
-  const datasets = viewRunners.map((name) => ({
+  const shown = viewRunners.filter((name) => runsOf(name).length);
+  setChartEmpty("radarChart", shown.length ? "" : emptyMessage());
+
+  const datasets = shown.map((name) => ({
     label: name,
     data: axes.map((a) => {
-      const m = avg(RUNS[name].map((r) => r[a.key]));
+      const m = avg(runsOf(name).map((r) => r[a.key]));
       const { min, max } = bounds[a.key];
       let norm = max === min ? 50 : ((m - min) / (max - min)) * 100;
       if (!a.higher) norm = 100 - norm; // pour l'allure : plus rapide = mieux
@@ -277,8 +338,13 @@ function analysisHtml(r) {
 // ---------- Tableau ----------
 function renderTable() {
   const tbody = document.querySelector("#runsTable tbody");
-  let rows = viewRunners.flatMap((name) => RUNS[name].map((r) => ({ ...r, name })));
+  let rows = viewRunners.flatMap((name) => runsOf(name).map((r) => ({ ...r, name })));
   rows.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><p class="empty-note">${emptyMessage()}</p></td></tr>`;
+    return;
+  }
 
   tbody.innerHTML = rows
     .map((r) => {
@@ -302,41 +368,55 @@ function renderTable() {
     .join("");
 }
 
-// ---------- Sélecteur global de coureur ----------
-function applyRunnerFilter(value) {
-  viewRunners = value === "all" ? [...RUNNERS] : [value];
-  renderCards();
-  renderEvolution();
-  renderRadar();
-  renderTable();
-}
-
-function renderRunnerFilter() {
-  const el = document.getElementById("runnerFilter");
-  const opts = [["all", "Tous"], ...RUNNERS.map((n) => [n, n])];
-  el.innerHTML = opts
-    .map(([k, label], i) => `<button data-runner="${k}" class="${i === 0 ? "active" : ""}">${label}</button>`)
+// ---------- Sélecteurs globaux ----------
+// Les trois barres de boutons (coureur, distance, métrique) partagent le même
+// comportement : un seul actif à la fois, on prévient au changement.
+function buildSwitch(elId, options, onPick) {
+  const el = document.getElementById(elId);
+  el.innerHTML = options
+    .map(([k, label], i) => `<button data-value="${k}" class="${i === 0 ? "active" : ""}">${label}</button>`)
     .join("");
   el.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => {
       el.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      applyRunnerFilter(btn.dataset.runner);
+      onPick(btn.dataset.value);
     });
   });
+}
+
+// Tout ce qui dépend des deux filtres globaux, y compris le décompte du pied
+// de page — sinon il annoncerait 34 séances sous un dashboard qui n'en montre 6.
+function renderAll() {
+  renderCards();
+  renderEvolution();
+  renderRadar();
+  renderTable();
+  document.getElementById("totalRuns").textContent = sum(viewRunners.map((n) => runsOf(n).length));
+}
+
+function renderFilters() {
+  buildSwitch("runnerFilter", [["all", "Tous"], ...RUNNERS.map((n) => [n, n])], (v) => {
+    viewRunners = v === "all" ? [...RUNNERS] : [v];
+    renderAll();
+  });
+  buildSwitch(
+    "distanceFilter",
+    [[ANY_DISTANCE, "Toutes"], ...DISTANCE_BUCKETS.map((b) => [b.key, b.label])],
+    (v) => {
+      viewBucket = v;
+      renderAll();
+    },
+  );
 }
 
 // ---------- Init ----------
 Chart.defaults.color = "#98989d";
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-renderRunnerFilter();
-renderCards();
+renderFilters();
 renderMetricSwitch();
-renderEvolution("distance");
-renderRadar();
-renderTable();
-document.getElementById("totalRuns").textContent = sum(RUNNERS.map((n) => RUNS[n].length));
+renderAll();
 
 // Déploiement de l'analyse au clic sur une ligne (délégation : survit aux re-render)
 document.querySelector("#runsTable tbody").addEventListener("click", (e) => {

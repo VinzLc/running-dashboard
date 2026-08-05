@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏃 Running Dashboard — Anaïs & Vincent</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=18" />
+  <link rel="stylesheet" href="styles.css?v=19" />
 </head>
 <body>
   <header class="hero">
@@ -14,9 +14,16 @@
   </header>
 
   <main>
-    <!-- Sélecteur global de coureur -->
-    <div class="runner-filter-bar">
-      <div class="filter-switch" id="runnerFilter"></div>
+    <!-- Filtres globaux : coureur et distance -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span class="filter-label">Coureur</span>
+        <div class="filter-switch" id="runnerFilter"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Distance</span>
+        <div class="filter-switch" id="distanceFilter"></div>
+      </div>
     </div>
 
     <!-- Cartes récap par personne -->
@@ -74,7 +81,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=18"></script>
-  <script src="app.js?v=18"></script>
+  <script src="data.js?v=19"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>
