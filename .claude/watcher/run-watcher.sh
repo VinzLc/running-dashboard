@@ -52,18 +52,16 @@ fi
 trap 'rm -rf "$lock" ${out:+"$out"} 2>/dev/null' EXIT
 
 # --- Dossiers des coureurs --------------------------------------------------
-# Le « ï » d'Anaïs peut être encodé en NFC ou NFD : on passe par un glob.
-runner_dirs() {
-  [ -d Vincent ] && printf '%s\n' Vincent
-  for d in Ana*/; do [ -d "$d" ] && printf '%s\n' "${d%/}"; done
-}
+# Liste partagée avec le hook de détection et l'installateur.
+# shellcheck source=../runners.sh
+. "$root/.claude/runners.sh"
 
 # --- Attendre la fin de la copie -------------------------------------------
 # Le Finder peut écrire le fichier progressivement : launchd nous réveille dès
 # la création, donc on attend que la liste des images ET leurs tailles cessent
 # de bouger avant de lire quoi que ce soit.
 fingerprint() {
-  runner_dirs | while IFS= read -r d; do
+  runner_dirs . | cut -f2 | while IFS= read -r d; do
     find "$d" -maxdepth 1 -type f \
       \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.heic' \) \
       -exec stat -f '%N %z' {} + 2>/dev/null

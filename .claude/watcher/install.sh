@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Installe (ou désinstalle) l'agent launchd qui surveille Vincent/ et Anaïs/.
+# Installe (ou désinstalle) l'agent launchd qui surveille les dossiers des
+# coureurs déclarés dans .claude/runners.sh.
+#
+# À relancer après l'ajout d'un coureur : les WatchPaths sont figés dans le
+# plist au moment de l'installation, l'agent n'ira pas relire runners.sh.
 #
 #   ./install.sh            installe et charge l'agent
 #   ./install.sh --uninstall  décharge et supprime l'agent
@@ -37,12 +41,18 @@ case "${1:-}" in
     ;;
 esac
 
-# Dossiers à surveiller : Vincent + le dossier d'Anaïs retrouvé par glob, pour
-# ne pas dépendre de l'encodage du « ï » (NFC vs NFD).
+# Dossiers à surveiller : ceux déclarés dans .claude/runners.sh, résolus par
+# glob pour ne pas dépendre de l'encodage du « ï » d'Anaïs (NFC vs NFD).
+# shellcheck source=../runners.sh
+. "$root/.claude/runners.sh"
+
 watch_entries=""
-add_watch() { watch_entries="${watch_entries}    <string>${1}</string>"$'\n'; }
-[ -d "$root/Vincent" ] && add_watch "$root/Vincent"
-for d in "$root"/Ana*/; do [ -d "$d" ] && add_watch "${d%/}"; done
+while IFS=$'\t' read -r _key dir; do
+  [ -n "$dir" ] || continue
+  watch_entries="${watch_entries}    <string>${dir}</string>"$'\n'
+done <<RUNNERS
+$(runner_dirs "$root")
+RUNNERS
 
 if [ -z "$watch_entries" ]; then
   echo "Aucun dossier de coureur trouvé dans $root — rien à surveiller." >&2

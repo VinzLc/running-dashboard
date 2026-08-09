@@ -37,9 +37,22 @@ const bucketLabel = (key) => (DISTANCE_BUCKETS.find((b) => b.key === key) || {})
 const runsOf = (name) =>
   viewBucket === ANY_DISTANCE ? RUNS[name] : RUNS[name].filter((r) => bucketOf(r) === viewBucket);
 
-// Certaines combinaisons ne contiennent aucune séance — Anaïs n'a pas encore
-// couru 5 km — et un graphique vide n'explique rien de lui-même.
-const emptyMessage = () => `Aucune séance de ${bucketLabel(viewBucket).toLowerCase()} pour l'instant.`;
+// Certaines combinaisons ne contiennent aucune séance — Ju n'a pas encore
+// déposé de capture, Anaïs n'a pas encore couru 6 km — et un graphique vide
+// n'explique rien de lui-même. `metric` couvre le second cas de vide : la
+// sélection contient des séances, mais aucune ne mesure la métrique demandée.
+function emptyMessage(metric) {
+  // Le libellé garde sa casse : « fc moy. » se lit comme une coquille.
+  if (metric) return `Aucune donnée de ${metric.label} pour cette sélection.`;
+  const scope = viewBucket === ANY_DISTANCE ? "" : ` de ${bucketLabel(viewBucket).toLowerCase()}`;
+  return `Aucune séance${scope} pour l'instant.`;
+}
+
+// Toutes les applis ne mesurent pas tout : adidas Running, côté Didi, ne donne
+// ni FC ni cadence ni dénivelé. Une métrique n'existe donc pour un coureur que
+// si au moins une de ses séances la porte — et il faut le vérifier avant de
+// tracer, de moyenner ou d'afficher quoi que ce soit.
+const hasMetric = (runs, key) => runs.some((r) => r[key] != null);
 
 // ---------- Helpers ----------
 const fmtPace = (sec) => {
@@ -110,22 +123,40 @@ function renderCards() {
     }
     const totalKm = sum(runs.map((r) => r.distance));
     const avgPace = avg(runs.map((r) => r.paceSec));
-    const avgHr = avg(runs.map((r) => r.hr));
     const bestPace = Math.min(...runs.map((r) => r.paceSec));
     const longest = Math.max(...runs.map((r) => r.distance));
     const totalCal = sum(runs.map((r) => r.activeCal));
+
+    // Chaque coureur remplit les huit cases, mais pas avec les mêmes chiffres :
+    // la FC pour ceux dont la montre la mesure, la vitesse de pointe pour ceux
+    // dont l'appli la donne. Une case absente est retirée, jamais mise à zéro.
+    const stats = [
+      ["Séances", `${runs.length}`],
+      ["Distance totale", `${totalKm.toFixed(1)} <small>km</small>`],
+      ["Allure moy.", `${fmtPace(avgPace)}<small>/km</small>`],
+      ["Meilleure allure", `${fmtPace(bestPace)}<small>/km</small>`],
+    ];
+    if (hasMetric(runs, "hr")) {
+      const avgHr = avg(runs.filter((r) => r.hr != null).map((r) => r.hr));
+      stats.push(["FC moyenne", `${Math.round(avgHr)} <small>bpm</small>`]);
+    }
+    if (hasMetric(runs, "maxSpeed")) {
+      const topSpeed = Math.max(...runs.filter((r) => r.maxSpeed != null).map((r) => r.maxSpeed));
+      stats.push(["Vitesse de pointe", `${topSpeed.toFixed(1)} <small>km/h</small>`]);
+    }
+    stats.push(
+      ["Plus longue", `${longest.toFixed(2)} <small>km</small>`],
+      ["Calories actives", `${totalCal} <small>cal</small>`],
+      ["Distance moy.", `${(totalKm / runs.length).toFixed(2)} <small>km</small>`],
+    );
+
     return `
       <div class="runner-card">
         <h3><span class="dot" style="background:${color}"></span>${name}</h3>
         <div class="stat-grid">
-          <div class="stat"><div class="label">Séances</div><div class="value">${runs.length}</div></div>
-          <div class="stat"><div class="label">Distance totale</div><div class="value">${totalKm.toFixed(1)} <small>km</small></div></div>
-          <div class="stat"><div class="label">Allure moy.</div><div class="value">${fmtPace(avgPace)}<small>/km</small></div></div>
-          <div class="stat"><div class="label">Meilleure allure</div><div class="value">${fmtPace(bestPace)}<small>/km</small></div></div>
-          <div class="stat"><div class="label">FC moyenne</div><div class="value">${Math.round(avgHr)} <small>bpm</small></div></div>
-          <div class="stat"><div class="label">Plus longue</div><div class="value">${longest.toFixed(2)} <small>km</small></div></div>
-          <div class="stat"><div class="label">Calories actives</div><div class="value">${totalCal} <small>cal</small></div></div>
-          <div class="stat"><div class="label">Distance moy.</div><div class="value">${(totalKm / runs.length).toFixed(2)} <small>km</small></div></div>
+          ${stats
+            .map(([label, value]) => `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`)
+            .join("")}
         </div>
       </div>`;
   }).join("");
@@ -143,12 +174,23 @@ function renderEvolution(metricKey = currentMetric) {
   if (descEl) descEl.textContent = metric.desc;
 
   const dates = visibleDates();
-  setChartEmpty("evolutionChart", dates.length ? "" : emptyMessage());
 
-  // Un coureur sans séance dans le filtre courant n'est pas tracé plutôt que
-  // tracé vide : une entrée de légende sans courbe se lit comme un bug.
-  const datasets = viewRunners.filter((name) => runsOf(name).length).map((name) => {
-    const byDate = Object.fromEntries(runsOf(name).map((r) => [r.date, metric.get(r)]));
+  // Un coureur sans séance dans le filtre courant — ou dont l'appli ne mesure
+  // pas la métrique affichée — n'est pas tracé plutôt que tracé vide : une
+  // entrée de légende sans courbe se lit comme un bug.
+  const plotted = viewRunners.filter(
+    (name) => runsOf(name).length && hasMetric(runsOf(name), metricKey),
+  );
+  setChartEmpty(
+    "evolutionChart",
+    plotted.length ? "" : emptyMessage(dates.length ? metric : null),
+  );
+
+  const datasets = plotted.map((name) => {
+    // `?? null` : une séance isolée peut manquer la métrique alors que d'autres
+    // l'ont (Didi n'a pas de FC du tout, mais le cas se poserait pour une montre
+    // changée en cours de route). Chart.js coupe sur null, pas sur undefined.
+    const byDate = Object.fromEntries(runsOf(name).map((r) => [r.date, metric.get(r) ?? null]));
     return {
       label: name,
       data: dates.map((d) => (d in byDate ? byDate[d] : null)),
@@ -207,7 +249,7 @@ function renderMetricSwitch() {
 let radarChart;
 function renderRadar() {
   const ctx = document.getElementById("radarChart");
-  const axes = [
+  const ALL_AXES = [
     { key: "distance", label: "Distance", higher: true },
     { key: "paceSec", label: "Vitesse", higher: false },
     { key: "cadence", label: "Cadence", higher: true },
@@ -216,23 +258,29 @@ function renderRadar() {
     { key: "duration", label: "Endurance", higher: true },
   ];
 
-  // Bornes de normalisation prises sur les deux coureurs, mais dans le filtre
+  const shown = viewRunners.filter((name) => runsOf(name).length);
+  setChartEmpty("radarChart", shown.length ? "" : emptyMessage());
+
+  // Un radar ne compare que sur des axes communs : dès que l'un des coureurs
+  // affichés ne mesure pas la cadence ou la FC, l'axe disparaît pour tout le
+  // monde. Le garder en mettant l'autre à zéro dessinerait un creux qui se lit
+  // comme une contre-performance alors que c'est une absence de mesure.
+  const axes = ALL_AXES.filter((a) => shown.every((name) => hasMetric(runsOf(name), a.key)));
+
+  // Bornes de normalisation prises sur tous les coureurs, mais dans le filtre
   // de distance courant : à 5 km, c'est aux 5 km d'en face qu'on se compare.
   // Elles ne dépendent pas de viewRunners, sinon isoler un coureur le
   // repousserait mécaniquement à 100 sur chaque axe.
   const bounds = {};
   axes.forEach((a) => {
-    const vals = RUNNERS.flatMap((n) => runsOf(n).map((r) => r[a.key]));
+    const vals = RUNNERS.flatMap((n) => runsOf(n).map((r) => r[a.key])).filter((v) => v != null);
     bounds[a.key] = { min: Math.min(...vals), max: Math.max(...vals) };
   });
-
-  const shown = viewRunners.filter((name) => runsOf(name).length);
-  setChartEmpty("radarChart", shown.length ? "" : emptyMessage());
 
   const datasets = shown.map((name) => ({
     label: name,
     data: axes.map((a) => {
-      const m = avg(runsOf(name).map((r) => r[a.key]));
+      const m = avg(runsOf(name).filter((r) => r[a.key] != null).map((r) => r[a.key]));
       const { min, max } = bounds[a.key];
       let norm = max === min ? 50 : ((m - min) / (max - min)) * 100;
       if (!a.higher) norm = 100 - norm; // pour l'allure : plus rapide = mieux
@@ -382,11 +430,14 @@ function analysisHtml(r) {
   if (m.prev) {
     const dPace = r.paceSec - m.prev.paceSec; // < 0 = plus rapide
     const dDist = r.distance - m.prev.distance;
-    const dHr = r.hr - m.prev.hr;
     deltas =
       deltaChip("Allure", dPace, (v) => Math.round(v) + " s/km", dPace < 0) +
-      deltaChip("Distance", dDist, (v) => v.toFixed(2) + " km", dDist > 0) +
-      deltaChip("FC", dHr, (v) => Math.round(v) + " bpm", null);
+      deltaChip("Distance", dDist, (v) => v.toFixed(2) + " km", dDist > 0);
+    // Pas de puce FC quand l'une des deux séances ne la mesure pas : un écart
+    // calculé sur une valeur absente vaudrait NaN.
+    if (r.hr != null && m.prev.hr != null) {
+      deltas += deltaChip("FC", r.hr - m.prev.hr, (v) => Math.round(v) + " bpm", null);
+    }
   } else {
     deltas = `<span class="delta-chip flat">Première séance — référence de départ</span>`;
   }
@@ -413,6 +464,10 @@ function analysisHtml(r) {
 }
 
 // ---------- Tableau ----------
+// Un tiret cadratin plutôt qu'une case vide : il dit « non mesuré » là où le
+// blanc laisserait croire à un oubli de saisie.
+const cell = (value, unit) => (value == null ? '<span class="na">—</span>' : `${value} ${unit}`);
+
 function renderTable() {
   const tbody = document.querySelector("#runsTable tbody");
   let rows = viewRunners.flatMap((name) => runsOf(name).map((r) => ({ ...r, name })));
@@ -433,10 +488,10 @@ function renderTable() {
         <td>${r.distance.toFixed(2)} km</td>
         <td>${fmtDuration(r.duration)}</td>
         <td>${fmtPace(r.paceSec)}/km</td>
-        <td>${r.hr} bpm</td>
-        <td>${r.cadence} spm</td>
-        <td>${r.activeCal} cal</td>
-        <td>${r.elevation} m</td>
+        <td>${cell(r.hr, "bpm")}</td>
+        <td>${cell(r.cadence, "spm")}</td>
+        <td>${cell(r.activeCal, "cal")}</td>
+        <td>${cell(r.elevation, "m")}</td>
       </tr>
       <tr class="analysis-row" data-key="${key}">
         <td colspan="9">${analysisHtml(r)}</td>

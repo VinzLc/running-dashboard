@@ -1,22 +1,33 @@
 ---
 name: add-run
-description: Ajoute une (ou plusieurs) nouvelle(s) séance(s) de course au dashboard à partir des captures Apple Fitness déposées dans les dossiers Vincent/ ou Anaïs/. À utiliser quand l'utilisateur dit "nouvelle run", "nouvelle séance", "ajoute la course", ou /add-run.
+description: Ajoute une (ou plusieurs) nouvelle(s) séance(s) de course au dashboard à partir des captures d'appli de course déposées dans les dossiers Vincent/, Anaïs/, Didi/ ou Ju/. À utiliser quand l'utilisateur dit "nouvelle run", "nouvelle séance", "ajoute la course", ou /add-run.
 ---
 
 # Ajouter une séance de course au dashboard
 
-Procédure pour intégrer de nouvelles captures Apple Fitness dans le dashboard.
+Procédure pour intégrer de nouvelles captures dans le dashboard.
 
 ## 1. Trouver les captures à traiter
 
-- Les captures sont dans `Vincent/` et `Anaïs/` (le dossier détermine le coureur).
+- Le dossier détermine le coureur. La liste des coureurs vit dans
+  `.claude/runners.sh` — **c'est le seul endroit à modifier pour en ajouter un**
+  (le hook de détection, le watcher et son installateur la lisent tous de là).
 - **`.claude/captures-integrees.txt` est la source de vérité** : toute capture qui
   n'y figure pas reste à traiter. Compare le contenu des dossiers à ce manifeste
   (le hook `detect-new-runs.sh` fait déjà ce diff et te donne la liste).
 - Ne te fie ni au décompte des images, ni à `git status` : une capture peut être
   commitée avant que ses données soient dans `data.js`.
 
-**Une séance = deux captures** depuis août 2026 :
+**Chaque coureur a sa propre appli, et donc son propre format.** Lis la capture
+avant de supposer quoi que ce soit :
+
+| Coureur | Appli | Captures par séance | Mesures |
+|---|---|---|---|
+| Vincent, Anaïs | Apple Fitness | **2** — récapitulatif + splits | tout, sauf FC/cadence par km chez Anaïs |
+| Didi | adidas Running | **1** | ni FC, ni cadence, ni dénivelé ; en plus : vitesse de pointe |
+| Ju | — | pas encore de séance | — |
+
+Pour Vincent et Anaïs, depuis août 2026 :
 
 | Capture | Écran | Ce qu'on en tire |
 |---|---|---|
@@ -43,9 +54,24 @@ créer un doublon.
 | Avg. Pace (ex. 7'23"/km) | `paceSec` | en **secondes/km** (7×60+23 = 443) |
 | Avg. Heart Rate (ex. 144 bpm) | `hr` | nombre |
 
+L'écran adidas Running (Didi) est plus pauvre — date **et heure** en haut sous le
+titre, puis `DISTANCE`, `DURATION`, `AVG. PACE`, `CALORIES` (un seul chiffre →
+`activeCal`, pas de `totalCal`), `AVG. SPEED`, `MAX. SPEED` (→ `maxSpeed`, en
+km/h) et `DEHYDRATION`. Il n'y a **ni FC, ni cadence, ni dénivelé** : ces clés
+sont simplement absentes de l'objet.
+
+> **N'invente jamais une valeur manquante, et ne mets pas 0.** Le dashboard sait
+> afficher « — » et retirer un axe du radar, mais un `hr: 0` se lit comme une
+> mesure réelle et fausse toutes les moyennes.
+
+Un champ `PAUSE` apparaît quand la séance a été interrompue. On ne le stocke pas,
+mais il vaut la peine d'être commenté dans l'analyse : la durée affichée ne
+compte que le temps en mouvement, donc l'allure reste juste, mais 5 km d'une
+traite et 5 km en trois morceaux ne sont pas le même effort.
+
 **Vérification** : `paceSec` ≈ `duration / distance`. Si l'écart est important, relis l'image.
 
-## 3. Lire les splits
+## 3. Lire les splits (Apple Fitness uniquement)
 
 L'écran « Splits » liste une ligne par kilomètre : numéro, `Time`, `Pace`, et —
 selon la montre — `Heart Rate` et `Cadence`. La **dernière ligne est le tronçon
@@ -68,9 +94,11 @@ splits: [
 
 ## 4. Mettre à jour `data.js`
 
-Ajoute l'objet à la fin du tableau du bon coureur (`RUNS.Vincent` ou
-`RUNS["Anaïs"]`), en gardant l'ordre chronologique et l'alignement des colonnes
-existant. Avec splits, le bloc passe sur plusieurs lignes :
+Ajoute l'objet à la fin du tableau du bon coureur (`RUNS.Vincent`,
+`RUNS["Anaïs"]`, `RUNS.Didi`…), en gardant l'ordre chronologique et l'alignement
+des colonnes existant. Un nouveau coureur a besoin en plus d'une entrée dans
+`RUNNER_COLORS`, d'un bloc dans `ANALYSES` et d'une ligne dans
+`.claude/runners.sh`. Avec splits, le bloc passe sur plusieurs lignes :
 
 ```js
 { date: "2026-08-09", duration: 2345, distance: 6.01, activeCal: 463, totalCal: 531, elevation: 4,  cadence: 144, paceSec: 390, hr: 158,
@@ -101,6 +129,15 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
   Vincent 30 ans, Anaïs 29 ans, 9 ans de muscu chacun mais **très novices en
   cardio** (souligne l'adaptation aérobie, FC qui baisse à effort égal,
   distance/allure qui montent, records).
+- **N'analyse que ce qui est mesuré.** Sans FC ni cadence (Didi), l'adaptation
+  aérobie n'est pas observable : appuie-toi sur ce que l'appli donne — allure,
+  régularité d'une sortie à l'autre, temps de pause, vitesse de pointe, et le
+  fait que le parcours soit identique à chaque fois (le chrono devient alors une
+  mesure très propre du progrès).
+- **N'invente pas de contexte personnel.** Pour un coureur dont on ne connaît ni
+  l'âge ni le passé sportif, tiens-t'en aux chiffres. En français, évite aussi
+  les accords qui présument du genre (« ton allure est passée de… » plutôt que
+  « tu es passé·e de… ») tant que la personne ne l'a pas indiqué.
 - **Exploite les splits** — c'est là que se trouve ce que les moyennes cachent :
   - *gestion de l'effort* : écart entre le 1er et le dernier kilomètre complet.
     Un positive split marqué (départ rapide, fin qui s'écroule) est le défaut

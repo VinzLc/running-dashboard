@@ -6,6 +6,8 @@
   --text-dim: #98989d;
   --vincent: #0a84ff;
   --anais: #ff375f;
+  --didi: #30d158;
+  --ju: #bf5af2;
   --green: #30d158;
   --yellow: #ffd60a;
   --radius: 18px;
@@ -39,6 +41,8 @@ body {
 }
 .vincent { color: var(--vincent); font-weight: 700; }
 .anais { color: var(--anais); font-weight: 700; }
+.didi { color: var(--didi); font-weight: 700; }
+.ju { color: var(--ju); font-weight: 700; }
 
 main {
   max-width: 1000px;
@@ -196,6 +200,8 @@ tbody tr:last-child { border-bottom: none; }
   gap: 6px;
   font-weight: 600;
 }
+/* Mesure absente de l'appli du coureur — à ne pas confondre avec un zéro. */
+.na { color: rgba(255,255,255,0.28); }
 
 /* Lignes dépliables — analyse IA */
 .run-row { cursor: pointer; transition: background 0.15s; }

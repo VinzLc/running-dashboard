@@ -1,6 +1,14 @@
-// Données des sessions de course — extraites des captures Apple Fitness.
+// Données des sessions de course — extraites des captures d'écran des applis.
 // Allure en secondes/km pour permettre les calculs/graphiques.
 // Durée en secondes. Distance en km. Dénivelé en m. FC en bpm. Cadence en spm.
+//
+// SEULES `date`, `duration`, `distance` et `paceSec` sont garanties. Tout le
+// reste dépend de l'appli et de la montre du coureur, et le dashboard doit
+// composer avec : Vincent et Anaïs sont sur Apple Fitness (FC, cadence,
+// dénivelé, calories actives + totales), Didi sur adidas Running, qui ne donne
+// ni FC, ni cadence, ni dénivelé, mais une vitesse de pointe (`maxSpeed`, km/h).
+// Une clé absente n'est jamais remplacée par un zéro — un 0 bpm se lit comme une
+// mesure, une clé manquante se lit comme « non mesuré ».
 //
 // `splits` (optionnel) : le détail kilomètre par kilomètre, lu sur la 2e capture
 // (écran « Splits »). `sec` = temps passé sur ce tronçon, `paceSec` = allure
@@ -66,11 +74,27 @@ const RUNS = {
         { km: 6, sec: 145, paceSec: 445, partial: true },
       ] },
   ],
+  // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
+  // une vitesse de pointe, et un seul chiffre de calories (pas de total).
+  Didi: [
+    { date: "2026-07-23", duration: 1971, distance: 5.00, activeCal: 347, paceSec: 394, maxSpeed: 11.0 },
+    { date: "2026-07-26", duration: 1989, distance: 5.02, activeCal: 349, paceSec: 396, maxSpeed: 10.9 },
+    { date: "2026-07-30", duration: 1951, distance: 5.02, activeCal: 347, paceSec: 388, maxSpeed: 10.6 },
+    { date: "2026-08-01", duration: 1945, distance: 5.01, activeCal: 348, paceSec: 388, maxSpeed: 10.4 },
+    { date: "2026-08-05", duration: 1902, distance: 5.01, activeCal: 347, paceSec: 379, maxSpeed: 13.9 },
+    { date: "2026-08-09", duration: 1889, distance: 5.00, activeCal: 345, paceSec: 377, maxSpeed: 11.2 },
+  ],
+  // Ju a rejoint le dashboard mais n'a pas encore déposé de capture : le tableau
+  // vide lui réserve sa place (carte, filtre, couleur) au lieu de la faire
+  // apparaître au milieu de la première séance.
+  Ju: [],
 };
 
 const RUNNER_COLORS = {
   Vincent: "#0a84ff",
   "Anaïs": "#ff375f",
+  Didi: "#30d158",
+  Ju: "#bf5af2",
 };
 
 // Analyses « coach » par séance, rédigées en comparant chaque run aux précédentes
@@ -195,4 +219,28 @@ const ANALYSES = {
       text: "Ça y est, le cap est passé : 5,32 km, ton premier vrai 5 km, et 460 m de plus que ton record du 28 juin qui tenait depuis six semaines. C'est aussi ta plus longue séance (39:52, contre 38:05 en juin) et la plus dépensière (262 cal actives, ton précédent maximum était à 234). L'allure de 7'29\"/km est en retrait de tes 7'12\" du 1er août, et c'est exactement ce qu'il fallait faire : sur ta dernière sortie longue, le 28 juin, tu tournais à 7'50\" sur 4,86 km — tu viens de courir 460 m de plus, 21 s/km plus vite. Le détail qui compte le plus à mes yeux : ta cadence tient à 138 spm, identique à tes deux dernières séances, alors que tu as couru près de 8 minutes de plus. Quand la fatigue arrive, la foulée est la première chose qui s'écroule chez une coureuse encore jeune en cardio — la tienne n'a pas bougé. La FC à 145 bpm est ta plus haute, mais sur presque 40 minutes d'effort c'est cohérent, rien d'alarmant. Trois mois après tes 3,76 km à 8'13\"/km du 17 mai, tu cours 40 % plus loin et 44 s/km plus vite. Le seul vrai reproche, et c'est déjà celui du 1er août : tes splits. 6'46\" sur le premier kilomètre — plus rapide que ta meilleure allure moyenne à ce jour — puis 7'28\", 7'23\", 7'49\" et 7'58\" : tu perds 1'12\"/km entre ton premier et ton avant-dernier kilomètre, là où l'écart n'était que de 35 s la dernière fois. La consigne de lisser était déjà passée, et le trou s'est creusé au lieu de se réduire. Pour la suite, ne cherche pas à allonger tout de suite : refais deux ou trois fois cette distance en passant le premier kilomètre autour de 7'40\". Ça te paraîtra beaucoup trop lent pendant cinq minutes, et tu finiras plus vite qu'aujourd'hui — c'est comme ça que le 6 km viendra tout seul.",
       pokemon: "Roucarnage", pokemonPhrase: "Roucarnage : Roucool en juin, Roucoups en juillet, l'évolution finale pile pour ton premier 5 km. Reste à lui apprendre à ne pas tout donner dès le premier battement d'ailes." },
   },
+  // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
+  // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
+  Didi: {
+    "2026-07-23": { trend: "start", verdict: "Point de départ",
+      text: "Première séance enregistrée : 5,00 km en 32:51, soit 6'34\"/km à 9,1 km/h de moyenne. C'est ta ligne de base, et elle est d'emblée solide — un 5 km complet dès la première sortie, sans passer par les distances intermédiaires. Ton appli ne remonte ni fréquence cardiaque ni cadence : on suivra donc l'allure, la régularité et le temps de pause. Le chrono sera le juge de paix, et sur un parcours identique à chaque fois, c'est même la mesure la plus honnête qui soit.",
+      pokemon: "Porygon", pokemonPhrase: "Porygon : un Pokémon entièrement programmé, incapable de faire deux fois la même chose différemment. 5,00 km pile au premier essai, on ne pouvait pas mieux tomber." },
+    "2026-07-26": { trend: "flat", verdict: "Copie conforme",
+      text: "Trois jours plus tard, la photocopie : 5,02 km en 33:09, 6'36\"/km — 2 s/km d'écart avec la séance précédente, soit l'épaisseur du trait. Vitesse de pointe quasi identique elle aussi (10,9 contre 11,0 km/h). À ce stade, cette régularité est une bonne nouvelle plutôt qu'une stagnation : elle dit que l'allure du 23 juillet n'était pas un jour de forme isolé mais ton vrai rythme de croisière. C'est une base fiable, et c'est de là qu'on ira chercher du mieux.",
+      pokemon: "Excelangue", pokemonPhrase: "Excelangue : sa langue fait deux fois la longueur de son corps et il ne s'en sert jamais pour aller plus vite. Deux secondes au kilomètre en dix-sept jours, il aurait fait pareil." },
+    "2026-07-30": { trend: "up", verdict: "Premier record : 6'28\"/km",
+      text: "Premier vrai gain : 6'28\"/km, 8 s/km de mieux que tes deux premières sorties, sur exactement la même distance. Un point mérite quand même ton attention : 4 min 19 de pause sur cette séance, contre quasiment rien les fois précédentes. Le chrono affiché ne compte que le temps en mouvement, donc l'allure est juste — mais boucler 5 km en plusieurs morceaux ou d'une traite, ce n'est pas le même exercice pour l'organisme. Si la coupure était subie, la prochaine fois vise plutôt à la raccourcir qu'à tenir l'allure : c'est la continuité de l'effort qui construit l'endurance, bien plus que les secondes au kilomètre.",
+      pokemon: "Canarticho", pokemonPhrase: "Canarticho : il court en tenant un poireau, ce qui explique assez bien 4 minutes et 19 secondes de pause au milieu d'un 5 km." },
+    "2026-08-01": { trend: "flat", verdict: "Même allure, sans les coupures",
+      text: "Rigoureusement la même allure qu'il y a deux jours (6'28\"/km), mais cette fois presque sans t'arrêter : 30 secondes de pause contre 4 min 19. C'est une meilleure séance que la précédente, même si le chrono refuse de le dire — tenir 32 minutes d'affilée demande davantage que tenir la même allure entrecoupée de récupérations. Le conseil de la dernière fois a été appliqué en une séance, et ça se voit.",
+      pokemon: "Herbizarre", pokemonPhrase: "Herbizarre : il ne fait jamais rien de spectaculaire, il se contente de pousser tranquillement dans son coin. Deux secondes de mieux au chrono et quatre minutes de pause en moins, c'est très exactement sa méthode." },
+    "2026-08-05": { trend: "up", verdict: "Record + gros coup d'accélérateur",
+      text: "Nouveau record : 6'19\"/km, 9 s/km grattées, et ton 5 km passe sous les 32 minutes (31:42). Le chiffre qui saute aux yeux, c'est la vitesse de pointe : 13,9 km/h, contre 10,4 à 11,0 sur absolument toutes tes autres sorties. Tu as lâché les chevaux sur une portion, très probablement la fin. C'est excellent pour découvrir ce que tu as sous le pied, à condition que ça reste l'exception : l'essentiel du progrès vient des kilomètres roulés à allure régulière, pas des pointes.",
+      pokemon: "Voltorbe", pokemonPhrase: "Voltorbe : immobile, immobile, immobile, et d'un coup tout part en même temps. 13,9 km/h de pointe après cinq séances à 11, c'est littéralement son mode de fonctionnement." },
+    "2026-08-09": { trend: "up", verdict: "Troisième record, et le plus propre",
+      text: "Encore un record, et le mieux construit des trois : 5,00 km en 31:29, soit 6'17\"/km. Le gain est plus fin que la dernière fois (2 s/km contre 9), mais la manière est meilleure — pointe à 11,2 km/h seulement, donc pas de sprint final pour aller chercher le chrono, juste une allure tenue de bout en bout. En dix-sept jours, ton allure est passée de 6'34\" à 6'17\", soit 17 s/km, sur une distance strictement identique à chaque sortie. C'est le protocole le plus honnête qui existe pour mesurer un progrès : même parcours, même distance, seul le temps bouge. Prochaine étape logique maintenant que les 5 km sont acquis : allonger, 6 ou 7 km à allure franchement tranquille, pour élargir la base avant de rechercher la vitesse.",
+      pokemon: "Persian", pokemonPhrase: "Persian : rapide, silencieux, et absolument pas du genre à se donner en spectacle. Troisième record d'affilée sans jamais dépasser 11,2 km/h, c'est la classe à la Persian." },
+  },
+  // Ju : pas encore de séance, donc pas encore d'analyse.
+  Ju: {},
 };

@@ -32,6 +32,10 @@ root="${CLAUDE_PROJECT_DIR:-}"
 cd "$root" 2>/dev/null || exit 0
 [ -f data.js ] || exit 0
 
+# La liste des coureurs vit dans un seul fichier, partagé avec le watcher.
+# shellcheck source=../runners.sh
+. .claude/runners.sh 2>/dev/null || exit 0
+
 manifest=".claude/captures-integrees.txt"
 
 emit() { # $1 = contexte à injecter
@@ -66,30 +70,24 @@ pending_of() { # $1 = dossier réel, $2 = préfixe manifeste (Vincent | Anais)
 report=""
 total=0
 
-for runner in Vincent "Anaïs"; do
-  # Le dossier Anaïs peut être encodé en NFC ou NFD selon la source : on le
-  # retrouve par glob plutôt que par nom littéral. Le manifeste, lui, n'utilise
-  # que des préfixes ASCII, insensibles à cette différence d'encodage.
-  if [ "$runner" = "Vincent" ]; then
-    dir="Vincent"
-    key="Vincent"
-  else
-    dir=""
-    for d in Ana*/; do [ -d "$d" ] && dir="${d%/}"; done
-    key="Anais"
-  fi
-  [ -d "$dir" ] || continue
+while IFS=$'\t' read -r key dir; do
+  [ -n "$dir" ] || continue
+  dir="${dir#./}" # chemins relatifs propres dans le rapport
 
   pending="$(pending_of "$dir" "$key")"
   [ -z "$pending" ] && continue
 
   n="$(printf '%s\n' "$pending" | grep -c .)"
   total=$(( total + n ))
-  report="${report}${runner} — ${n} capture(s) non traitée(s) :
+  # Le nom affiché est celui du dossier : c'est lui que l'utilisateur voit, la
+  # clé ASCII ne sert qu'à indexer le manifeste.
+  report="${report}${dir} — ${n} capture(s) non traitée(s) :
 ${pending}
 
 "
-done
+done <<RUNNERS
+$(runner_dirs .)
+RUNNERS
 
 # Rien de nouveau : on sort sans rien injecter (cas normal, coût nul).
 [ "$total" -eq 0 ] && exit 0
