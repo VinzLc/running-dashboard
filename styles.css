@@ -267,6 +267,60 @@ tbody tr:last-child { border-bottom: none; }
 }
 .delta-chip.good { color: var(--green); }
 .delta-chip.bad  { color: #ff9f0a; }
+/* Splits — une ligne par kilomètre, barre proportionnelle au temps passé */
+.splits {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 12px 14px 10px;
+  margin-bottom: 14px;
+}
+.splits-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.splits-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.splits-drift { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+.splits-drift.good { color: var(--green); }
+.splits-drift.bad  { color: #ff9f0a; }
+.split {
+  display: grid;
+  grid-template-columns: 22px minmax(60px, 1fr) 66px auto;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+.split-km { color: var(--text-dim); font-variant-numeric: tabular-nums; text-align: right; }
+.split-track {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+.split-bar {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: #5ea9ff;
+}
+.split.best  .split-bar { background: var(--green); }
+.split.worst .split-bar { background: #ff9f0a; }
+.split.partial .split-bar { background: rgba(255,255,255,0.22); }
+.split.partial .split-pace { color: var(--text-dim); }
+.split-pace { font-weight: 600; font-variant-numeric: tabular-nums; }
+.split-extra { color: var(--text-dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+.splits-note { margin: 8px 0 0; font-size: 11px; color: var(--text-dim); }
+
 .coach {
   margin: 0;
   font-size: 14px;
@@ -274,6 +328,38 @@ tbody tr:last-child { border-bottom: none; }
   color: var(--text);
 }
 .coach::before { content: "🧠 "; }
+
+/* Pokémon de la séance — son rang de vitesse reflète la performance */
+.pokemon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-radius: 12px;
+}
+.pokemon-sprite {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  image-rendering: pixelated;
+}
+.pokemon-name { font-weight: 700; font-size: 15px; }
+.pokemon-rank {
+  margin-left: 8px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+.pokemon-phrase {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
 
 footer {
   text-align: center;
@@ -286,4 +372,8 @@ footer {
   .cards { grid-template-columns: 1fr; }
   .stat .value { font-size: 19px; }
   .chart-wrap { height: 280px; }
+  /* FC et cadence par km passent à la ligne plutôt que d'écraser la barre. */
+  .split { grid-template-columns: 20px minmax(40px, 1fr) 60px; }
+  .split-extra { grid-column: 2 / -1; margin-top: -2px; }
+  .pokemon-sprite { width: 60px; height: 60px; }
 }

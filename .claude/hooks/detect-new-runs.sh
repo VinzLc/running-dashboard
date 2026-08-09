@@ -2,15 +2,19 @@
 # Détecte les captures Apple Fitness déposées dans Vincent/ ou Anaïs/ qui ne sont
 # pas encore intégrées au dashboard, et demande à Claude de lancer la skill add-run.
 #
-# « Pas encore intégrée » = il y a plus d'images dans le dossier d'un coureur que
-# de séances enregistrées pour lui dans data.js (invariant : 1 capture = 1 séance).
-# On ne se fie PAS au fait que le fichier soit non commité : l'étape « git add -A »
-# de la skill peut committer une image avant que ses données ne soient dans data.js,
-# et la séance passerait alors à la trappe pour toujours.
+# « Pas encore intégrée » = la capture n'est pas listée dans le manifeste
+# .claude/captures-integrees.txt, que la skill add-run complète à chaque séance
+# traitée. On ne compte plus les images pour les comparer au nombre de séances de
+# data.js : depuis août 2026 une séance donne DEUX captures (le récapitulatif et
+# le détail des splits), et rien ne garantit qu'elles arrivent ensemble — un
+# décompte ne sait plus dire ce qui manque. On ne se fie pas non plus au fait que
+# le fichier soit non commité : l'étape « git add -A » de la skill peut committer
+# une image avant que ses données ne soient dans data.js, et la séance passerait
+# alors à la trappe pour toujours.
 #
-# Le décompte dit COMBIEN de séances manquent ; les dates de modification disent
-# LESQUELLES sont les plus probables — c'est une heuristique, donc on demande à
-# Claude de vérifier la date lue dans l'image avant de l'ajouter.
+# Le manifeste dit exactement QUELLES captures restent à traiter, mais pas à
+# quelle séance elles appartiennent : on demande donc à Claude de lire la date
+# dans chaque image avant de l'ajouter.
 #
 # Usage : detect-new-runs.sh <NomDeLEvenementHook>   (défaut : SessionStart)
 
@@ -28,33 +32,35 @@ root="${CLAUDE_PROJECT_DIR:-}"
 cd "$root" 2>/dev/null || exit 0
 [ -f data.js ] || exit 0
 
-# Nombre de séances déjà enregistrées dans data.js, par coureur.
-# Le tableau d'un coureur va de « Nom: [ » à la ligne « ], » ; on compte les
-# lignes contenant « date: " » à l'intérieur. ANALYSES utilise des accolades et
-# n'a pas de clé « date: », donc aucun risque de confusion.
-runs_recorded() { # $1 = motif awk du nom de coureur
-  awk -v pat="$1" '
-    $0 ~ "^  " pat ": \\["      { inside = 1; next }
-    inside && /^  \],?$/        { inside = 0 }
-    inside && /date: "/         { n++ }
-    END                         { print n + 0 }
-  ' data.js
+manifest=".claude/captures-integrees.txt"
+
+emit() { # $1 = contexte à injecter
+  jq -n --arg e "$event" --arg c "$1" \
+    '{hookSpecificOutput: {hookEventName: $e, additionalContext: $c}}' || exit 0
+  exit 0
 }
 
-# Nombre de captures présentes dans un dossier.
-images_present() {
-  find "$1" -maxdepth 1 -type f \
-    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.heic' \) \
-    2>/dev/null | grep -c .
-}
+# Sans manifeste, impossible de distinguer une capture neuve d'une capture déjà
+# exploitée. On le signale plutôt que de rester muet (détection désactivée en
+# silence) ou de tout redéclarer comme neuf (36 captures à revérifier à la main).
+if [ ! -f "$manifest" ]; then
+  emit "Le manifeste ${manifest} est introuvable : la détection automatique des
+nouvelles séances est hors service tant qu'il n'est pas reconstruit.
 
-# Les $2 captures les plus récemment modifiées d'un dossier (les candidates).
-newest_images() {
+Reconstruis-le à partir de data.js et des dossiers Vincent/ et Anaïs/ : une ligne
+par capture déjà intégrée, au format \`Vincent/IMG_1234.jpeg\` (préfixe \`Vincent\`
+ou \`Anais\`, sans tréma). Voir la skill add-run pour le détail."
+fi
+
+# Captures d'un dossier qui n'apparaissent pas dans le manifeste.
+pending_of() { # $1 = dossier réel, $2 = préfixe manifeste (Vincent | Anais)
   find "$1" -maxdepth 1 -type f \
     \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.heic' \) \
-    -print0 2>/dev/null \
-    | { xargs -0 stat -f '%m %N' 2>/dev/null || xargs -0 stat -c '%Y %n' 2>/dev/null; } \
-    | sort -rn | head -n "$2" | cut -d' ' -f2-
+    2>/dev/null \
+    | sort \
+    | while IFS= read -r img; do
+        grep -qxF "$2/$(basename "$img")" "$manifest" || printf '%s\n' "$img"
+      done
 }
 
 report=""
@@ -62,28 +68,25 @@ total=0
 
 for runner in Vincent "Anaïs"; do
   # Le dossier Anaïs peut être encodé en NFC ou NFD selon la source : on le
-  # retrouve par glob plutôt que par nom littéral.
-  dir=""
+  # retrouve par glob plutôt que par nom littéral. Le manifeste, lui, n'utilise
+  # que des préfixes ASCII, insensibles à cette différence d'encodage.
   if [ "$runner" = "Vincent" ]; then
-    [ -d Vincent ] && dir="Vincent"
-    pat="Vincent"
+    dir="Vincent"
+    key="Vincent"
   else
+    dir=""
     for d in Ana*/; do [ -d "$d" ] && dir="${d%/}"; done
-    pat="\"Ana[^\"]*\""
+    key="Anais"
   fi
-  [ -z "$dir" ] && continue
+  [ -d "$dir" ] || continue
 
-  present="$(images_present "$dir")"
-  recorded="$(runs_recorded "$pat")"
-  missing=$(( present - recorded ))
-  [ "$missing" -le 0 ] && continue
+  pending="$(pending_of "$dir" "$key")"
+  [ -z "$pending" ] && continue
 
-  candidates="$(newest_images "$dir" "$missing")"
-  [ -z "$candidates" ] && continue
-
-  total=$(( total + missing ))
-  report="${report}${runner} — ${present} capture(s) dans ${dir}/ mais ${recorded} séance(s) dans data.js, soit ${missing} manquante(s). Candidate(s) la/les plus récente(s) :
-${candidates}
+  n="$(printf '%s\n' "$pending" | grep -c .)"
+  total=$(( total + n ))
+  report="${report}${runner} — ${n} capture(s) non traitée(s) :
+${pending}
 
 "
 done
@@ -91,19 +94,16 @@ done
 # Rien de nouveau : on sort sans rien injecter (cas normal, coût nul).
 [ "$total" -eq 0 ] && exit 0
 
-read -r -d '' context <<EOF || true
-${total} séance(s) de course non intégrée(s) au dashboard détectée(s) :
+emit "${total} capture(s) Apple Fitness non intégrée(s) au dashboard :
 
-${report}Lance la skill \`add-run\` (outil Skill, skill: "add-run") pour les traiter maintenant,
-sans demander confirmation à l'utilisateur. Le dossier détermine le coureur.
+${report}Lance la skill \`add-run\` (outil Skill, skill: \"add-run\") pour les traiter
+maintenant, sans demander confirmation à l'utilisateur. Le dossier détermine le
+coureur.
 
-Les candidates ci-dessus sont déduites des dates de modification des fichiers :
-vérifie la date lue DANS chaque image avant de l'ajouter. Si une candidate est
-déjà présente dans data.js, ignore-la et examine les autres captures du dossier
-pour trouver celle qui manque réellement.
-EOF
-
-jq -n --arg e "$event" --arg c "$context" \
-  '{hookSpecificOutput: {hookEventName: $e, additionalContext: $c}}' || exit 0
-
-exit 0
+Une séance produit normalement DEUX captures : le récapitulatif « Workout
+Details » et le détail des splits par kilomètre. Elles n'arrivent pas forcément
+ensemble, et une séance ancienne peut n'en avoir qu'une. Lis chaque capture pour
+savoir de quelle date et de quel type elle relève, puis vérifie dans data.js si
+la séance y figure déjà : si oui, complète-la (splits, analyse) au lieu de créer
+un doublon. Dans tous les cas, ajoute les captures traitées au manifeste
+${manifest}."

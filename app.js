@@ -1,4 +1,4 @@
-/* global Chart, RUNS, RUNNER_COLORS, ANALYSES */
+/* global Chart, RUNS, RUNNER_COLORS, ANALYSES, POKEDEX */
 
 const RUNNERS = Object.keys(RUNS);
 
@@ -299,6 +299,81 @@ function deltaChip(label, value, fmt, good) {
   return `<span class="delta-chip ${cls}">${label} ${arrow} ${fmt(Math.abs(value))}</span>`;
 }
 
+// Détail kilomètre par kilomètre, lu sur la capture « Splits » (absent des
+// séances antérieures à août 2026, d'où le retour vide).
+function splitsHtml(r) {
+  if (!r.splits || !r.splits.length) return "";
+
+  // Seuls les kilomètres complets fixent l'échelle : le dernier tronçon fait
+  // souvent quelques dizaines de mètres, son allure extrapolée est bruitée et
+  // écraserait toutes les autres barres si on la laissait borner l'échelle.
+  const full = r.splits.filter((s) => !s.partial);
+  if (!full.length) return "";
+  const fastest = Math.min(...full.map((s) => s.paceSec));
+  const slowest = Math.max(...full.map((s) => s.paceSec));
+  const span = slowest - fastest || 1;
+  // Barre = temps passé : plus elle est longue, plus le kilomètre a été lent.
+  const width = (p) => 30 + Math.max(0, Math.min(1, (p - fastest) / span)) * 70;
+
+  const hasHr = r.splits.some((s) => s.hr != null);
+  const hasCadence = r.splits.some((s) => s.cadence != null);
+  const anyPartial = r.splits.some((s) => s.partial);
+
+  const rows = r.splits
+    .map((s) => {
+      const cls = s.partial ? "partial" : s.paceSec === fastest ? "best" : s.paceSec === slowest ? "worst" : "";
+      const extra = [
+        hasHr && s.hr != null ? `${s.hr} bpm` : "",
+        hasCadence && s.cadence != null ? `${s.cadence} spm` : "",
+      ].filter(Boolean).join(" · ");
+      return `
+        <div class="split ${cls}">
+          <span class="split-km">${s.km}${s.partial ? "*" : ""}</span>
+          <span class="split-track"><span class="split-bar" style="width:${width(s.paceSec).toFixed(1)}%"></span></span>
+          <span class="split-pace">${fmtPace(s.paceSec)}</span>
+          <span class="split-extra">${extra}</span>
+        </div>`;
+    })
+    .join("");
+
+  // Écart premier / dernier kilomètre complet : c'est le chiffre qui dit si la
+  // séance a été tenue ou si le départ a été payé sur la fin.
+  const drift = full[full.length - 1].paceSec - full[0].paceSec;
+  const driftLabel =
+    drift > 0
+      ? `${Math.round(drift)} s/km perdues entre le 1er et le dernier kilomètre`
+      : drift < 0
+        ? `${Math.round(-drift)} s/km gagnées entre le 1er et le dernier kilomètre`
+        : "allure identique du premier au dernier kilomètre";
+
+  return `
+    <div class="splits">
+      <div class="splits-head">
+        <span class="splits-title">Allure kilomètre par kilomètre</span>
+        <span class="splits-drift ${drift > 5 ? "bad" : drift < -5 ? "good" : ""}">${driftLabel}</span>
+      </div>
+      ${rows}
+      ${anyPartial ? `<p class="splits-note">* dernier tronçon incomplet — allure ramenée au kilomètre.</p>` : ""}
+    </div>`;
+}
+
+// Le Pokémon de la séance : rang de vitesse dans la 1re génération à l'appui.
+function pokemonHtml(a) {
+  if (!a || !a.pokemon || typeof POKEDEX === "undefined") return "";
+  const p = POKEDEX[a.pokemon];
+  if (!p) return "";
+  return `
+    <div class="pokemon">
+      <img class="pokemon-sprite" src="assets/pokemon/${p.id}.png" alt="${p.nom}" width="96" height="96" loading="lazy" />
+      <div>
+        <div class="pokemon-name">${p.nom}
+          <span class="pokemon-rank">${p.rang}<sup>e</sup> / 151 en vitesse · ${p.vitesse}</span>
+        </div>
+        <p class="pokemon-phrase">${a.pokemonPhrase || ""}</p>
+      </div>
+    </div>`;
+}
+
 function analysisHtml(r) {
   const m = INSIGHTS[r.name][r.date];
   const a = (typeof ANALYSES !== "undefined" && ANALYSES[r.name]) ? ANALYSES[r.name][r.date] : null;
@@ -331,7 +406,9 @@ function analysisHtml(r) {
         ${prBadges}
       </div>
       <div class="delta-row">${m.prev ? '<span class="delta-label">vs séance précédente :</span>' : ""}${deltas}</div>
+      ${splitsHtml(r)}
       <p class="coach">${text}</p>
+      ${pokemonHtml(a)}
     </div>`;
 }
 

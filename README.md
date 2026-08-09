@@ -9,6 +9,9 @@ Données extraites des résumés d'entraînement Apple Fitness.
 - **Graphique d'évolution** interactif : distance, allure, fréquence cardiaque, cadence, calories ou durée
 - **Radar comparatif** des performances moyennes (normalisées)
 - **Tableau détaillé** filtrable par coureur
+- **Analyse « coach »** dépliable par séance, avec le détail des **splits au kilomètre**
+  et le **Pokémon de la séance** — choisi parmi les 151 de la 1re génération classés
+  par vitesse de base, d'autant plus rapide que la performance est bonne
 
 ## Stack
 
@@ -18,8 +21,10 @@ Site 100 % statique — HTML / CSS / [Chart.js](https://www.chartjs.org/) (CDN).
 |---|---|
 | `index.html` | Structure |
 | `styles.css` | Thème sombre type Apple Fitness |
-| `data.js` | Données des séances |
+| `data.js` | Données des séances + analyses « coach » |
+| `pokemon.js` | Les 151 Pokémon de la 1re génération classés par vitesse de base |
 | `app.js` | Rendu + graphiques |
+| `assets/pokemon/` | Sprites (un PNG par Pokémon, servi en local) |
 
 ## Développement local
 
@@ -30,12 +35,26 @@ python3 -m http.server 8000
 
 ## Mettre à jour les données
 
-Ajoutez une entrée dans le tableau du coureur concerné dans [`data.js`](data.js) :
+Le plus simple : déposer les captures Apple Fitness dans `Vincent/` ou `Anaïs/` —
+une séance en produit **deux** (le récapitulatif « Workout Details » et le détail
+des splits) — puis lancer la skill `add-run`, qui fait le reste (extraction,
+analyse, Pokémon, commit). Un watcher launchd la déclenche même automatiquement.
+
+À la main, ajoutez une entrée dans le tableau du coureur concerné dans
+[`data.js`](data.js) :
 
 ```js
 { date: "2026-06-30", duration: 1900, distance: 4.0, activeCal: 300,
-  totalCal: 360, elevation: 8, cadence: 127, paceSec: 475, hr: 138 }
+  totalCal: 360, elevation: 8, cadence: 127, paceSec: 475, hr: 138,
+  splits: [{ km: 1, sec: 475, paceSec: 475, hr: 136, cadence: 127 }] }
 ```
 
 - `duration` et `paceSec` sont en **secondes** (`paceSec` = allure par km).
 - `distance` en km, `elevation` en m, `hr` en bpm, `cadence` en spm.
+- `splits` est facultatif : une entrée par kilomètre, `partial: true` sur le
+  dernier tronçon s'il est incomplet, `hr`/`cadence` omis si la montre ne les
+  donne pas.
+
+Après toute modification de `data.js`, `pokemon.js`, `app.js` ou `styles.css`,
+incrémentez le `?v=N` sur les quatre balises de [`index.html`](index.html) —
+sinon le navigateur continue de servir l'ancienne version.

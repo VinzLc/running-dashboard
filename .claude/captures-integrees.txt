@@ -1,0 +1,46 @@
+# Captures Apple Fitness déjà intégrées au dashboard — une par ligne.
+# Format : <Vincent|Anais>/<nom de fichier>. Le préfixe est volontairement en
+# ASCII : le dossier « Anaïs » peut être encodé en NFC ou NFD selon la source,
+# et une comparaison sur le nom réel échouerait selon la machine.
+#
+# Lu par .claude/hooks/detect-new-runs.sh pour savoir ce qui reste à traiter,
+# complété par la skill add-run à chaque séance ajoutée. Ne pas réordonner :
+# l'ordre d'ajout retrace l'historique.
+Vincent/IMG_8945.jpeg
+Vincent/IMG_8956.jpeg
+Vincent/IMG_8985.jpeg
+Vincent/IMG_9014.jpeg
+Vincent/IMG_9030.jpeg
+Vincent/IMG_9068.jpeg
+Vincent/IMG_9096.jpeg
+Vincent/IMG_9104.jpeg
+Vincent/IMG_9138.jpeg
+Vincent/IMG_9153.jpeg
+Vincent/IMG_9157.jpeg
+Vincent/IMG_9165.jpeg
+Vincent/IMG_9199.jpeg
+Vincent/IMG_9220.jpeg
+Vincent/IMG_9226.jpeg
+Vincent/IMG_9255.jpeg
+Vincent/IMG_9406.jpeg
+Vincent/IMG_9440.jpeg
+Vincent/IMG_9462.jpeg
+Vincent/IMG_9475.jpeg
+Vincent/IMG_9489.jpeg
+Vincent/IMG_9501.jpeg
+Vincent/IMG_9502.jpeg
+Anais/IMG_0021.jpeg
+Anais/IMG_0077.jpeg
+Anais/IMG_0376.jpeg
+Anais/IMG_0377.jpeg
+Anais/IMG_0497.jpeg
+Anais/IMG_0516.jpeg
+Anais/IMG_0560.jpeg
+Anais/IMG_0561.jpeg
+Anais/IMG_9243.jpeg
+Anais/IMG_9244.jpeg
+Anais/IMG_9614.jpeg
+Anais/IMG_9670.jpeg
+Anais/IMG_9767.jpeg
+Anais/IMG_9817.jpeg
+Anais/IMG_9928.jpeg
