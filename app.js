@@ -405,7 +405,9 @@ function splitsHtml(r) {
     </div>`;
 }
 
-// Le Pokémon de la séance : rang de vitesse dans la 1re génération à l'appui.
+// Le Pokémon de la séance — section purement humoristique : le sprite, le nom,
+// la vanne. Le rang de vitesse sert encore à choisir, jamais à s'afficher : le
+// lecteur n'a pas besoin d'un classement pour comprendre la blague.
 function pokemonHtml(a) {
   if (!a || !a.pokemon || typeof POKEDEX === "undefined") return "";
   const p = POKEDEX[a.pokemon];
@@ -414,12 +416,18 @@ function pokemonHtml(a) {
     <div class="pokemon">
       <img class="pokemon-sprite" src="assets/pokemon/${p.id}.png" alt="${p.nom}" width="96" height="96" loading="lazy" />
       <div>
-        <div class="pokemon-name">${p.nom}
-          <span class="pokemon-rank">${p.rang}<sup>e</sup> / 151 en vitesse · ${p.vitesse}</span>
-        </div>
+        <div class="pokemon-name">${p.nom}</div>
         <p class="pokemon-phrase">${a.pokemonPhrase || ""}</p>
       </div>
     </div>`;
+}
+
+// L'analyse coach est un tableau de paragraphes dans `data.js` : un pavé de dix
+// phrases ne se lit pas, surtout sur téléphone. Une simple chaîne reste acceptée
+// et donne un paragraphe unique.
+function coachHtml(text) {
+  const paras = (Array.isArray(text) ? text : [text]).filter(Boolean);
+  return `<div class="coach">${paras.map((p) => `<p>${p}</p>`).join("")}</div>`;
 }
 
 function analysisHtml(r) {
@@ -448,7 +456,7 @@ function analysisHtml(r) {
 
   const trend = a ? a.trend : "flat";
   const verdict = a ? a.verdict : "Analyse à venir";
-  const text = a ? a.text : "Analyse non disponible pour cette séance.";
+  const text = a ? a.text : ["Analyse non disponible pour cette séance."];
 
   return `
     <div class="analysis">
@@ -458,7 +466,7 @@ function analysisHtml(r) {
       </div>
       <div class="delta-row">${m.prev ? '<span class="delta-label">vs séance précédente :</span>' : ""}${deltas}</div>
       ${splitsHtml(r)}
-      <p class="coach">${text}</p>
+      ${coachHtml(text)}
       ${pokemonHtml(a)}
     </div>`;
 }

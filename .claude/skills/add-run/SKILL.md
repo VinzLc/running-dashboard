@@ -114,7 +114,11 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
 
 ```js
 "2026-08-09": { trend: "up", verdict: "Premier 6 km 🎉",
-  text: "...",
+  text: [
+    "Le constat chiffré du jour.",
+    "Ce que racontent les splits.",
+    "Le conseil pour la prochaine.",
+  ],
   pokemon: "Électrode", pokemonPhrase: "..." },
 ```
 
@@ -124,7 +128,14 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
 - **`trend`** : `"up"` (vrai progrès), `"flat"` (stable ou séance volontairement
   facile / reprise), `"down"` (en retrait), `"start"` (toute première séance).
 - **`verdict`** : titre court accrocheur (ex. « Record d'allure », « Reprise après coupure »).
-- **`text`** : 2 à 4 phrases minimum, ton d'un coach bienveillant qui constate les
+- **`text`** : un **tableau de paragraphes**, jamais une chaîne unique — le
+  dashboard rend un `<p>` par entrée, et un pavé de dix phrases n'est pas lu.
+  Une idée par paragraphe (2 à 4 phrases chacun), dans cet ordre naturel : le
+  constat chiffré du jour, ce que racontent les splits ou la FC, puis le conseil
+  ou la mise en perspective. Compte 2 paragraphes pour une séance ordinaire, 4 à
+  6 pour une grosse séance à commenter. Une analyse d'une ou deux phrases peut
+  rester un tableau à un seul élément.
+  Ton d'un coach bienveillant qui constate les
   progrès. Cite des chiffres réels et les écarts vs séances précédentes. Contexte :
   Vincent 30 ans, Anaïs 29 ans, 9 ans de muscu chacun mais **très novices en
   cardio** (souligne l'adaptation aérobie, FC qui baisse à effort égal,
@@ -152,31 +163,28 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
 
 ## 6. Attribuer le Pokémon de la séance (OBLIGATOIRE)
 
-`pokemon.js` contient les 151 Pokémon de la 1re génération classés par **vitesse
-de base**, rang 1 = le plus rapide (Électrode) → rang 151 = le plus lent (Ramoloss).
+**C'est une section humoristique**, rien d'autre : le dashboard affiche le
+sprite, le nom et la vanne. Aucun rang, aucune statistique — le lecteur n'a pas
+besoin d'un classement pour comprendre la blague. **Le gag prime sur tout le reste.**
 
-1. **Calcule le rang visé** à partir de l'allure du jour, positionnée dans
-   l'historique complet du coureur (nouvelle séance incluse) :
+1. **Cherche d'abord la blague.** Une chaîne d'évolution qui suit la progression
+   (Chenipan → Papilusion pour le premier 5 km, Goupix → Feunard), un trait de
+   caractère qui colle à la séance (Ronflex pour une sortie volontairement lente,
+   Psykokwak pour un coup de mou, Kicklee qui n'est littéralement que deux jambes,
+   Canarticho pour 4 minutes de pause au milieu d'un 5 km).
 
-   ```
-   rang ≈ 145 − 140 × (pireAllure − allureDuJour) / (pireAllure − meilleureAllure)
-   ```
+2. **Cale grossièrement sur la performance.** `pokemon.js` classe les 151 par
+   vitesse de base (rang 1 = Électrode, rang 151 = Ramoloss) : une bonne séance
+   appelle plutôt un Pokémon rapide, une sortie tranquille un lent. C'est un
+   repère, pas une règle — Électrode, le plus rapide de tous, a été attribué à une
+   séance partie trop vite et explosée en vol, parce que son attaque signature
+   s'appelle Explosion. Un bon gag justifie n'importe quel écart.
 
-   Sa meilleure allure de tous les temps vise donc le haut du classement, sa
-   plus lente le bas. Une tolérance de ±20 rangs est normale.
-
-2. **Choisis un Pokémon libre dans cette zone.** Un même Pokémon ne sert
-   **qu'une seule fois par coureur** — chacun se constitue son propre Pokédex.
-   Vérifie les `pokemon:` déjà présents dans le bloc du coureur avant de choisir.
-
-3. **Privilégie celui qui fait la meilleure blague.** Une chaîne d'évolution qui
-   suit la progression (Chenipan → Papilusion pour le premier 5 km, Goupix →
-   Feunard), un trait de caractère qui colle à la séance (Ronflex pour une sortie
-   volontairement lente, Psykokwak pour un coup de mou, Kicklee qui n'est
-   littéralement que deux jambes). Un bon gag vaut mieux qu'un rang exact : tu
-   peux sortir de la zone si la phrase justifie l'écart — Électrode, le plus
-   rapide de tous, a été attribué à une séance partie trop vite et explosée en
-   vol, parce que son attaque signature s'appelle Explosion.
+3. **Un même Pokémon ne sert qu'une fois par coureur** — chacun se constitue son
+   propre Pokédex, et une évolution ne peut donc pas revenir en arrière. En
+   revanche, **le même Pokémon peut très bien être attribué à plusieurs
+   personnes** : les Pokédex sont indépendants. Vérifie donc uniquement les
+   `pokemon:` déjà présents dans le bloc du coureur concerné.
 
 4. **`pokemonPhrase`** : une à deux phrases, humoristiques, qui font le lien entre
    le Pokémon et la performance du jour, avec un chiffre réel de la séance.

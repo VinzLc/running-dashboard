@@ -1,7 +1,8 @@
 // Les 151 Pokémon de la première génération, classés par VITESSE DE BASE
 // (la statistique « Vitesse » des jeux) — rang 1 = le plus rapide, 151 = le plus lent.
 // Sert à attribuer un Pokémon à chaque séance : plus la performance est bonne,
-// plus le rang attribué est haut. Sprites locaux dans assets/pokemon/<id>.png.
+// plus le rang visé est haut. Le rang n'est pas affiché — c'est une aide au
+// choix, pas une donnée. Sprites locaux dans assets/pokemon/<id>.png.
 
 const POKEMON = [
   { rang: 1, nom: "Électrode", vitesse: 150, id: 101 },

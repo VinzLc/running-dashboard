@@ -16,9 +16,10 @@ pas renseigner, plutôt que de les afficher à zéro.
 - **Graphique d'évolution** interactif : distance, allure, fréquence cardiaque, cadence, calories ou durée
 - **Radar comparatif** des performances moyennes (normalisées)
 - **Tableau détaillé** filtrable par coureur
-- **Analyse « coach »** dépliable par séance, avec le détail des **splits au kilomètre**
-  et le **Pokémon de la séance** — choisi parmi les 151 de la 1re génération classés
-  par vitesse de base, d'autant plus rapide que la performance est bonne
+- **Analyse « coach »** dépliable par séance, rédigée en paragraphes, avec le détail
+  des **splits au kilomètre** et le **Pokémon de la séance** — une section purement
+  humoristique, choisie parmi les 151 de la 1re génération (un Pokémon peut servir à
+  plusieurs coureurs, jamais deux fois au même)
 
 ## Stack
 
