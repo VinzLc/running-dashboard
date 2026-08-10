@@ -208,6 +208,22 @@ main {
    rangée « Classement » et son bouton unique formaient une longue barre vide. */
 .lb-tab-row { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 
+/* Le sélecteur de saison est le cran au-dessus des onglets de catégorie : il
+   change ce qui est compté, pas ce qui est classé. Il siège donc dans l'en-tête
+   du panneau, et son actif prend l'or plutôt que le blanc des autres barres. */
+.lb-seasons button.active {
+  background: linear-gradient(180deg, #ffe680 0%, #f0a91c 100%);
+  color: #3a2a00;
+}
+
+.lb-scope {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.lb-scope b { color: var(--text); font-weight: 600; }
+
 .lb-desc {
   margin: 0;
   font-size: 13px;

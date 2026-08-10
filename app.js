@@ -461,25 +461,62 @@ function renderTable() {
 
 // ---------- Leaderboard ----------
 // Un podium par catégorie, façon plateau de Mario Party : chaque catégorie
-// distribue 3, 2 et 1 étoiles, et l'onglet « Général » additionne le tout.
-// Volontairement à l'écart des filtres du haut : c'est un palmarès sur
-// l'ensemble des séances, pas une vue de la sélection courante — sans quoi
-// isoler un coureur donnerait un podium à une place.
+// distribue 3, 2 et 1 étoiles, et l'onglet « Étoiles » additionne le tout.
+// Volontairement à l'écart des filtres du haut : c'est un palmarès, pas une vue
+// de la sélection courante — sans quoi isoler un coureur donnerait un podium à
+// une place.
 const STARS_BY_RANK = [3, 2, 1];
 
-// Le palmarès ne remonte pas plus loin que la première séance de Didi. Sur tout
+// ---------- Saisons ----------
+// Le palmarès se lit à deux échelles, et les deux ont leur raison d'être.
+//
+// Le Général ne remonte pas plus loin que la première séance de Didi : sur tout
 // l'historique, les catégories de volume ne mesuraient qu'une chose — qui a
 // commencé le plus tôt — et Didi, arrivée fin juillet, partait avec 16 séances
-// de retard qu'aucune performance ne pouvait rattraper. Une fenêtre commune
-// compare des coureurs, pas des dates d'inscription.
+// de retard qu'aucune performance ne pouvait rattraper.
+//
+// Les saisons mensuelles, elles, peuvent remonter avant cette date sans injustice :
+// un mois est un concours autonome qui repart de zéro, donc n'avoir pas encore
+// couru en mai ne coûte aucune étoile — il n'y a simplement pas de saison de mai
+// pour Didi. Conséquence à assumer : le Général n'est pas la somme des saisons,
+// il ne couvre que juillet à partir du 23.
 const LEADERBOARD_START = "2026-07-23";
 const LB_START_LABEL = new Date(`${LEADERBOARD_START}T00:00:00`).toLocaleDateString("fr-FR", {
   day: "numeric",
   month: "long",
 });
 
-const lbRunsOf = (name) => RUNS[name].filter((r) => r.date >= LEADERBOARD_START);
-const LB_BUCKETS = bucketsIn(RUNNERS.flatMap(lbRunsOf));
+const capitalize = (s) => s[0].toUpperCase() + s.slice(1);
+
+const SEASONS = (() => {
+  const months = [...new Set(RUNNERS.flatMap((n) => RUNS[n].map((r) => r.date.slice(0, 7))))].sort();
+  // « Août » suffit tant que tout tient dans la même année ; le jour où un second
+  // août arrive, les deux onglets doivent porter leur millésime.
+  const oneYear = new Set(months.map((m) => m.slice(0, 4))).size <= 1;
+  const label = (ym, opts) => capitalize(new Date(`${ym}-01T00:00:00`).toLocaleDateString("fr-FR", opts));
+
+  return [
+    {
+      id: "general",
+      tab: "🏆 Général",
+      title: "Général",
+      scope: `Le cumul depuis le ${LB_START_LABEL}, date à laquelle tout le monde était enfin en course. Les saisons mensuelles remontent plus loin — le Général n'en est donc pas la somme.`,
+      match: (r) => r.date >= LEADERBOARD_START,
+    },
+    // Le libellé du mois n'est jamais réinjecté dans la phrase : « la saison de
+    // août » demanderait une élision que `toLocaleDateString` ne fournit pas.
+    ...months.map((ym) => ({
+      id: ym,
+      tab: label(ym, oneYear ? { month: "long" } : { month: "long", year: "2-digit" }),
+      title: label(ym, { month: "long", year: "numeric" }),
+      scope:
+        "Une saison close sur elle-même : elle ne compte que ce mois, et la suivante repart de zéro. Arriver en cours de route n'y coûte donc aucune étoile.",
+      match: (r) => r.date.startsWith(ym),
+    })),
+  ];
+})();
+
+const seasonRuns = (season, name) => RUNS[name].filter((r) => season.match(r));
 
 const chrono = (runs) => [...runs].sort((a, b) => a.date.localeCompare(b.date));
 const stdev = (arr) => {
@@ -489,27 +526,37 @@ const stdev = (arr) => {
 
 // Une catégorie note chaque coureur (`score`, `null` = ne concourt pas) et sait
 // dire dans quel sens on lit la note (`lower`). Les deux motifs d'exclusion
-// communs à toutes — rien couru du tout, rien couru sur la période — sont
+// communs à toutes — rien couru du tout, rien couru sur la saison — sont
 // traités ici ; `absent` ne couvre que le motif propre à la catégorie.
-function absentReason(cat, name) {
+function absentReason(cat, season, name) {
   if (!RUNS[name].length) return "pas encore de séance";
-  if (!lbRunsOf(name).length) return `aucune séance depuis le ${LB_START_LABEL}`;
+  if (!seasonRuns(season, name).length) {
+    return season.id === "general"
+      ? `aucune séance depuis le ${LB_START_LABEL}`
+      : `pas de séance sur cette saison`;
+  }
   return cat.absent ? cat.absent() : "pas de donnée dans cette catégorie";
 }
 
-const DISTANCE_CATEGORIES = LB_BUCKETS.map((b) => ({
-  id: `km-${b.key}`,
-  tab: b.label,
-  title: `Le plus rapide sur ${b.label.toLowerCase()}`,
-  desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()} depuis le ${LB_START_LABEL}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
-  lower: true,
-  score: (runs) => {
-    const rs = runs.filter((r) => bucketOf(r) === b.key);
-    return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
-  },
-  fmt: (v) => `${fmtPace(v)}/km`,
-  absent: () => `aucune séance de ${b.label.toLowerCase()} sur la période`,
-}));
+// Les seaux de distance sont recalculés pour chaque saison : proposer un onglet
+// « 6 km » à un mois où personne n'a couru 6 km mènerait vers un podium vide.
+const distanceCategories = (season) =>
+  bucketsIn(RUNNERS.flatMap((n) => seasonRuns(season, n))).map((b) => ({
+    id: `km-${b.key}`,
+    // Le groupe est porté explicitement : trier les onglets sur le préfixe de
+    // l'`id` rangeait « km-total », le compteur de kilomètres, parmi les distances.
+    group: "distance",
+    tab: b.label,
+    title: `Le plus rapide sur ${b.label.toLowerCase()}`,
+    desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
+    lower: true,
+    score: (runs) => {
+      const rs = runs.filter((r) => bucketOf(r) === b.key);
+      return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
+    },
+    fmt: (v) => `${fmtPace(v)}/km`,
+    absent: () => `aucune séance de ${b.label.toLowerCase()} sur cette saison`,
+  }));
 
 const FUN_CATEGORIES = [
   {
@@ -611,8 +658,8 @@ const FUN_CATEGORIES = [
 // avoir couru 6 km, lui donner 3 étoiles pour ça fausserait le général. La
 // règle vit ici et nulle part ailleurs, pour que le total des étoiles et les
 // étoiles dessinées sur le podium ne puissent pas se contredire.
-function rankCategory(cat) {
-  const scored = RUNNERS.map((name) => ({ name, value: cat.score(lbRunsOf(name), name) }))
+function rankCategory(cat, season) {
+  const scored = RUNNERS.map((name) => ({ name, value: cat.score(seasonRuns(season, name), name, season) }))
     .filter((e) => e.value != null && Number.isFinite(e.value));
   scored.sort((a, b) => (cat.lower ? a.value - b.value : b.value - a.value));
   const awards = scored.length > 1 && !cat.noStars;
@@ -625,31 +672,49 @@ function rankCategory(cat) {
   return scored;
 }
 
-const SCORED_CATEGORIES = [...DISTANCE_CATEGORIES, ...FUN_CATEGORIES];
-const STAR_TOTALS = (() => {
-  const totals = Object.fromEntries(RUNNERS.map((n) => [n, 0]));
-  SCORED_CATEGORIES.forEach((cat) =>
-    rankCategory(cat).forEach((e) => {
-      totals[e.name] += e.stars;
-    }),
-  );
-  return totals;
-})();
+// Catégories notées d'une saison — distances du mois, puis les fun, communes à
+// toutes les saisons. Mémorisé : le classement aux étoiles les reparcourt toutes
+// à chaque rendu, et elles ne dépendent que de données figées.
+const scoredCache = new Map();
+function scoredCategories(season) {
+  if (!scoredCache.has(season.id)) {
+    scoredCache.set(season.id, [...distanceCategories(season), ...FUN_CATEGORIES]);
+  }
+  return scoredCache.get(season.id);
+}
 
-const GENERAL = {
-  id: "general",
-  tab: "🌟 Général",
-  title: "Classement général",
-  desc: `Le total des étoiles récoltées sur les ${SCORED_CATEGORIES.length} autres onglets. Chacun distribue 3 étoiles au premier, 2 au deuxième, 1 au troisième — sauf ceux où il n'y a qu'un concourant, qui ne rapportent rien. Tout se joue depuis le ${LB_START_LABEL} : avant, le classement ne récompensait que d'avoir commencé tôt.`,
-  score: (runs, name) => (runs.length ? STAR_TOTALS[name] : null),
+const starTotalsCache = new Map();
+function starTotals(season) {
+  if (!starTotalsCache.has(season.id)) {
+    const totals = Object.fromEntries(RUNNERS.map((n) => [n, 0]));
+    scoredCategories(season).forEach((cat) =>
+      rankCategory(cat, season).forEach((e) => {
+        totals[e.name] += e.stars;
+      }),
+    );
+    starTotalsCache.set(season.id, totals);
+  }
+  return starTotalsCache.get(season.id);
+}
+
+// Le classement aux étoiles : la seule catégorie qui lit les autres plutôt que
+// les séances. Elle n'entre jamais dans `scoredCategories`, sans quoi elle se
+// compterait elle-même.
+const STANDINGS = {
+  id: "standings",
+  tab: "🌟 Étoiles",
+  title: "Le classement aux étoiles",
+  desc: (season) =>
+    `Le total des étoiles récoltées sur les ${scoredCategories(season).length} autres onglets de la saison. Chacun distribue 3 étoiles au premier, 2 au deuxième, 1 au troisième — sauf ceux où il n'y a qu'un concourant, qui ne rapportent rien.`,
+  score: (runs, name, season) => (runs.length ? starTotals(season)[name] : null),
   fmt: (v) => `${v} étoile${v > 1 ? "s" : ""}`,
-  // Le général ne se rapporte pas à lui-même : les étoiles sont déjà le score
+  // Le classement ne se rapporte pas à lui-même : les étoiles sont déjà le score
   // affiché, en redessiner 3 au-dessus de la tête du premier se lirait comme un
   // second compte qui contredit le premier.
   noStars: true,
 };
 
-const CATEGORIES = [GENERAL, ...SCORED_CATEGORIES];
+const categoriesOf = (season) => [STANDINGS, ...scoredCategories(season)];
 
 const starsHtml = (n) =>
   Array.from({ length: n }, () => `<svg class="star" aria-hidden="true"><use href="#mp-star" /></svg>`).join("");
@@ -672,16 +737,27 @@ function podiumSlot(entry, cat, index, total) {
     </div>`;
 }
 
-let lbCategory = GENERAL.id;
-function renderLeaderboard(catId = lbCategory) {
-  lbCategory = catId;
-  const cat = CATEGORIES.find((c) => c.id === catId) || GENERAL;
-  const ranked = rankCategory(cat);
+let lbSeason = SEASONS[0].id;
+let lbCategory = STANDINGS.id;
 
-  document.getElementById("lbDesc").innerHTML = `<b>${cat.title}</b> — ${cat.desc}`;
+function renderLeaderboard() {
+  const season = SEASONS.find((s) => s.id === lbSeason) || SEASONS[0];
+  const cats = categoriesOf(season);
+  // Les onglets de distance changent d'une saison à l'autre : celui qu'on
+  // regardait peut ne pas exister dans la nouvelle. On retombe alors sur le
+  // classement aux étoiles plutôt que sur un panneau vide.
+  const cat = cats.find((c) => c.id === lbCategory) || STANDINGS;
+  lbCategory = cat.id;
+
+  const ranked = rankCategory(cat, season);
+  const desc = typeof cat.desc === "function" ? cat.desc(season) : cat.desc;
+
+  document.getElementById("lbScope").innerHTML =
+    `<b>${season.title}</b> — ${season.scope} Les filtres du haut ne s'y appliquent pas.`;
+  document.getElementById("lbDesc").innerHTML = `<b>${cat.title}</b> — ${desc}`;
   document.getElementById("lbPodium").innerHTML = ranked.length
     ? ranked.slice(0, 3).map((e, i) => podiumSlot(e, cat, i, Math.min(ranked.length, 3))).join("")
-    : `<p class="empty-note">Personne ne concourt encore dans cette catégorie.</p>`;
+    : `<p class="empty-note">Personne ne concourt dans cette catégorie sur cette saison.</p>`;
 
   // Au-delà du podium : la suite du classement, l'avertissement « pas
   // d'étoiles » et les absents avec leur motif. Tout ce qui explique le podium
@@ -694,50 +770,73 @@ function renderLeaderboard(catId = lbCategory) {
           .map((e) => `<li><span class="dot" style="background:${RUNNER_COLORS[e.name]}"></span>${e.name}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`)
           .join("")}</ol>`
       : "",
-    ranked.length === 1 && cat.id !== GENERAL.id
+    ranked.length === 1 && !cat.noStars
       ? `<p class="lb-note">Un seul concourant : cette catégorie ne distribue pas d'étoiles.</p>`
       : "",
     absents.length
       ? `<p class="lb-note">Hors classement : ${absents
-          .map((n) => `<b>${n}</b> — ${absentReason(cat, n)}`)
+          .map((n) => `<b>${n}</b> — ${absentReason(cat, season, n)}`)
           .join(" · ")}</p>`
       : "",
   ].join("");
 
-  document.querySelectorAll("#lbTabs button").forEach((b) => {
-    const on = b.dataset.value === catId;
+  renderLeaderboardTabs(season, cats);
+  document.querySelectorAll("#lbSeasons button").forEach((b) => {
+    const on = b.dataset.value === season.id;
     b.classList.toggle("active", on);
     b.setAttribute("aria-pressed", String(on));
   });
 }
 
-function renderLeaderboardTabs() {
-  // La fenêtre est écrite en toutes lettres, avec son motif : un palmarès qui
-  // ignore en silence les deux tiers des séances passerait pour un bug.
-  document.getElementById("lbScope").textContent =
-    `Depuis le ${LB_START_LABEL}, quand tout le monde était en course — les filtres du haut ne s'y appliquent pas`;
-
+// Les onglets de catégorie sont redessinés à chaque changement de saison, leur
+// rangée « Par distance » en dépendant.
+function renderLeaderboardTabs(season, cats) {
+  const distance = cats.filter((c) => c.group === "distance");
   const groups = [
-    ["Classement", [GENERAL]],
-    ["Par distance", DISTANCE_CATEGORIES],
+    ["Classement", [STANDINGS]],
+    ["Par distance", distance],
     ["Catégories fun", FUN_CATEGORIES],
-  ];
-  const el = document.getElementById("lbTabs");
-  el.innerHTML = groups
+  ].filter(([, list]) => list.length);
+
+  document.getElementById("lbTabs").innerHTML = groups
     .map(
-      ([label, cats]) => `
+      ([label, list]) => `
       <div class="lb-tab-row">
         <span class="filter-label">${label}</span>
         <div class="filter-switch">
-          ${cats.map((c) => `<button type="button" data-value="${c.id}">${c.tab}</button>`).join("")}
+          ${list
+            .map((c) => {
+              const on = c.id === lbCategory;
+              return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
+            })
+            .join("")}
         </div>
       </div>`,
     )
     .join("");
-  el.addEventListener("click", (e) => {
+}
+
+function initLeaderboard() {
+  document.getElementById("lbSeasons").innerHTML = SEASONS.map(
+    (s) => `<button type="button" data-value="${s.id}">${s.tab}</button>`,
+  ).join("");
+
+  // Délégation sur les deux barres : les onglets de catégorie sont recréés à
+  // chaque rendu, un écouteur posé sur les boutons ne leur survivrait pas.
+  document.getElementById("lbSeasons").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
-    if (btn) renderLeaderboard(btn.dataset.value);
+    if (!btn) return;
+    lbSeason = btn.dataset.value;
+    renderLeaderboard();
   });
+  document.getElementById("lbTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    lbCategory = btn.dataset.value;
+    renderLeaderboard();
+  });
+
+  renderLeaderboard();
 }
 
 // ---------- Sélecteurs globaux ----------
@@ -827,8 +926,7 @@ Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
 
 renderFilters();
 renderMetricSwitch();
-renderLeaderboardTabs();
-renderLeaderboard();
+initLeaderboard();
 renderAll();
 
 // Déploiement de l'analyse au clic sur une ligne (délégation : survit aux re-render)
