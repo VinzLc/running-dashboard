@@ -74,6 +74,15 @@ main {
   text-transform: uppercase;
   color: var(--text-dim);
 }
+/* « (sélection multiple) » : l'affordance n'est pas devinable sur des boutons
+   qui ressemblent trait pour trait à un choix unique. */
+.filter-label em {
+  font-style: normal;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.65;
+}
 
 /* Filtre sans séance : carte, tableau ou graphique restés vides */
 .empty-note {
@@ -179,6 +188,162 @@ main {
   line-height: 1.5;
   margin: 0 0 14px;
 }
+
+/* ---------- Leaderboard : podium façon plateau de Mario Party ---------- */
+/* Le panneau s'autorise un fond plus festif que les autres — c'est la seule
+   section du dashboard qui ne prétend pas être un instrument de mesure. */
+.leaderboard {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255,214,10,0.10), transparent 45%),
+    radial-gradient(circle at 92% 8%, rgba(191,90,242,0.10), transparent 42%),
+    var(--surface);
+}
+
+/* Libellé au-dessus de sa rangée de boutons, comme la barre de filtres du haut.
+   Un libellé à gauche paraissait plus compact, mais la rangée « fun » compte huit
+   onglets : elle prend toute la largeur et repassait sous son propre libellé, ce
+   qui désalignait les trois rangées entre elles. */
+.lb-tabs { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+/* `align-items: flex-start` : chaque pilule s'arrête à son contenu. Étirée, la
+   rangée « Classement » et son bouton unique formaient une longue barre vide. */
+.lb-tab-row { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+
+.lb-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.lb-desc b { color: var(--text); }
+
+/* L'étoile Mario Party : un seul tracé dans index.html, réutilisé par <use>. */
+.star {
+  width: 17px;
+  height: 17px;
+  color: #ffd60a;
+  filter: drop-shadow(0 1px 3px rgba(255,214,10,0.45));
+}
+
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  margin: 26px auto 0;
+  max-width: 560px;
+}
+.podium-slot {
+  flex: 1 1 0;
+  min-width: 0;
+  /* Plafond = la largeur qu'aurait la place dans un podium complet. Sans lui, le
+     6 km — que Vincent est seul à avoir couru — étalait sa marche sur toute la
+     largeur du panneau, ce qui donnait au vainqueur d'une course à un concurrent
+     le bloc le plus imposant du dashboard. */
+  max-width: 178px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.podium-stars { display: flex; gap: 3px; min-height: 19px; margin-bottom: 8px; }
+
+.podium-avatar {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--c);
+  border: 3px solid rgba(255,255,255,0.92);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.5), 0 0 0 5px var(--glow);
+}
+/* La couronne déborde volontairement du médaillon : posée dessus, elle mangerait
+   l'initiale, et c'est l'initiale qui identifie le coureur. Le débord reste plus
+   court que la gouttière au-dessus, sinon elle vient se poser sur les étoiles. */
+.podium-crown {
+  position: absolute;
+  top: -13px;
+  font-size: 19px;
+  line-height: 1;
+  transform: rotate(-16deg);
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+}
+
+.podium-name {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  /* Un nom long ne doit pas élargir sa colonne au détriment des deux autres. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.podium-value {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* Les marches : bloc épais, arête claire sur le dessus, ombre interne en bas —
+   de quoi lire un volume plutôt qu'un rectangle plat. */
+.podium-block {
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 12px 12px 5px 5px;
+  display: grid;
+  place-items: center;
+  border-top: 3px solid rgba(255,255,255,0.6);
+  box-shadow: inset 0 -14px 22px rgba(0,0,0,0.22), 0 4px 14px rgba(0,0,0,0.35);
+}
+.podium-rank {
+  font-size: 32px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.5);
+  text-shadow: 0 1.5px 0 rgba(255,255,255,0.5);
+}
+.rank-1 .podium-block { height: 106px; background: linear-gradient(180deg, #ffe680 0%, #f0a91c 100%); }
+.rank-2 .podium-block { height: 78px;  background: linear-gradient(180deg, #eef0f6 0%, #9ea2b0 100%); }
+.rank-3 .podium-block { height: 58px;  background: linear-gradient(180deg, #f2b57e 0%, #ad6528 100%); }
+
+/* Suite du classement (4e et au-delà) et notes explicatives */
+.lb-rest {
+  list-style: none;
+  margin: 20px auto 0;
+  padding: 0;
+  max-width: 560px;
+}
+.lb-rest li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+.lb-rest li + li { margin-top: 6px; }
+.lb-rest-value {
+  margin-left: auto;
+  font-weight: 500;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.lb-note {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.lb-note b { color: var(--text); font-weight: 600; }
 
 .chart-wrap { position: relative; height: 340px; }
 /* Le tableau défile horizontalement sur mobile ; `contain` empêche ce défilement
@@ -406,6 +571,21 @@ footer {
   /* Cibles tactiles : 30 px de haut se ratent au pouce, 40 px non. */
   .metric-switch button, .filter-switch button { padding: 10px 14px; font-size: 13px; }
   .filter-bar { gap: 10px 16px; margin-bottom: 18px; }
+
+  /* Le podium garde ses trois colonnes sur mobile — l'empiler en liste ferait
+     disparaître la seule chose qui le distingue d'un classement ordinaire — mais
+     tout rétrécit pour tenir dans les ~330 px utiles d'un écran de téléphone. */
+  .podium { gap: 6px; margin-top: 22px; }
+  .podium-avatar { width: 42px; height: 42px; font-size: 17px; border-width: 2px; }
+  .podium-crown { top: -11px; font-size: 16px; }
+  .podium-name { font-size: 12.5px; margin-top: 8px; }
+  .podium-value { font-size: 11px; }
+  .star { width: 14px; height: 14px; }
+  .podium-stars { gap: 2px; min-height: 16px; margin-bottom: 8px; }
+  .podium-rank { font-size: 26px; }
+  .rank-1 .podium-block { height: 84px; }
+  .rank-2 .podium-block { height: 62px; }
+  .rank-3 .podium-block { height: 46px; }
 
   th, td { padding: 10px 6px; }
   .analysis-row > td { padding: 8px 6px 14px; }

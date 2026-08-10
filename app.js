@@ -3,17 +3,20 @@
 const RUNNERS = Object.keys(RUNS);
 
 // Coureurs actuellement affichés (pilote cartes, graphiques et tableau).
-// Par défaut : tous.
+// Les deux filtres sont multi-sélection ; rien de coché vaut « tout », ce qui
+// évite un état où le dashboard se vide sans que rien à l'écran ne l'explique.
+// `viewRunners` est donc toujours peuplé — c'est le filtre qui détend, pas les
+// lecteurs qui gèrent le cas vide.
 let viewRunners = [...RUNNERS];
 
 // ---------- Filtre de distance ----------
 // Comparer ce qui est comparable : une séance appartient au seau de son
 // kilométrage entier (5,39 km → « 5 km »), et tout ce qui est sous 5 km tient
 // dans un seul seau — à ce stade, un 3,7 km et un 4,8 km relèvent de la même
-// mise en route. Par défaut, aucun filtre.
-const ANY_DISTANCE = "all";
+// mise en route. Ici, en revanche, la liste vide se lit directement comme
+// « toutes distances » : lister les trois seaux reviendrait au même.
 const SUB_5 = "sub5";
-let viewBucket = ANY_DISTANCE;
+let viewBuckets = [];
 
 const bucketOf = (r) => (r.distance < 5 ? SUB_5 : String(Math.floor(r.distance)));
 
@@ -35,7 +38,7 @@ const bucketLabel = (key) => (DISTANCE_BUCKETS.find((b) => b.key === key) || {})
 
 // Séances d'un coureur, filtre de distance appliqué.
 const runsOf = (name) =>
-  viewBucket === ANY_DISTANCE ? RUNS[name] : RUNS[name].filter((r) => bucketOf(r) === viewBucket);
+  viewBuckets.length ? RUNS[name].filter((r) => viewBuckets.includes(bucketOf(r))) : RUNS[name];
 
 // Certaines combinaisons ne contiennent aucune séance — Ju n'a pas encore
 // déposé de capture, Anaïs n'a pas encore couru 6 km — et un graphique vide
@@ -44,7 +47,9 @@ const runsOf = (name) =>
 function emptyMessage(metric) {
   // Le libellé garde sa casse : « fc moy. » se lit comme une coquille.
   if (metric) return `Aucune donnée de ${metric.label} pour cette sélection.`;
-  const scope = viewBucket === ANY_DISTANCE ? "" : ` de ${bucketLabel(viewBucket).toLowerCase()}`;
+  const scope = viewBuckets.length
+    ? ` de ${viewBuckets.map((b) => bucketLabel(b).toLowerCase()).join(" ou ")}`
+    : "";
   return `Aucune séance${scope} pour l'instant.`;
 }
 
@@ -243,78 +248,6 @@ function renderEvolution(metricKey = currentMetric) {
 
 function renderMetricSwitch() {
   buildSwitch("metricSwitch", Object.entries(METRICS).map(([k, m]) => [k, m.label]), renderEvolution);
-}
-
-// ---------- Radar comparatif (moyennes normalisées) ----------
-let radarChart;
-function renderRadar() {
-  const ctx = document.getElementById("radarChart");
-  const ALL_AXES = [
-    { key: "distance", label: "Distance", higher: true },
-    { key: "paceSec", label: "Vitesse", higher: false },
-    { key: "cadence", label: "Cadence", higher: true },
-    { key: "hr", label: "Intensité FC", higher: true },
-    { key: "activeCal", label: "Calories", higher: true },
-    { key: "duration", label: "Endurance", higher: true },
-  ];
-
-  const shown = viewRunners.filter((name) => runsOf(name).length);
-  setChartEmpty("radarChart", shown.length ? "" : emptyMessage());
-
-  // Un radar ne compare que sur des axes communs : dès que l'un des coureurs
-  // affichés ne mesure pas la cadence ou la FC, l'axe disparaît pour tout le
-  // monde. Le garder en mettant l'autre à zéro dessinerait un creux qui se lit
-  // comme une contre-performance alors que c'est une absence de mesure.
-  const axes = ALL_AXES.filter((a) => shown.every((name) => hasMetric(runsOf(name), a.key)));
-
-  // Bornes de normalisation prises sur tous les coureurs, mais dans le filtre
-  // de distance courant : à 5 km, c'est aux 5 km d'en face qu'on se compare.
-  // Elles ne dépendent pas de viewRunners, sinon isoler un coureur le
-  // repousserait mécaniquement à 100 sur chaque axe.
-  const bounds = {};
-  axes.forEach((a) => {
-    const vals = RUNNERS.flatMap((n) => runsOf(n).map((r) => r[a.key])).filter((v) => v != null);
-    bounds[a.key] = { min: Math.min(...vals), max: Math.max(...vals) };
-  });
-
-  const datasets = shown.map((name) => ({
-    label: name,
-    data: axes.map((a) => {
-      const m = avg(runsOf(name).filter((r) => r[a.key] != null).map((r) => r[a.key]));
-      const { min, max } = bounds[a.key];
-      let norm = max === min ? 50 : ((m - min) / (max - min)) * 100;
-      if (!a.higher) norm = 100 - norm; // pour l'allure : plus rapide = mieux
-      return Math.round(norm);
-    }),
-    borderColor: RUNNER_COLORS[name],
-    backgroundColor: RUNNER_COLORS[name] + "26",
-    borderWidth: 2,
-    pointBackgroundColor: RUNNER_COLORS[name],
-  }));
-
-  if (radarChart) radarChart.destroy();
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: { labels: axes.map((a) => a.label), datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: "#f5f5f7", usePointStyle: true } },
-        tooltip: { enabled: false },
-      },
-      scales: {
-        r: {
-          angleLines: { color: "rgba(255,255,255,0.1)" },
-          grid: { color: "rgba(255,255,255,0.1)" },
-          pointLabels: { color: "#f5f5f7", font: { size: 12 } },
-          ticks: { display: false, maxTicksLimit: 5 },
-          suggestedMin: 0,
-          suggestedMax: 100,
-        },
-      },
-    },
-  });
 }
 
 // ---------- Insights objectifs (calculés sur chaque coureur séparément) ----------
@@ -522,9 +455,267 @@ function renderTable() {
     .join("");
 }
 
+// ---------- Leaderboard ----------
+// Un podium par catégorie, façon plateau de Mario Party : chaque catégorie
+// distribue 3, 2 et 1 étoiles, et l'onglet « Général » additionne le tout.
+// Volontairement à l'écart des filtres du haut : c'est un palmarès sur
+// l'ensemble des séances, pas une vue de la sélection courante — sans quoi
+// isoler un coureur donnerait un podium à une place.
+const STARS_BY_RANK = [3, 2, 1];
+
+const chrono = (runs) => [...runs].sort((a, b) => a.date.localeCompare(b.date));
+const stdev = (arr) => {
+  const m = avg(arr);
+  return Math.sqrt(avg(arr.map((v) => (v - m) ** 2)));
+};
+
+// Une catégorie note chaque coureur (`score`, `null` = ne concourt pas) et sait
+// dire dans quel sens on lit la note (`lower`). `absent` explique l'exclusion :
+// « pas de donnée » se lit comme un bug, « son appli ne mesure pas la FC » non.
+const NOT_YET = "pas encore de séance";
+const defaultAbsent = (name) => (RUNS[name].length ? "pas de donnée dans cette catégorie" : NOT_YET);
+
+const DISTANCE_CATEGORIES = DISTANCE_BUCKETS.map((b) => ({
+  id: `km-${b.key}`,
+  tab: b.label,
+  title: `Le plus rapide sur ${b.label.toLowerCase()}`,
+  desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
+  lower: true,
+  score: (runs) => {
+    const rs = runs.filter((r) => bucketOf(r) === b.key);
+    return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
+  },
+  fmt: (v) => `${fmtPace(v)}/km`,
+  absent: (name) => (RUNS[name].length ? `aucune séance de ${b.label.toLowerCase()}` : NOT_YET),
+}));
+
+const FUN_CATEGORIES = [
+  {
+    id: "km-total",
+    tab: "🗺️ Compteur de km",
+    title: "Le Compteur de kilomètres",
+    desc: "Le plus grand total de kilomètres, toutes séances confondues. La catégorie la plus bête du plateau : il n'y a qu'à sortir, encore et encore.",
+    score: (runs) => (runs.length ? sum(runs.map((r) => r.distance)) : null),
+    fmt: (v) => `${v.toFixed(1)} km`,
+  },
+  {
+    id: "metronome",
+    tab: "🎯 Métronome",
+    title: "Le Métronome",
+    desc: "L'allure la plus constante d'une séance à l'autre (le plus petit écart-type). Elle récompense la régularité, et elle sourit assez peu à qui progresse vite : progresser, c'est justement ne pas courir deux fois à la même allure.",
+    lower: true,
+    score: (runs) => (runs.length > 1 ? stdev(runs.map((r) => r.paceSec)) : null),
+    fmt: (v) => `± ${Math.round(v)} s/km`,
+    absent: (name) => (RUNS[name].length ? "une seule séance, rien à comparer" : NOT_YET),
+  },
+  {
+    id: "progress",
+    tab: "🚀 Fusée",
+    title: "La Fusée",
+    desc: "Les secondes au kilomètre grattées entre la toute première séance et la dernière. Du progrès brut, sans regarder le temps qu'il a fallu pour l'obtenir.",
+    score: (runs) => {
+      const s = chrono(runs);
+      return s.length > 1 ? s[0].paceSec - s[s.length - 1].paceSec : null;
+    },
+    fmt: (v) => `${v >= 0 ? "−" : "+"}${Math.abs(Math.round(v))} s/km`,
+    absent: (name) => (RUNS[name].length ? "une seule séance, rien à comparer" : NOT_YET),
+  },
+  {
+    id: "freq",
+    tab: "📅 Machine",
+    title: "La Machine",
+    desc: "Le rythme : nombre de séances par semaine depuis sa propre première sortie. Arriver en cours de saison n'est pas un handicap ici, c'est même plutôt l'inverse.",
+    score: (runs) => {
+      const s = chrono(runs);
+      if (s.length < 2) return null;
+      const jours = (new Date(s[s.length - 1].date) - new Date(s[0].date)) / 864e5 + 1;
+      return (s.length / jours) * 7;
+    },
+    fmt: (v) => `${v.toFixed(1)} séances/sem.`,
+    absent: (name) => (RUNS[name].length ? "une seule séance, pas encore de rythme" : NOT_YET),
+  },
+  {
+    id: "avg-dist",
+    tab: "📏 Gros Rouleur",
+    title: "Le Gros Rouleur",
+    desc: "La distance moyenne par sortie. Peu de séances mais longues bat beaucoup de séances mais courtes — c'est fait exprès, tout le monde ne doit pas gagner au même jeu.",
+    score: (runs) => (runs.length ? avg(runs.map((r) => r.distance)) : null),
+    fmt: (v) => `${v.toFixed(2)} km`,
+  },
+  {
+    id: "pr-hunter",
+    tab: "🏅 Chasseur de records",
+    title: "Le Chasseur de records",
+    desc: "Le nombre de séances qui ont battu le record d'allure personnel. Attention au piège : plus le record est haut, plus le suivant est difficile à décrocher.",
+    score: (runs) => {
+      const s = chrono(runs);
+      if (!s.length) return null;
+      let best = Infinity;
+      let n = 0;
+      s.forEach((r, i) => {
+        if (i > 0 && r.paceSec < best) n += 1;
+        best = Math.min(best, r.paceSec);
+      });
+      return n;
+    },
+    fmt: (v) => `${v} record${v > 1 ? "s" : ""}`,
+  },
+  {
+    id: "coldheart",
+    tab: "🧊 Cœur de glace",
+    title: "Le Cœur de glace",
+    desc: "La fréquence cardiaque moyenne la plus basse. Comparer deux cœurs n'a aucune valeur scientifique — la FC max dépend surtout de l'âge — mais ça reste la catégorie la plus classe à gagner.",
+    lower: true,
+    score: (runs) => {
+      const v = runs.filter((r) => r.hr != null).map((r) => r.hr);
+      return v.length ? avg(v) : null;
+    },
+    fmt: (v) => `${Math.round(v)} bpm`,
+    absent: (name) => (RUNS[name].length ? "son appli ne mesure pas la FC" : NOT_YET),
+  },
+  {
+    id: "burner",
+    tab: "🔥 Lance-flammes",
+    title: "Le Lance-flammes",
+    desc: "Le plus de calories actives brûlées au total. Ça dépend au moins autant du gabarit que de l'effort, mais personne n'a jamais refusé un trophée pour ce motif.",
+    score: (runs) => (runs.length ? sum(runs.map((r) => r.activeCal)) : null),
+    fmt: (v) => `${Math.round(v).toLocaleString("fr-FR")} cal`,
+  },
+];
+
+// Classement d'une catégorie : les non-concourants sortent, les ex æquo
+// partagent le rang (deux premiers, puis un troisième — pas de deuxième).
+// Une catégorie à un seul concourant ne distribue rien : Vincent est le seul à
+// avoir couru 6 km, lui donner 3 étoiles pour ça fausserait le général. La
+// règle vit ici et nulle part ailleurs, pour que le total des étoiles et les
+// étoiles dessinées sur le podium ne puissent pas se contredire.
+function rankCategory(cat) {
+  const scored = RUNNERS.map((name) => ({ name, value: cat.score(RUNS[name], name) }))
+    .filter((e) => e.value != null && Number.isFinite(e.value));
+  scored.sort((a, b) => (cat.lower ? a.value - b.value : b.value - a.value));
+  const awards = scored.length > 1 && !cat.noStars;
+  let rank = 0;
+  scored.forEach((e, i) => {
+    if (i > 0 && e.value !== scored[i - 1].value) rank = i;
+    e.rank = rank;
+    e.stars = awards ? STARS_BY_RANK[rank] || 0 : 0;
+  });
+  return scored;
+}
+
+const SCORED_CATEGORIES = [...DISTANCE_CATEGORIES, ...FUN_CATEGORIES];
+const STAR_TOTALS = (() => {
+  const totals = Object.fromEntries(RUNNERS.map((n) => [n, 0]));
+  SCORED_CATEGORIES.forEach((cat) =>
+    rankCategory(cat).forEach((e) => {
+      totals[e.name] += e.stars;
+    }),
+  );
+  return totals;
+})();
+
+const GENERAL = {
+  id: "general",
+  tab: "🌟 Général",
+  title: "Classement général",
+  desc: `Le total des étoiles récoltées sur les ${SCORED_CATEGORIES.length} autres onglets. Chacun distribue 3 étoiles au premier, 2 au deuxième, 1 au troisième — sauf ceux où il n'y a qu'un concourant, qui ne rapportent rien.`,
+  score: (runs, name) => (runs.length ? STAR_TOTALS[name] : null),
+  fmt: (v) => `${v} étoile${v > 1 ? "s" : ""}`,
+  // Le général ne se rapporte pas à lui-même : les étoiles sont déjà le score
+  // affiché, en redessiner 3 au-dessus de la tête du premier se lirait comme un
+  // second compte qui contredit le premier.
+  noStars: true,
+};
+
+const CATEGORIES = [GENERAL, ...SCORED_CATEGORIES];
+
+const starsHtml = (n) =>
+  Array.from({ length: n }, () => `<svg class="star" aria-hidden="true"><use href="#mp-star" /></svg>`).join("");
+
+// Une place du podium. Le bloc suit le rang affiché, pas la position : deux ex
+// æquo en tête méritent deux blocs de la même hauteur, tous deux marqués « 1 ».
+function podiumSlot(entry, cat, index, total) {
+  const place = Math.min(entry.rank + 1, 3);
+  const color = RUNNER_COLORS[entry.name];
+  // À trois places ou plus, le vainqueur passe au centre — c'est ce qui fait
+  // lire la marche haute comme un podium et pas comme un simple histogramme.
+  const order = total >= 3 ? [2, 1, 3][index] || index + 1 : index + 1;
+  return `
+    <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
+      <div class="podium-stars">${starsHtml(entry.stars)}</div>
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${entry.name[0]}</div>
+      <div class="podium-name">${entry.name}</div>
+      <div class="podium-value">${cat.fmt(entry.value)}</div>
+      <div class="podium-block"><span class="podium-rank">${entry.rank + 1}</span></div>
+    </div>`;
+}
+
+let lbCategory = GENERAL.id;
+function renderLeaderboard(catId = lbCategory) {
+  lbCategory = catId;
+  const cat = CATEGORIES.find((c) => c.id === catId) || GENERAL;
+  const ranked = rankCategory(cat);
+
+  document.getElementById("lbDesc").innerHTML = `<b>${cat.title}</b> — ${cat.desc}`;
+  document.getElementById("lbPodium").innerHTML = ranked.length
+    ? ranked.slice(0, 3).map((e, i) => podiumSlot(e, cat, i, Math.min(ranked.length, 3))).join("")
+    : `<p class="empty-note">Personne ne concourt encore dans cette catégorie.</p>`;
+
+  // Au-delà du podium : la suite du classement, l'avertissement « pas
+  // d'étoiles » et les absents avec leur motif. Tout ce qui explique le podium
+  // sans y tenir de place.
+  const rest = ranked.slice(3);
+  const absents = RUNNERS.filter((n) => !ranked.some((e) => e.name === n));
+  document.getElementById("lbExtra").innerHTML = [
+    rest.length
+      ? `<ol class="lb-rest" start="4">${rest
+          .map((e) => `<li><span class="dot" style="background:${RUNNER_COLORS[e.name]}"></span>${e.name}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`)
+          .join("")}</ol>`
+      : "",
+    ranked.length === 1 && cat.id !== GENERAL.id
+      ? `<p class="lb-note">Un seul concourant : cette catégorie ne distribue pas d'étoiles.</p>`
+      : "",
+    absents.length
+      ? `<p class="lb-note">Hors classement : ${absents
+          .map((n) => `<b>${n}</b> — ${(cat.absent || defaultAbsent)(n)}`)
+          .join(" · ")}</p>`
+      : "",
+  ].join("");
+
+  document.querySelectorAll("#lbTabs button").forEach((b) => {
+    const on = b.dataset.value === catId;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", String(on));
+  });
+}
+
+function renderLeaderboardTabs() {
+  const groups = [
+    ["Classement", [GENERAL]],
+    ["Par distance", DISTANCE_CATEGORIES],
+    ["Catégories fun", FUN_CATEGORIES],
+  ];
+  const el = document.getElementById("lbTabs");
+  el.innerHTML = groups
+    .map(
+      ([label, cats]) => `
+      <div class="lb-tab-row">
+        <span class="filter-label">${label}</span>
+        <div class="filter-switch">
+          ${cats.map((c) => `<button type="button" data-value="${c.id}">${c.tab}</button>`).join("")}
+        </div>
+      </div>`,
+    )
+    .join("");
+  el.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (btn) renderLeaderboard(btn.dataset.value);
+  });
+}
+
 // ---------- Sélecteurs globaux ----------
-// Les trois barres de boutons (coureur, distance, métrique) partagent le même
-// comportement : un seul actif à la fois, on prévient au changement.
+// Un seul actif à la fois : c'est le comportement du sélecteur de métrique, où
+// deux courbes de nature différente sur le même axe n'auraient pas de sens.
 function buildSwitch(elId, options, onPick) {
   const el = document.getElementById(elId);
   el.innerHTML = options
@@ -539,29 +730,68 @@ function buildSwitch(elId, options, onPick) {
   });
 }
 
+// Multi-sélection, pour les deux filtres globaux : comparer Anaïs et Didi sans
+// Vincent, ou les 5 et 6 km sans les mises en route, demande de cocher
+// plusieurs valeurs. « Tous » n'est pas une valeur de plus mais l'état « rien
+// de coché » ; et le premier clic sur une valeur isole celle-ci au lieu de
+// décocher les autres une à une, parce que c'est ce qu'on vient faire neuf
+// fois sur dix.
+function buildMultiSwitch(elId, allLabel, options, onChange) {
+  const el = document.getElementById(elId);
+  const ALL = "__all__";
+  const keys = options.map(([k]) => k);
+  let selected = [];
+
+  el.innerHTML = [[ALL, allLabel], ...options]
+    .map(([k, label]) => `<button type="button" data-value="${k}">${label}</button>`)
+    .join("");
+
+  const paint = () =>
+    el.querySelectorAll("button").forEach((b) => {
+      const on = b.dataset.value === ALL ? !selected.length : selected.includes(b.dataset.value);
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+
+  el.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const v = btn.dataset.value;
+    if (v === ALL) selected = [];
+    else if (!selected.length) selected = [v];
+    else {
+      const next = new Set(selected);
+      if (!next.delete(v)) next.add(v);
+      // Ordre de déclaration, pas ordre de clic : sinon les cartes récap
+      // changeraient de place selon l'ordre dans lequel on a coché.
+      selected = keys.filter((k) => next.has(k));
+    }
+    paint();
+    onChange(selected);
+  });
+
+  paint();
+}
+
 // Tout ce qui dépend des deux filtres globaux, y compris le décompte du pied
 // de page — sinon il annoncerait 34 séances sous un dashboard qui n'en montre 6.
+// Le leaderboard, lui, n'en dépend pas et n'est rendu qu'à l'init.
 function renderAll() {
   renderCards();
   renderEvolution();
-  renderRadar();
   renderTable();
   document.getElementById("totalRuns").textContent = sum(viewRunners.map((n) => runsOf(n).length));
 }
 
 function renderFilters() {
-  buildSwitch("runnerFilter", [["all", "Tous"], ...RUNNERS.map((n) => [n, n])], (v) => {
-    viewRunners = v === "all" ? [...RUNNERS] : [v];
+  buildMultiSwitch("runnerFilter", "Tous", RUNNERS.map((n) => [n, n]), (sel) => {
+    viewRunners = sel.length ? sel : [...RUNNERS];
     renderAll();
   });
-  buildSwitch(
-    "distanceFilter",
-    [[ANY_DISTANCE, "Toutes"], ...DISTANCE_BUCKETS.map((b) => [b.key, b.label])],
-    (v) => {
-      viewBucket = v;
-      renderAll();
-    },
-  );
+  buildMultiSwitch("distanceFilter", "Toutes", DISTANCE_BUCKETS.map((b) => [b.key, b.label]), (sel) => {
+    viewBuckets = sel;
+    renderAll();
+  });
 }
 
 // ---------- Init ----------
@@ -570,6 +800,8 @@ Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
 
 renderFilters();
 renderMetricSwitch();
+renderLeaderboardTabs();
+renderLeaderboard();
 renderAll();
 
 // Déploiement de l'analyse au clic sur une ligne (délégation : survit aux re-render)

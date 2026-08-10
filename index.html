@@ -5,9 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏃 Running Dashboard — Anaïs & Vincent</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=27" />
+  <link rel="stylesheet" href="styles.css?v=28" />
 </head>
 <body>
+  <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
+       répétée une trentaine de fois par podium, en dupliquer le tracé autant. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="mp-star" viewBox="0 0 24 24">
+      <path d="M12 1.5 14.7 8.28 21.99 8.76 16.38 13.42 18.17 20.49 12 16.6 5.83 20.49 7.62 13.42 2.01 8.76 9.3 8.28Z"
+            fill="currentColor" stroke="rgba(0,0,0,0.4)" stroke-width="0.9" stroke-linejoin="round" />
+      <ellipse cx="10.3" cy="11.2" rx="1" ry="1.5" fill="#4a3200" />
+      <ellipse cx="13.7" cy="11.2" rx="1" ry="1.5" fill="#4a3200" />
+    </symbol>
+  </svg>
+
   <header class="hero">
     <h1>🏃 Running Dashboard</h1>
     <p class="subtitle">Suivi des sessions de course — <span class="anais">Anaïs</span>, <span class="vincent">Vincent</span>, <span class="didi">Didi</span> &amp; <span class="ju">Ju</span></p>
@@ -17,11 +28,11 @@
     <!-- Filtres globaux : coureur et distance -->
     <div class="filter-bar">
       <div class="filter-group">
-        <span class="filter-label">Coureur</span>
+        <span class="filter-label">Coureur <em>(sélection multiple)</em></span>
         <div class="filter-switch" id="runnerFilter"></div>
       </div>
       <div class="filter-group">
-        <span class="filter-label">Distance</span>
+        <span class="filter-label">Distance <em>(sélection multiple)</em></span>
         <div class="filter-switch" id="distanceFilter"></div>
       </div>
     </div>
@@ -41,12 +52,16 @@
       </div>
     </section>
 
-    <!-- Mini-graphiques comparatifs -->
-    <section class="panel">
-      <h2>Comparaison globale</h2>
-      <div class="chart-wrap">
-        <canvas id="radarChart"></canvas>
+    <!-- Leaderboard : un podium par catégorie, chacune distribuant des étoiles -->
+    <section class="panel leaderboard">
+      <div class="panel-head">
+        <h2>🏆 Leaderboard</h2>
+        <span class="hint">Palmarès sur toutes les séances — les filtres du haut ne s'y appliquent pas</span>
       </div>
+      <div class="lb-tabs" id="lbTabs"></div>
+      <p class="lb-desc" id="lbDesc"></p>
+      <div class="podium" id="lbPodium"></div>
+      <div class="lb-extra" id="lbExtra"></div>
     </section>
 
     <!-- Tableau détaillé -->
@@ -81,8 +96,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=27"></script>
-  <script src="pokemon.js?v=27"></script>
-  <script src="app.js?v=27"></script>
+  <script src="data.js?v=28"></script>
+  <script src="pokemon.js?v=28"></script>
+  <script src="app.js?v=28"></script>
 </body>
 </html>
