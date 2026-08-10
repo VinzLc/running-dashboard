@@ -543,10 +543,10 @@ function absentReason(cat, season, name) {
 const distanceCategories = (season) =>
   bucketsIn(RUNNERS.flatMap((n) => seasonRuns(season, n))).map((b) => ({
     id: `km-${b.key}`,
-    // Le groupe est porté explicitement : trier les onglets sur le préfixe de
-    // l'`id` rangeait « km-total », le compteur de kilomètres, parmi les distances.
-    group: "distance",
-    tab: b.label,
+    // Le drapeau met les courses de distance au même rang visuel que les autres
+    // compétitions : dans un menu unique, un onglet sans emoji se lit comme une
+    // rubrique plutôt que comme un choix.
+    tab: `🏁 ${b.label}`,
     title: `Le plus rapide sur ${b.label.toLowerCase()}`,
     desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
     lower: true,
@@ -788,32 +788,22 @@ function renderLeaderboard() {
   });
 }
 
-// Les onglets de catégorie sont redessinés à chaque changement de saison, leur
-// rangée « Par distance » en dépendant.
+// Un seul menu, sans sous-rubriques : les douze entrées sont toutes la même
+// chose — une compétition à regarder. Les répartir sous « Classement », « Par
+// distance » et « Catégories fun » laissait croire à trois réglages distincts
+// alors qu'un seul choix est actif à la fois. Redessiné à chaque changement de
+// saison, puisque les courses de distance proposées en dépendent.
 function renderLeaderboardTabs(season, cats) {
-  const distance = cats.filter((c) => c.group === "distance");
-  const groups = [
-    ["Classement", [STANDINGS]],
-    ["Par distance", distance],
-    ["Catégories fun", FUN_CATEGORIES],
-  ].filter(([, list]) => list.length);
-
-  document.getElementById("lbTabs").innerHTML = groups
-    .map(
-      ([label, list]) => `
-      <div class="lb-tab-row">
-        <span class="filter-label">${label}</span>
-        <div class="filter-switch">
-          ${list
-            .map((c) => {
-              const on = c.id === lbCategory;
-              return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
-            })
-            .join("")}
-        </div>
-      </div>`,
-    )
-    .join("");
+  document.getElementById("lbTabs").innerHTML = `
+    <span class="filter-label">Compétition</span>
+    <div class="filter-switch">
+      ${cats
+        .map((c) => {
+          const on = c.id === lbCategory;
+          return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
+        })
+        .join("")}
+    </div>`;
 }
 
 function initLeaderboard() {

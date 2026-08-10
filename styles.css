@@ -199,14 +199,16 @@ main {
     var(--surface);
 }
 
-/* Libellé au-dessus de sa rangée de boutons, comme la barre de filtres du haut.
-   Un libellé à gauche paraissait plus compact, mais la rangée « fun » compte huit
-   onglets : elle prend toute la largeur et repassait sous son propre libellé, ce
-   qui désalignait les trois rangées entre elles. */
-.lb-tabs { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
-/* `align-items: flex-start` : chaque pilule s'arrête à son contenu. Étirée, la
-   rangée « Classement » et son bouton unique formaient une longue barre vide. */
-.lb-tab-row { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+/* Menu unique des compétitions : libellé au-dessus de sa rangée de boutons,
+   comme la barre de filtres du haut. `align-items: flex-start` pour que la
+   pilule s'arrête à son contenu au lieu de s'étirer en barre vide. */
+.lb-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 18px;
+}
 
 /* Le sélecteur de saison est le cran au-dessus des onglets de catégorie : il
    change ce qui est compté, pas ce qui est classé. Il siège donc dans l'en-tête
