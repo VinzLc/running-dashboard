@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏃 Running Dashboard — Anaïs & Vincent</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=28" />
+  <link rel="stylesheet" href="styles.css?v=29" />
 </head>
 <body>
   <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
@@ -56,7 +56,7 @@
     <section class="panel leaderboard">
       <div class="panel-head">
         <h2>🏆 Leaderboard</h2>
-        <span class="hint">Palmarès sur toutes les séances — les filtres du haut ne s'y appliquent pas</span>
+        <span class="hint" id="lbScope"></span>
       </div>
       <div class="lb-tabs" id="lbTabs"></div>
       <p class="lb-desc" id="lbDesc"></p>
@@ -96,8 +96,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=28"></script>
-  <script src="pokemon.js?v=28"></script>
-  <script src="app.js?v=28"></script>
+  <script src="data.js?v=29"></script>
+  <script src="pokemon.js?v=29"></script>
+  <script src="app.js?v=29"></script>
 </body>
 </html>

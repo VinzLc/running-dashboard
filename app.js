@@ -22,9 +22,11 @@ const bucketOf = (r) => (r.distance < 5 ? SUB_5 : String(Math.floor(r.distance))
 
 // Les seaux proposés sont déduits des données, pas écrits en dur : le jour où
 // un premier 6 km tombe, le bouton apparaît de lui-même — et en attendant,
-// aucun bouton ne renvoie vers un graphique vide.
-const DISTANCE_BUCKETS = (() => {
-  const present = new Set(RUNNERS.flatMap((n) => RUNS[n].map(bucketOf)));
+// aucun bouton ne renvoie vers un graphique vide. Le leaderboard, qui ne
+// regarde qu'une tranche de l'historique, en déduit les siens sur cette
+// tranche : un seau que plus personne n'a couru depuis n'y a pas d'onglet.
+const bucketsIn = (runs) => {
+  const present = new Set(runs.map(bucketOf));
   const buckets = [];
   if (present.delete(SUB_5)) buckets.push({ key: SUB_5, label: "Moins de 5 km" });
   [...present]
@@ -32,7 +34,9 @@ const DISTANCE_BUCKETS = (() => {
     .sort((a, b) => a - b)
     .forEach((km) => buckets.push({ key: String(km), label: `${km} km` }));
   return buckets;
-})();
+};
+
+const DISTANCE_BUCKETS = bucketsIn(RUNNERS.flatMap((n) => RUNS[n]));
 
 const bucketLabel = (key) => (DISTANCE_BUCKETS.find((b) => b.key === key) || {}).label || "";
 
@@ -463,6 +467,20 @@ function renderTable() {
 // isoler un coureur donnerait un podium à une place.
 const STARS_BY_RANK = [3, 2, 1];
 
+// Le palmarès ne remonte pas plus loin que la première séance de Didi. Sur tout
+// l'historique, les catégories de volume ne mesuraient qu'une chose — qui a
+// commencé le plus tôt — et Didi, arrivée fin juillet, partait avec 16 séances
+// de retard qu'aucune performance ne pouvait rattraper. Une fenêtre commune
+// compare des coureurs, pas des dates d'inscription.
+const LEADERBOARD_START = "2026-07-23";
+const LB_START_LABEL = new Date(`${LEADERBOARD_START}T00:00:00`).toLocaleDateString("fr-FR", {
+  day: "numeric",
+  month: "long",
+});
+
+const lbRunsOf = (name) => RUNS[name].filter((r) => r.date >= LEADERBOARD_START);
+const LB_BUCKETS = bucketsIn(RUNNERS.flatMap(lbRunsOf));
+
 const chrono = (runs) => [...runs].sort((a, b) => a.date.localeCompare(b.date));
 const stdev = (arr) => {
   const m = avg(arr);
@@ -470,23 +488,27 @@ const stdev = (arr) => {
 };
 
 // Une catégorie note chaque coureur (`score`, `null` = ne concourt pas) et sait
-// dire dans quel sens on lit la note (`lower`). `absent` explique l'exclusion :
-// « pas de donnée » se lit comme un bug, « son appli ne mesure pas la FC » non.
-const NOT_YET = "pas encore de séance";
-const defaultAbsent = (name) => (RUNS[name].length ? "pas de donnée dans cette catégorie" : NOT_YET);
+// dire dans quel sens on lit la note (`lower`). Les deux motifs d'exclusion
+// communs à toutes — rien couru du tout, rien couru sur la période — sont
+// traités ici ; `absent` ne couvre que le motif propre à la catégorie.
+function absentReason(cat, name) {
+  if (!RUNS[name].length) return "pas encore de séance";
+  if (!lbRunsOf(name).length) return `aucune séance depuis le ${LB_START_LABEL}`;
+  return cat.absent ? cat.absent() : "pas de donnée dans cette catégorie";
+}
 
-const DISTANCE_CATEGORIES = DISTANCE_BUCKETS.map((b) => ({
+const DISTANCE_CATEGORIES = LB_BUCKETS.map((b) => ({
   id: `km-${b.key}`,
   tab: b.label,
   title: `Le plus rapide sur ${b.label.toLowerCase()}`,
-  desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
+  desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()} depuis le ${LB_START_LABEL}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
   lower: true,
   score: (runs) => {
     const rs = runs.filter((r) => bucketOf(r) === b.key);
     return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
   },
   fmt: (v) => `${fmtPace(v)}/km`,
-  absent: (name) => (RUNS[name].length ? `aucune séance de ${b.label.toLowerCase()}` : NOT_YET),
+  absent: () => `aucune séance de ${b.label.toLowerCase()} sur la période`,
 }));
 
 const FUN_CATEGORIES = [
@@ -494,7 +516,7 @@ const FUN_CATEGORIES = [
     id: "km-total",
     tab: "🗺️ Compteur de km",
     title: "Le Compteur de kilomètres",
-    desc: "Le plus grand total de kilomètres, toutes séances confondues. La catégorie la plus bête du plateau : il n'y a qu'à sortir, encore et encore.",
+    desc: "Le plus grand total de kilomètres sur la période. La catégorie la plus bête du plateau : il n'y a qu'à sortir, encore et encore.",
     score: (runs) => (runs.length ? sum(runs.map((r) => r.distance)) : null),
     fmt: (v) => `${v.toFixed(1)} km`,
   },
@@ -506,25 +528,25 @@ const FUN_CATEGORIES = [
     lower: true,
     score: (runs) => (runs.length > 1 ? stdev(runs.map((r) => r.paceSec)) : null),
     fmt: (v) => `± ${Math.round(v)} s/km`,
-    absent: (name) => (RUNS[name].length ? "une seule séance, rien à comparer" : NOT_YET),
+    absent: () => "une seule séance sur la période, rien à comparer",
   },
   {
     id: "progress",
     tab: "🚀 Fusée",
     title: "La Fusée",
-    desc: "Les secondes au kilomètre grattées entre la toute première séance et la dernière. Du progrès brut, sans regarder le temps qu'il a fallu pour l'obtenir.",
+    desc: "Les secondes au kilomètre grattées entre la première et la dernière séance de la période. Du progrès brut, sans regarder le temps qu'il a fallu pour l'obtenir.",
     score: (runs) => {
       const s = chrono(runs);
       return s.length > 1 ? s[0].paceSec - s[s.length - 1].paceSec : null;
     },
     fmt: (v) => `${v >= 0 ? "−" : "+"}${Math.abs(Math.round(v))} s/km`,
-    absent: (name) => (RUNS[name].length ? "une seule séance, rien à comparer" : NOT_YET),
+    absent: () => "une seule séance sur la période, rien à comparer",
   },
   {
     id: "freq",
     tab: "📅 Machine",
     title: "La Machine",
-    desc: "Le rythme : nombre de séances par semaine depuis sa propre première sortie. Arriver en cours de saison n'est pas un handicap ici, c'est même plutôt l'inverse.",
+    desc: "Le rythme : nombre de séances par semaine. Le décompte part de sa propre première sortie et non du début de la période, pour que rejoindre en retard ne coûte rien.",
     score: (runs) => {
       const s = chrono(runs);
       if (s.length < 2) return null;
@@ -532,13 +554,13 @@ const FUN_CATEGORIES = [
       return (s.length / jours) * 7;
     },
     fmt: (v) => `${v.toFixed(1)} séances/sem.`,
-    absent: (name) => (RUNS[name].length ? "une seule séance, pas encore de rythme" : NOT_YET),
+    absent: () => "une seule séance sur la période, pas encore de rythme",
   },
   {
     id: "avg-dist",
     tab: "📏 Gros Rouleur",
     title: "Le Gros Rouleur",
-    desc: "La distance moyenne par sortie. Peu de séances mais longues bat beaucoup de séances mais courtes — c'est fait exprès, tout le monde ne doit pas gagner au même jeu.",
+    desc: "La distance moyenne par sortie sur la période. Peu de séances mais longues bat beaucoup de séances mais courtes — c'est fait exprès, tout le monde ne doit pas gagner au même jeu.",
     score: (runs) => (runs.length ? avg(runs.map((r) => r.distance)) : null),
     fmt: (v) => `${v.toFixed(2)} km`,
   },
@@ -546,7 +568,7 @@ const FUN_CATEGORIES = [
     id: "pr-hunter",
     tab: "🏅 Chasseur de records",
     title: "Le Chasseur de records",
-    desc: "Le nombre de séances qui ont battu le record d'allure personnel. Attention au piège : plus le record est haut, plus le suivant est difficile à décrocher.",
+    desc: "Le nombre de séances qui ont battu le meilleur chrono de la période. Attention au piège : plus le record est haut, plus le suivant est difficile à décrocher.",
     score: (runs) => {
       const s = chrono(runs);
       if (!s.length) return null;
@@ -564,20 +586,20 @@ const FUN_CATEGORIES = [
     id: "coldheart",
     tab: "🧊 Cœur de glace",
     title: "Le Cœur de glace",
-    desc: "La fréquence cardiaque moyenne la plus basse. Comparer deux cœurs n'a aucune valeur scientifique — la FC max dépend surtout de l'âge — mais ça reste la catégorie la plus classe à gagner.",
+    desc: "La fréquence cardiaque moyenne la plus basse sur la période. Comparer deux cœurs n'a aucune valeur scientifique — la FC max dépend surtout de l'âge — mais ça reste la catégorie la plus classe à gagner.",
     lower: true,
     score: (runs) => {
       const v = runs.filter((r) => r.hr != null).map((r) => r.hr);
       return v.length ? avg(v) : null;
     },
     fmt: (v) => `${Math.round(v)} bpm`,
-    absent: (name) => (RUNS[name].length ? "son appli ne mesure pas la FC" : NOT_YET),
+    absent: () => "son appli ne mesure pas la FC",
   },
   {
     id: "burner",
     tab: "🔥 Lance-flammes",
     title: "Le Lance-flammes",
-    desc: "Le plus de calories actives brûlées au total. Ça dépend au moins autant du gabarit que de l'effort, mais personne n'a jamais refusé un trophée pour ce motif.",
+    desc: "Le plus de calories actives brûlées sur la période. Ça dépend au moins autant du gabarit que de l'effort, mais personne n'a jamais refusé un trophée pour ce motif.",
     score: (runs) => (runs.length ? sum(runs.map((r) => r.activeCal)) : null),
     fmt: (v) => `${Math.round(v).toLocaleString("fr-FR")} cal`,
   },
@@ -590,7 +612,7 @@ const FUN_CATEGORIES = [
 // règle vit ici et nulle part ailleurs, pour que le total des étoiles et les
 // étoiles dessinées sur le podium ne puissent pas se contredire.
 function rankCategory(cat) {
-  const scored = RUNNERS.map((name) => ({ name, value: cat.score(RUNS[name], name) }))
+  const scored = RUNNERS.map((name) => ({ name, value: cat.score(lbRunsOf(name), name) }))
     .filter((e) => e.value != null && Number.isFinite(e.value));
   scored.sort((a, b) => (cat.lower ? a.value - b.value : b.value - a.value));
   const awards = scored.length > 1 && !cat.noStars;
@@ -618,7 +640,7 @@ const GENERAL = {
   id: "general",
   tab: "🌟 Général",
   title: "Classement général",
-  desc: `Le total des étoiles récoltées sur les ${SCORED_CATEGORIES.length} autres onglets. Chacun distribue 3 étoiles au premier, 2 au deuxième, 1 au troisième — sauf ceux où il n'y a qu'un concourant, qui ne rapportent rien.`,
+  desc: `Le total des étoiles récoltées sur les ${SCORED_CATEGORIES.length} autres onglets. Chacun distribue 3 étoiles au premier, 2 au deuxième, 1 au troisième — sauf ceux où il n'y a qu'un concourant, qui ne rapportent rien. Tout se joue depuis le ${LB_START_LABEL} : avant, le classement ne récompensait que d'avoir commencé tôt.`,
   score: (runs, name) => (runs.length ? STAR_TOTALS[name] : null),
   fmt: (v) => `${v} étoile${v > 1 ? "s" : ""}`,
   // Le général ne se rapporte pas à lui-même : les étoiles sont déjà le score
@@ -677,7 +699,7 @@ function renderLeaderboard(catId = lbCategory) {
       : "",
     absents.length
       ? `<p class="lb-note">Hors classement : ${absents
-          .map((n) => `<b>${n}</b> — ${(cat.absent || defaultAbsent)(n)}`)
+          .map((n) => `<b>${n}</b> — ${absentReason(cat, n)}`)
           .join(" · ")}</p>`
       : "",
   ].join("");
@@ -690,6 +712,11 @@ function renderLeaderboard(catId = lbCategory) {
 }
 
 function renderLeaderboardTabs() {
+  // La fenêtre est écrite en toutes lettres, avec son motif : un palmarès qui
+  // ignore en silence les deux tiers des séances passerait pour un bug.
+  document.getElementById("lbScope").textContent =
+    `Depuis le ${LB_START_LABEL}, quand tout le monde était en course — les filtres du haut ne s'y appliquent pas`;
+
   const groups = [
     ["Classement", [GENERAL]],
     ["Par distance", DISTANCE_CATEGORIES],
