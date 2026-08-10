@@ -7,15 +7,16 @@ Une analyse réussie tient en deux qualités : elle est **juste** (chaque chiffr
 est vérifiable dans `RUNS`, chaque conseil découle des données) et elle est
 **lue** (paragraphes courts, ton adapté à la personne, une vanne pour finir).
 
-## 1. La forme : des paragraphes, jamais un pavé
+## 1. La forme : des paragraphes titrés, jamais un pavé
 
-`text` est un **tableau**, une entrée = un `<p>` :
+`text` est un **tableau** de `{ titre, texte }` — une entrée = un intertitre et
+son paragraphe :
 
 ```js
 text: [
-  "Le constat chiffré du jour : ce qui a changé, avec les écarts.",
-  "Ce que racontent les splits, la FC ou la cadence.",
-  "Le conseil pour la prochaine, ou la mise en perspective.",
+  { titre: "Sorti de la boucle des 5 km", texte: "Le constat chiffré du jour…" },
+  { titre: "Le départ payé sur quatre kilomètres", texte: "Ce que disent les splits…" },
+  { titre: "La sortie lente, troisième rappel", texte: "Le conseil pour la prochaine…" },
 ],
 ```
 
@@ -24,7 +25,22 @@ text: [
   caractères, `verifier.js` réclame une coupe — et il a raison.
 - **L'ordre naturel** : constat → explication → conseil. Le lecteur qui
   s'arrête au premier paragraphe doit déjà savoir ce qui s'est passé.
-- Une analyse de deux phrases reste un tableau à un seul élément.
+- Une analyse de deux phrases reste un tableau à un seul élément — titré quand
+  même.
+
+### Écrire les titres
+
+Le titre est ce qu'on lit en diagonale : il doit **dire quelque chose**, pas
+étiqueter. « Le point à surveiller » vaut mieux que « Analyse » ; « 45 secondes
+en quatre jours » vaut mieux que « Progression ».
+
+- **Court** : 2 à 6 mots, 45 caractères maximum (au-delà il passe sur deux
+  lignes et perd son rôle de repère).
+- **Concret** : un chiffre ou un fait de la séance quand c'est possible —
+  « 157 bpm, le prix payé », « 17 s/km en dix-sept jours ».
+- **Jamais le verdict recopié** : le verdict s'affiche déjà juste au-dessus, en
+  vert. Le titre apporte un autre angle. `verifier.js` signale le doublon.
+- **Pas de guillemets droits** (`"`), comme partout ailleurs dans `data.js`.
 
 ## 2. Le fond : n'affirme que ce qui est mesuré
 

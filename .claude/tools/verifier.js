@@ -151,15 +151,29 @@ runners.forEach((name) => {
     if (i === 0 && a.trend !== "start") warn(`${at} : première séance, trend "start" attendu`);
     if (!a.verdict || !String(a.verdict).trim()) err(`${at} : verdict vide`);
 
-    // `text` : tableau de paragraphes. Une chaîne unique s'affiche encore, mais
-    // c'est le pavé illisible qu'on cherche justement à éviter.
-    if (!Array.isArray(a.text)) {
-      err(`${at} : text doit être un tableau de paragraphes, pas une chaîne`);
-    } else if (!a.text.length || a.text.some((p) => typeof p !== "string" || !p.trim())) {
-      err(`${at} : text contient un paragraphe vide`);
+    // `text` : tableau de paragraphes titrés. Le pavé sans titres reste lisible
+    // par le dashboard, mais c'est précisément ce qu'on cherche à éviter.
+    if (!Array.isArray(a.text) || !a.text.length) {
+      err(`${at} : text doit être un tableau de paragraphes { titre, texte }`);
     } else {
       a.text.forEach((p, k) => {
-        if (p.length > 700) warn(`${at} : paragraphe ${k + 1} de ${p.length} caractères — coupe-le en deux`);
+        const ou = `${at} : paragraphe ${k + 1}`;
+        if (typeof p === "string") {
+          err(`${ou} — format ancien (chaîne nue), attendu { titre: "…", texte: "…" }`);
+          return;
+        }
+        if (!p || typeof p !== "object") return err(`${ou} — ni chaîne ni objet`);
+        if (!p.titre || !String(p.titre).trim()) err(`${ou} — titre manquant`);
+        if (!p.texte || !String(p.texte).trim()) err(`${ou} — texte manquant`);
+        if (p.titre && p.titre.length > 45) {
+          warn(`${ou} — titre de ${p.titre.length} caractères, il passera sur deux lignes`);
+        }
+        if (p.titre && a.verdict && p.titre.trim().toLowerCase() === String(a.verdict).trim().toLowerCase()) {
+          warn(`${ou} — titre identique au verdict, trouve un autre angle`);
+        }
+        if (p.texte && p.texte.length > 700) {
+          warn(`${ou} — ${p.texte.length} caractères, coupe-le en deux`);
+        }
       });
     }
 

@@ -415,22 +415,28 @@ function pokemonHtml(a) {
   const p = POKEDEX[a.pokemon];
   if (!p) return "";
   const adj = a.pokemonAdj ? ` <span class="pokemon-adj">${a.pokemonAdj}</span>` : "";
+  // Grille plutôt que flex imbriqué : sur mobile, la phrase peut alors passer
+  // sous le sprite et récupérer toute la largeur au lieu de s'étrangler à côté.
   return `
     <div class="pokemon">
       <img class="pokemon-sprite" src="assets/pokemon/${p.id}.png" alt="${p.nom}" width="96" height="96" loading="lazy" />
-      <div>
-        <div class="pokemon-name">${p.nom}${adj}</div>
-        <p class="pokemon-phrase">${a.pokemonPhrase || ""}</p>
-      </div>
+      <div class="pokemon-name">${p.nom}${adj}</div>
+      <p class="pokemon-phrase">${a.pokemonPhrase || ""}</p>
     </div>`;
 }
 
-// L'analyse coach est un tableau de paragraphes dans `data.js` : un pavé de dix
-// phrases ne se lit pas, surtout sur téléphone. Une simple chaîne reste acceptée
-// et donne un paragraphe unique.
+// L'analyse coach est un tableau de paragraphes `{ titre, texte }` : un pavé de
+// dix phrases ne se lit pas, surtout sur téléphone, et les titres donnent le fil
+// de la séance à qui parcourt sans tout lire. Une chaîne nue reste acceptée
+// (paragraphe sans titre) pour ne pas casser sur une analyse ancienne.
 function coachHtml(text) {
   const paras = (Array.isArray(text) ? text : [text]).filter(Boolean);
-  return `<div class="coach">${paras.map((p) => `<p>${p}</p>`).join("")}</div>`;
+  return `<div class="coach">${paras
+    .map((p) => {
+      const { titre, texte } = typeof p === "string" ? { titre: "", texte: p } : p;
+      return `${titre ? `<h4>${titre}</h4>` : ""}<p>${texte}</p>`;
+    })
+    .join("")}</div>`;
 }
 
 function analysisHtml(r) {
@@ -459,7 +465,7 @@ function analysisHtml(r) {
 
   const trend = a ? a.trend : "flat";
   const verdict = a ? a.verdict : "Analyse à venir";
-  const text = a ? a.text : ["Analyse non disponible pour cette séance."];
+  const text = a ? a.text : [{ titre: "", texte: "Analyse non disponible pour cette séance." }];
 
   return `
     <div class="analysis">

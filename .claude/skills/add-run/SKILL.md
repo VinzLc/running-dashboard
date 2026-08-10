@@ -129,9 +129,9 @@ Une analyse par séance, dans `ANALYSES[coureur][date]` de `data.js` :
 ```js
 "2026-08-09": { trend: "up", verdict: "Premier 6 km 🎉",
   text: [
-    "Le constat chiffré du jour.",
-    "Ce que racontent les splits.",
-    "Le conseil pour la prochaine.",
+    { titre: "Sorti de la boucle des 5 km", texte: "Le constat chiffré du jour." },
+    { titre: "Le départ payé sur quatre km", texte: "Ce que racontent les splits." },
+    { titre: "La sortie lente, troisième rappel", texte: "Le conseil pour la prochaine." },
   ],
   pokemon: "Électrode", pokemonAdj: "Impatient",
   pokemonPhrase: "..." },
@@ -141,7 +141,7 @@ Une analyse par séance, dans `ANALYSES[coureur][date]` de `data.js` :
 |---|---|
 | `trend` | `"up"` (vrai progrès), `"flat"` (stable / séance facile assumée / reprise), `"down"` (en retrait), `"start"` (première séance uniquement) |
 | `verdict` | Titre court et accrocheur (« Record d'allure », « Reprise après coupure ») |
-| `text` | **Tableau de paragraphes**, jamais une chaîne. Une idée par entrée |
+| `text` | **Tableau de `{ titre, texte }`**, jamais une chaîne. Une idée par entrée, titre de 2 à 6 mots qui dit quelque chose |
 | `pokemon` | Nom français exact de `pokemon.js`, **une seule fois par coureur** |
 | `pokemonAdj` | L'adjectif (« Impatient »), masculin, **une seule fois par coureur** |
 | `pokemonPhrase` | La vanne, qui justifie le Pokémon **et** son adjectif |
