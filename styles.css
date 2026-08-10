@@ -357,6 +357,8 @@ tbody tr:last-child { border-bottom: none; }
   image-rendering: pixelated;
 }
 .pokemon-name { font-weight: 700; font-size: 15px; }
+/* L'adjectif : c'est lui qui fait la personnalisation, il mérite sa couleur. */
+.pokemon-adj { color: var(--yellow); }
 .pokemon-phrase {
   margin: 3px 0 0;
   font-size: 13.5px;

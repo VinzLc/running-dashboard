@@ -15,11 +15,12 @@ pas renseigner, plutôt que de les afficher à zéro.
 - **Cartes récap** par coureur (distance totale, allure moyenne/meilleure, FC, calories…)
 - **Graphique d'évolution** interactif : distance, allure, fréquence cardiaque, cadence, calories ou durée
 - **Radar comparatif** des performances moyennes (normalisées)
-- **Tableau détaillé** filtrable par coureur
+- **Tableau détaillé** filtrable par coureur — quand on isole une personne, sa
+  dernière séance se déplie automatiquement
 - **Analyse « coach »** dépliable par séance, rédigée en paragraphes, avec le détail
   des **splits au kilomètre** et le **Pokémon de la séance** — une section purement
-  humoristique, choisie parmi les 151 de la 1re génération (un Pokémon peut servir à
-  plusieurs coureurs, jamais deux fois au même)
+  humoristique : une créature parmi les 151 de la 1re génération, assortie d'un
+  adjectif (« Persian Impérial ») que la vanne se charge de justifier
 
 ## Stack
 

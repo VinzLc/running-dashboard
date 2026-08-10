@@ -161,3 +161,22 @@ const POKEMON = [
 // Accès par nom — c'est le nom français qui est stocké dans data.js.
 const POKEDEX = Object.fromEntries(POKEMON.map((p) => [p.nom, p]));
 
+// Adjectifs de personnalisation : « Persian Impérial », « Chenipan Frétillant ».
+// 151 créatures × cette liste, il y a de quoi tenir quelques années sans se
+// répéter. Purement rédactionnel — l'adjectif retenu est stocké dans
+// `pokemonAdj` (data.js), cette palette sert juste à ne pas tourner en rond.
+// Toujours au masculin (on dit « le Pokémon »), et toujours justifié dans la
+// phrase : un adjectif non expliqué n'est pas une blague, juste un mot de plus.
+// En inventer un hors liste est encouragé s'il fait mieux rire.
+const POKEMON_ADJECTIFS = [
+  "Frétillant", "Poussif", "Assoupli", "Placide", "Élastique", "Groggy",
+  "Dégourdi", "Increvable", "Débonnaire", "Fumant", "Frustré", "Triomphant",
+  "Teigneux", "Nonchalant", "Survolté", "Décontracté", "Infatigable", "Furibond",
+  "Hautain", "Obstiné", "Frénétique", "Impatient", "Indécis", "Raisonnable",
+  "Serein", "Ambitieux", "Boudeur", "Guilleret", "Conquérant", "Imperturbable",
+  "Migraineux", "Fluide", "Têtu", "Jaillissant", "Trépidant", "Impétueux",
+  "Méthodique", "Consciencieux", "Distrait", "Discipliné", "Explosif", "Impérial",
+  "Bougon", "Sautillant", "Chafouin", "Vantard", "Pataud", "Rêveur", "Sournois",
+  "Zélé", "Godillot", "Malicieux", "Éreinté", "Tenace", "Boiteux", "Grognon",
+];
+

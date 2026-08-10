@@ -408,15 +408,18 @@ function splitsHtml(r) {
 // Le Pokémon de la séance — section purement humoristique : le sprite, le nom,
 // la vanne. Le rang de vitesse sert encore à choisir, jamais à s'afficher : le
 // lecteur n'a pas besoin d'un classement pour comprendre la blague.
+// L'adjectif (« Persian Impérial ») personnalise la créature au-delà des 151
+// possibles ; il est justifié dans la phrase, sinon ce n'est qu'un mot de plus.
 function pokemonHtml(a) {
   if (!a || !a.pokemon || typeof POKEDEX === "undefined") return "";
   const p = POKEDEX[a.pokemon];
   if (!p) return "";
+  const adj = a.pokemonAdj ? ` <span class="pokemon-adj">${a.pokemonAdj}</span>` : "";
   return `
     <div class="pokemon">
       <img class="pokemon-sprite" src="assets/pokemon/${p.id}.png" alt="${p.nom}" width="96" height="96" loading="lazy" />
       <div>
-        <div class="pokemon-name">${p.nom}</div>
+        <div class="pokemon-name">${p.nom}${adj}</div>
         <p class="pokemon-phrase">${a.pokemonPhrase || ""}</p>
       </div>
     </div>`;
@@ -487,10 +490,15 @@ function renderTable() {
   }
 
   tbody.innerHTML = rows
-    .map((r) => {
+    .map((r, i) => {
       const key = `${r.name}__${r.date}`;
+      // Quand on isole un coureur, c'est son actualité qu'on vient voir : sa
+      // dernière séance s'ouvre d'elle-même. Les lignes sont triées par date
+      // décroissante, donc c'est la première. En vue « Tous », on ne déplie
+      // rien — ouvrir la séance d'une seule personne serait arbitraire.
+      const open = viewRunners.length === 1 && i === 0;
       return `
-      <tr class="run-row" data-key="${key}" aria-expanded="false">
+      <tr class="run-row${open ? " open" : ""}" data-key="${key}" aria-expanded="${open}">
         <td><span class="chevron">▸</span> ${fmtDate(r.date)}</td>
         <td><span class="badge"><span class="dot" style="background:${RUNNER_COLORS[r.name]}"></span>${r.name}</span></td>
         <td>${r.distance.toFixed(2)} km</td>
@@ -501,7 +509,7 @@ function renderTable() {
         <td>${cell(r.activeCal, "cal")}</td>
         <td>${cell(r.elevation, "m")}</td>
       </tr>
-      <tr class="analysis-row" data-key="${key}">
+      <tr class="analysis-row${open ? " open" : ""}" data-key="${key}">
         <td colspan="9">${analysisHtml(r)}</td>
       </tr>`;
     })

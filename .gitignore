@@ -7,3 +7,7 @@ node_modules/
 .claude/watcher/watcher.log
 .claude/watcher/launchd.log
 .claude/watcher/.lock/
+
+# Profils des coureurs : le dépôt est public, les détails personnels (surnoms,
+# conjoints, animaux) restent en local. Voir .claude/profils-coureurs.local.md
+.claude/*.local.md

@@ -119,7 +119,8 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
     "Ce que racontent les splits.",
     "Le conseil pour la prochaine.",
   ],
-  pokemon: "Électrode", pokemonPhrase: "..." },
+  pokemon: "Électrode", pokemonAdj: "Impatient",
+  pokemonPhrase: "..." },
 ```
 
 - **Compare uniquement aux séances précédentes du MÊME coureur** (jamais Vincent
@@ -140,6 +141,8 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
   Vincent 30 ans, Anaïs 29 ans, 9 ans de muscu chacun mais **très novices en
   cardio** (souligne l'adaptation aérobie, FC qui baisse à effort égal,
   distance/allure qui montent, records).
+- **Adapte le ton à la personne** (voir « Profils » juste en dessous) : la même
+  séance ne se commente pas de la même façon selon qui la lit.
 - **N'analyse que ce qui est mesuré.** Sans FC ni cadence (Didi), l'adaptation
   aérobie n'est pas observable : appuie-toi sur ce que l'appli donne — allure,
   régularité d'une sortie à l'autre, temps de pause, vitesse de pointe, et le
@@ -160,6 +163,25 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
 - Les écarts chiffrés vs séance précédente, les badges « Record » et le graphique
   des splits sont générés automatiquement en JS — inutile de les recopier, mais
   tu peux les commenter.
+
+### Profils des coureurs — à lire avant d'écrire
+
+L'analyse est sérieuse **et** humoristique, et le dosage change selon la personne :
+
+| Coureur | Ce qu'il faut viser |
+|---|---|
+| **Vincent** | L'auteur du dashboard : il lit tout, y compris les analyses des autres. Franchise sur les points à corriger. |
+| **Anaïs** | Veut des **axes d'amélioration concrets** et aime les analyses poussées : creuse les splits, la dérive cardiaque, la tenue de cadence. Termine toujours par la consigne suivante, précise. Elle ne court jamais seule — ses séances sont celles de Vincent. |
+| **Didi** | **A besoin d'encouragement.** Son objectif est de retrouver son niveau d'avant, et c'est atteignable : dis-le, chiffres à l'appui. Insiste sur ce qui remonte. |
+| **Ju** | Le grand frère, compétiteur : il donnera tout dès qu'il sentira le duel. Joue là-dessus, et surtout **fais-le rire**. |
+
+Les éléments personnels qui nourrissent les vannes (surnoms, animaux, goûts
+musicaux, références de jeux) sont dans **`.claude/profils-coureurs.local.md`** —
+non commité, **parce que ce dépôt est public**. Lis-le s'il est là.
+
+> ⚠️ Ce qui est écrit dans `data.js` **devient public**. Une référence complice à
+> un chat ou à un groupe de metal passe très bien ; nommer un conjoint, un
+> employeur ou une adresse, non — sauf accord explicite de Vincent.
 
 ## 6. Attribuer le Pokémon de la séance (OBLIGATOIRE)
 
@@ -186,8 +208,22 @@ besoin d'un classement pour comprendre la blague. **Le gag prime sur tout le res
    personnes** : les Pokédex sont indépendants. Vérifie donc uniquement les
    `pokemon:` déjà présents dans le bloc du coureur concerné.
 
-4. **`pokemonPhrase`** : une à deux phrases, humoristiques, qui font le lien entre
-   le Pokémon et la performance du jour, avec un chiffre réel de la séance.
+4. **Ajoute un adjectif** (`pokemonAdj`) : « Persian Impérial », « Chenipan
+   Frétillant », « Canarticho Distrait ». C'est lui qui personnalise la créature —
+   151 Pokémon × une cinquantaine d'adjectifs, la combinaison est unique même
+   quand la bestiole ne l'est pas. La palette vit dans `POKEMON_ADJECTIFS`
+   (`pokemon.js`), mais en inventer un hors liste est encouragé s'il fait mieux
+   rire. **Toujours au masculin** (on dit « le Pokémon »), et **jamais deux fois
+   le même adjectif chez un même coureur**.
+
+5. **`pokemonPhrase`** : une à trois phrases, humoristiques, qui font le lien entre
+   le Pokémon et la performance du jour, avec un chiffre réel de la séance —
+   **et qui justifient l'adjectif**, sinon ce n'est qu'un mot de plus :
+
+   > Persian : rapide, silencieux, et absolument pas du genre à se donner en
+   > spectacle. […] **Impérial**, parce que trois records d'affilée sans jamais
+   > dépasser 11,2 km/h, c'est la démarche de quelqu'un qui sait qu'on le regarde.
+
    N'utilise **pas de guillemets droits** dans la chaîne (préfère « » ou rien) —
    ils cassent le littéral JS.
 
