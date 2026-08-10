@@ -5,7 +5,17 @@ description: Ajoute une (ou plusieurs) nouvelle(s) séance(s) de course au dashb
 
 # Ajouter une séance de course au dashboard
 
-Procédure pour intégrer de nouvelles captures dans le dashboard.
+Procédure pour intégrer de nouvelles captures dans le dashboard. Neuf étapes,
+toutes obligatoires sauf mention contraire : lire les captures → remplir
+`data.js` → rédiger l'analyse → manifeste → cache-busting → vérifier → pousser.
+
+Deux compagnons à cette procédure :
+
+- **[`references/redaction.md`](references/redaction.md)** — comment écrire
+  l'analyse et la vanne Pokémon. À lire avant l'étape 5.
+- **`node .claude/tools/verifier.js`** — le contrôle mécanique de l'étape 8. Il
+  attrape ce que la relecture laisse passer ; ne commite jamais sans l'avoir vu
+  vert.
 
 ## 1. Trouver les captures à traiter
 
@@ -107,10 +117,14 @@ des colonnes existant. Un nouveau coureur a besoin en plus d'une entrée dans
   ] },
 ```
 
-## 5. Rédiger l'analyse « coach » (OBLIGATOIRE)
+## 5. Rédiger l'analyse « coach » et attribuer le Pokémon (OBLIGATOIRE)
 
-Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'objet
-`ANALYSES` de `data.js` (`ANALYSES[coureur][date]`) :
+> **Lis d'abord [`references/redaction.md`](references/redaction.md)** — le
+> savoir-faire d'écriture y est au complet : structure en paragraphes, ton à
+> viser selon la personne, exploitation des splits, règles du gag Pokémon.
+> N'écris pas une analyse sans l'avoir lu, le résultat s'en ressent.
+
+Une analyse par séance, dans `ANALYSES[coureur][date]` de `data.js` :
 
 ```js
 "2026-08-09": { trend: "up", verdict: "Premier 6 km 🎉",
@@ -123,124 +137,52 @@ Chaque séance a une analyse IA dépliable dans le tableau, stockée dans l'obje
   pokemonPhrase: "..." },
 ```
 
-- **Compare uniquement aux séances précédentes du MÊME coureur** (jamais Vincent
-  vs Anaïs). Regarde l'historique de la personne dans `RUNS` : allure, distance,
-  FC, cadence, durée, et les splits quand il y en a.
-- **`trend`** : `"up"` (vrai progrès), `"flat"` (stable ou séance volontairement
-  facile / reprise), `"down"` (en retrait), `"start"` (toute première séance).
-- **`verdict`** : titre court accrocheur (ex. « Record d'allure », « Reprise après coupure »).
-- **`text`** : un **tableau de paragraphes**, jamais une chaîne unique — le
-  dashboard rend un `<p>` par entrée, et un pavé de dix phrases n'est pas lu.
-  Une idée par paragraphe (2 à 4 phrases chacun), dans cet ordre naturel : le
-  constat chiffré du jour, ce que racontent les splits ou la FC, puis le conseil
-  ou la mise en perspective. Compte 2 paragraphes pour une séance ordinaire, 4 à
-  6 pour une grosse séance à commenter. Une analyse d'une ou deux phrases peut
-  rester un tableau à un seul élément.
-  Ton d'un coach bienveillant qui constate les
-  progrès. Cite des chiffres réels et les écarts vs séances précédentes. Contexte :
-  Vincent 30 ans, Anaïs 29 ans, 9 ans de muscu chacun mais **très novices en
-  cardio** (souligne l'adaptation aérobie, FC qui baisse à effort égal,
-  distance/allure qui montent, records).
-- **Adapte le ton à la personne** (voir « Profils » juste en dessous) : la même
-  séance ne se commente pas de la même façon selon qui la lit.
-- **N'analyse que ce qui est mesuré.** Sans FC ni cadence (Didi), l'adaptation
-  aérobie n'est pas observable : appuie-toi sur ce que l'appli donne — allure,
-  régularité d'une sortie à l'autre, temps de pause, vitesse de pointe, et le
-  fait que le parcours soit identique à chaque fois (le chrono devient alors une
-  mesure très propre du progrès).
-- **N'invente pas de contexte personnel.** Pour un coureur dont on ne connaît ni
-  l'âge ni le passé sportif, tiens-t'en aux chiffres. En français, évite aussi
-  les accords qui présument du genre (« ton allure est passée de… » plutôt que
-  « tu es passé·e de… ») tant que la personne ne l'a pas indiqué.
-- **Exploite les splits** — c'est là que se trouve ce que les moyennes cachent :
-  - *gestion de l'effort* : écart entre le 1er et le dernier kilomètre complet.
-    Un positive split marqué (départ rapide, fin qui s'écroule) est le défaut
-    le plus fréquent chez un débutant, et le conseil le plus utile à donner ;
-  - *dérive cardiaque* : la FC monte-t-elle à allure constante ?
-  - *tenue de la foulée* : la cadence s'effondre-t-elle sur la fin ?
-  - compare aussi aux splits des séances précédentes : le conseil déjà donné
-    a-t-il été suivi ?
-- Les écarts chiffrés vs séance précédente, les badges « Record » et le graphique
-  des splits sont générés automatiquement en JS — inutile de les recopier, mais
-  tu peux les commenter.
-
-### Profils des coureurs — à lire avant d'écrire
-
-L'analyse est sérieuse **et** humoristique, et le dosage change selon la personne :
-
-| Coureur | Ce qu'il faut viser |
+| Champ | Règle |
 |---|---|
-| **Vincent** | L'auteur du dashboard : il lit tout, y compris les analyses des autres. Franchise sur les points à corriger. |
-| **Anaïs** | Veut des **axes d'amélioration concrets** et aime les analyses poussées : creuse les splits, la dérive cardiaque, la tenue de cadence. Termine toujours par la consigne suivante, précise. Elle ne court jamais seule — ses séances sont celles de Vincent. |
-| **Didi** | **A besoin d'encouragement.** Son objectif est de retrouver son niveau d'avant, et c'est atteignable : dis-le, chiffres à l'appui. Insiste sur ce qui remonte. |
-| **Ju** | Le grand frère, compétiteur : il donnera tout dès qu'il sentira le duel. Joue là-dessus, et surtout **fais-le rire**. |
+| `trend` | `"up"` (vrai progrès), `"flat"` (stable / séance facile assumée / reprise), `"down"` (en retrait), `"start"` (première séance uniquement) |
+| `verdict` | Titre court et accrocheur (« Record d'allure », « Reprise après coupure ») |
+| `text` | **Tableau de paragraphes**, jamais une chaîne. Une idée par entrée |
+| `pokemon` | Nom français exact de `pokemon.js`, **une seule fois par coureur** |
+| `pokemonAdj` | L'adjectif (« Impatient »), masculin, **une seule fois par coureur** |
+| `pokemonPhrase` | La vanne, qui justifie le Pokémon **et** son adjectif |
 
-Les éléments personnels qui nourrissent les vannes (surnoms, animaux, goûts
-musicaux, références de jeux) sont dans **`.claude/profils-coureurs.local.md`** —
-non commité, **parce que ce dépôt est public**. Lis-le s'il est là.
+Avant de choisir, demande à l'outil ce qui est déjà pris chez cette personne et
+ce qui reste libre — le faire à l'œil dans `data.js` finit par rater un doublon :
 
-> ⚠️ Ce qui est écrit dans `data.js` **devient public**. Une référence complice à
-> un chat ou à un groupe de metal passe très bien ; nommer un conjoint, un
-> employeur ou une adresse, non — sauf accord explicite de Vincent.
+```bash
+node .claude/tools/pokedex.js Vincent
+```
 
-## 6. Attribuer le Pokémon de la séance (OBLIGATOIRE)
+**Compare uniquement aux séances précédentes du MÊME coureur.** Jamais Vincent
+contre Anaïs : ce dashboard n'est pas un classement.
 
-**C'est une section humoristique**, rien d'autre : le dashboard affiche le
-sprite, le nom et la vanne. Aucun rang, aucune statistique — le lecteur n'a pas
-besoin d'un classement pour comprendre la blague. **Le gag prime sur tout le reste.**
-
-1. **Cherche d'abord la blague.** Une chaîne d'évolution qui suit la progression
-   (Chenipan → Papilusion pour le premier 5 km, Goupix → Feunard), un trait de
-   caractère qui colle à la séance (Ronflex pour une sortie volontairement lente,
-   Psykokwak pour un coup de mou, Kicklee qui n'est littéralement que deux jambes,
-   Canarticho pour 4 minutes de pause au milieu d'un 5 km).
-
-2. **Cale grossièrement sur la performance.** `pokemon.js` classe les 151 par
-   vitesse de base (rang 1 = Électrode, rang 151 = Ramoloss) : une bonne séance
-   appelle plutôt un Pokémon rapide, une sortie tranquille un lent. C'est un
-   repère, pas une règle — Électrode, le plus rapide de tous, a été attribué à une
-   séance partie trop vite et explosée en vol, parce que son attaque signature
-   s'appelle Explosion. Un bon gag justifie n'importe quel écart.
-
-3. **Un même Pokémon ne sert qu'une fois par coureur** — chacun se constitue son
-   propre Pokédex, et une évolution ne peut donc pas revenir en arrière. En
-   revanche, **le même Pokémon peut très bien être attribué à plusieurs
-   personnes** : les Pokédex sont indépendants. Vérifie donc uniquement les
-   `pokemon:` déjà présents dans le bloc du coureur concerné.
-
-4. **Ajoute un adjectif** (`pokemonAdj`) : « Persian Impérial », « Chenipan
-   Frétillant », « Canarticho Distrait ». C'est lui qui personnalise la créature —
-   151 Pokémon × une cinquantaine d'adjectifs, la combinaison est unique même
-   quand la bestiole ne l'est pas. La palette vit dans `POKEMON_ADJECTIFS`
-   (`pokemon.js`), mais en inventer un hors liste est encouragé s'il fait mieux
-   rire. **Toujours au masculin** (on dit « le Pokémon »), et **jamais deux fois
-   le même adjectif chez un même coureur**.
-
-5. **`pokemonPhrase`** : une à trois phrases, humoristiques, qui font le lien entre
-   le Pokémon et la performance du jour, avec un chiffre réel de la séance —
-   **et qui justifient l'adjectif**, sinon ce n'est qu'un mot de plus :
-
-   > Persian : rapide, silencieux, et absolument pas du genre à se donner en
-   > spectacle. […] **Impérial**, parce que trois records d'affilée sans jamais
-   > dépasser 11,2 km/h, c'est la démarche de quelqu'un qui sait qu'on le regarde.
-
-   N'utilise **pas de guillemets droits** dans la chaîne (préfère « » ou rien) —
-   ils cassent le littéral JS.
-
-Le sprite est déjà dans `assets/pokemon/<id>.png` pour les 151 : rien à
-télécharger, il suffit que le nom français corresponde exactement à `pokemon.js`.
-
-## 7. Compléter le manifeste (OBLIGATOIRE)
+## 6. Compléter le manifeste (OBLIGATOIRE)
 
 Ajoute une ligne par capture traitée à la fin de `.claude/captures-integrees.txt`,
 au format `Vincent/IMG_9501.jpeg` ou `Anais/IMG_0560.jpeg` (**préfixe ASCII, sans
 tréma**). Sans ça, le hook redemandera indéfiniment de traiter les mêmes images.
 
-## 8. Bumper le cache-busting (OBLIGATOIRE)
+## 7. Bumper le cache-busting (OBLIGATOIRE)
 
 Dans `index.html`, incrémente le numéro `?v=N` sur **les quatre** références
 (`styles.css`, `data.js`, `pokemon.js`, `app.js`) — sinon le navigateur sert
 l'ancienne version et l'UI ne se met pas à jour.
+
+## 8. Vérifier (OBLIGATOIRE, avant le commit)
+
+```bash
+node .claude/tools/verifier.js
+```
+
+Il relit tout ce qui se vérifie mécaniquement : allure cohérente avec
+durée / distance, splits qui totalisent la durée, `text` bien en tableau,
+Pokémon et adjectifs sans doublon par coureur, adjectif justifié dans la phrase,
+sprites présents, manifeste à jour, cache-busting bumpé.
+
+- **Sortie 1 = ne commite pas.** Corrige d'abord : chaque erreur signalée est une
+  faute que l'œil ne rattrape plus dans un fichier de 400 lignes.
+- Les `⚠` ne bloquent pas mais méritent un regard (un paragraphe trop long, une
+  justification qui se répète, une capture hors manifeste).
 
 ## 9. Commit & push
 
@@ -252,3 +194,12 @@ git add -A && git commit -m "Add <Coureur> run for <YYYY-MM-DD>" && git push
 
 Inclure les images (elles sont ajoutées par `git add -A`). Message de commit avec
 le co-author Claude habituel.
+
+## Outils
+
+| Commande | À quoi ça sert |
+|---|---|
+| `node .claude/tools/verifier.js` | Contrôle complet avant commit (étape 8) |
+| `node .claude/tools/pokedex.js` | Vue d'ensemble : séances et Pokémon pris par coureur |
+| `node .claude/tools/pokedex.js <Coureur>` | Pokémon déjà attribués, adjectifs libres, zone de vitesse du jour |
+| `node .claude/tools/pokedex.js <Coureur> <allureSec>` | Même chose pour une allure pas encore saisie |

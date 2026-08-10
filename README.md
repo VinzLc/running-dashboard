@@ -73,3 +73,22 @@ dans `RUNS`, `RUNNER_COLORS` et `ANALYSES` de `data.js`.
 Après toute modification de `data.js`, `pokemon.js`, `app.js` ou `styles.css`,
 incrémentez le `?v=N` sur les quatre balises de [`index.html`](index.html) —
 sinon le navigateur continue de servir l'ancienne version.
+
+## Vérifier avant de pousser
+
+```bash
+node .claude/tools/verifier.js
+```
+
+Relit tout ce qui se contrôle mécaniquement : allure cohérente avec
+durée / distance, splits qui totalisent la durée, analyses bien formées, Pokémon
+et adjectifs sans doublon par coureur, sprites présents, manifeste des captures,
+cache-busting bumpé. Sortie non nulle = ne pas committer.
+
+```bash
+node .claude/tools/pokedex.js Vincent   # ce qui est pris, ce qui reste libre
+```
+
+Aide à l'attribution du Pokémon d'une séance : Pokémon déjà utilisés par la
+personne, adjectifs encore disponibles, et zone de vitesse correspondant à
+l'allure du jour.
