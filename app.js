@@ -871,6 +871,610 @@ function initLeaderboard() {
   renderLeaderboard();
 }
 
+// ---------- Leaderboard personnel ----------
+// Le même podium, mais entre les sorties d'une seule personne : ici on ne
+// compare plus des coureurs, on compare des séances. C'est la seule compétition
+// du dashboard qu'on puisse gagner tout seul — et la seule où tout l'historique
+// compte sans injustice, puisque personne n'y affronte quelqu'un d'arrivé avant.
+//
+// Pas d'étoiles : elles appartiennent au palmarès collectif, en distribuer ici
+// laisserait croire que battre ses propres séances rapporte au général.
+const RUN_CATEGORIES = [
+  {
+    id: "pace",
+    tab: "🏁 Allure",
+    title: "Les plus rapides",
+    desc: "Les sorties à la meilleure allure moyenne. La mesure la plus brute qui soit : le temps mis pour chaque kilomètre, du départ à l'arrivée.",
+    lower: true,
+    value: (r) => r.paceSec,
+    fmt: (v) => `${fmtPace(v)}/km`,
+  },
+  {
+    id: "dist",
+    tab: "📏 Distance",
+    title: "Les plus longues",
+    desc: "Les sorties les plus longues en kilomètres, sans regarder le temps qu'elles ont pris. Aller plus loin est un progrès en soi.",
+    value: (r) => r.distance,
+    fmt: (v) => `${v.toFixed(2)} km`,
+  },
+  {
+    id: "time",
+    tab: "⏱️ Temps de course",
+    title: "Les plus longtemps dehors",
+    desc: "Le temps passé à courir, distance mise de côté. Une sortie lente et longue vaut cher ici — c'est fait exprès, elle vaut cher pour de vrai.",
+    value: (r) => r.duration,
+    fmt: (v) => fmtDuration(v),
+  },
+  {
+    id: "bestkm",
+    tab: "⚡ Meilleur km",
+    title: "Le meilleur kilomètre",
+    desc: "Le kilomètre le plus rapide de chaque sortie, tronçons incomplets exclus. Une séance moyenne peut très bien contenir un excellent kilomètre.",
+    lower: true,
+    value: bestFullKm,
+    fmt: (v) => `${fmtPace(v)}/km`,
+  },
+  {
+    id: "cal",
+    tab: "🔥 Calories",
+    title: "Les plus coûteuses",
+    desc: "Les calories actives dépensées sur la séance. Ça monte avec la distance comme avec l'intensité : c'est la dépense totale, pas l'effort par kilomètre.",
+    value: (r) => r.activeCal,
+    fmt: (v) => `${Math.round(v)} cal`,
+  },
+  {
+    id: "hr",
+    tab: "🧊 FC la plus basse",
+    title: "Les plus calmes",
+    desc: "Les séances au cœur le plus tranquille. Le podium des sorties faciles — celles qu'on oublie et qui font pourtant le gros du travail de fond.",
+    lower: true,
+    value: (r) => r.hr,
+    fmt: (v) => `${Math.round(v)} bpm`,
+  },
+  {
+    id: "cadence",
+    tab: "👟 Cadence",
+    title: "Les foulées les plus vives",
+    desc: "Le nombre de pas par minute. Une cadence haute traduit une foulée courte et rapide, en général plus économe et moins traumatisante.",
+    value: (r) => r.cadence,
+    fmt: (v) => `${Math.round(v)} spm`,
+  },
+  {
+    id: "elev",
+    tab: "⛰️ Dénivelé",
+    title: "Les plus pentues",
+    desc: "Le dénivelé positif accumulé. Sur du plat on parle de quelques mètres, mais à allure égale, ceux-là comptent double dans les jambes.",
+    value: (r) => r.elevation,
+    fmt: (v) => `${Math.round(v)} m`,
+  },
+];
+
+// Une catégorie n'est proposée que si la personne a de quoi la remplir : Didi
+// n'a ni FC ni cadence, et l'onglet mènerait à un podium vide.
+const personalCategories = (runs) => RUN_CATEGORIES.filter((c) => runs.some((r) => c.value(r) != null));
+
+// Ex æquo au même rang, comme au leaderboard : deux séances à la seconde près
+// ne peuvent pas être départagées par l'ordre du tableau.
+function rankRuns(cat, runs) {
+  const scored = runs.map((r) => ({ run: r, value: cat.value(r) })).filter((e) => e.value != null);
+  scored.sort((a, b) => (cat.lower ? a.value - b.value : b.value - a.value));
+  let rank = 0;
+  scored.forEach((e, i) => {
+    if (i > 0 && e.value !== scored[i - 1].value) rank = i;
+    e.rank = rank;
+  });
+  return scored;
+}
+
+// Le nom d'une sortie, c'est sa distance et sa date : rien d'autre ne la
+// distingue, et les deux ensemble suffisent à la retrouver dans le tableau.
+const runLabel = (r) => `${r.distance.toFixed(2)} km · ${fmtDate(r.date)}`;
+
+function runPodiumSlot(entry, cat, index, total) {
+  const place = Math.min(entry.rank + 1, 3);
+  const color = RUNNER_COLORS[plRunner];
+  const order = total >= 3 ? [2, 1, 3][index] || index + 1 : index + 1;
+  return `
+    <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${plRunner[0]}</div>
+      <div class="podium-name">${entry.run.distance.toFixed(2)} km</div>
+      <div class="podium-sub">${fmtDate(entry.run.date)}</div>
+      <div class="podium-value">${cat.fmt(entry.value)}</div>
+      <div class="podium-block"><span class="podium-rank">${entry.rank + 1}</span></div>
+    </div>`;
+}
+
+let plRunner = RUNNERS.find((n) => RUNS[n].length) || RUNNERS[0];
+let plCategory = RUN_CATEGORIES[0].id;
+
+function renderPersonal() {
+  const runs = RUNS[plRunner];
+  const cats = personalCategories(runs);
+  // L'onglet regardé peut ne pas exister chez la personne suivante : on retombe
+  // sur le premier disponible plutôt que sur un panneau vide.
+  const cat = cats.find((c) => c.id === plCategory) || cats[0];
+  if (cat) plCategory = cat.id;
+
+  const scope = document.getElementById("plScope");
+  const podium = document.getElementById("plPodium");
+  const extra = document.getElementById("plExtra");
+
+  if (!cat) {
+    scope.innerHTML = `<b>${plRunner}</b> — pas encore de séance déposée.`;
+    document.getElementById("plTabs").innerHTML = "";
+    document.getElementById("plDesc").innerHTML = "";
+    podium.innerHTML = `<p class="empty-note">Le podium s'ouvrira à la première sortie.</p>`;
+    extra.innerHTML = "";
+    paintRunnerPills("plRunners", plRunner);
+    return;
+  }
+
+  const ranked = rankRuns(cat, runs);
+  scope.innerHTML =
+    `<b>${plRunner}</b> — ses ${runs.length} séances en concurrence les unes avec les autres, sur tout son historique. ` +
+    `Aucune étoile en jeu et aucune comparaison avec les autres : c'est un palmarès privé. Les filtres du haut ne s'y appliquent pas.`;
+  document.getElementById("plDesc").innerHTML = `<b>${cat.title}</b> — ${cat.desc}`;
+  podium.innerHTML = ranked
+    .slice(0, 3)
+    .map((e, i) => runPodiumSlot(e, cat, i, Math.min(ranked.length, 3)))
+    .join("");
+
+  // La suite du classement s'arrête à la 8e : au-delà, ce n'est plus un palmarès
+  // mais le tableau des séances, qui existe déjà plus bas.
+  const rest = ranked.slice(3, 8);
+  extra.innerHTML = [
+    rest.length
+      ? `<ol class="lb-rest" start="4">${rest
+          .map(
+            (e) =>
+              `<li><span class="dot" style="background:${RUNNER_COLORS[plRunner]}"></span>${runLabel(e.run)}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`,
+          )
+          .join("")}</ol>`
+      : "",
+    ranked.length > 8
+      ? `<p class="lb-note">…et ${ranked.length - 8} autre${ranked.length - 8 > 1 ? "s" : ""} séance${ranked.length - 8 > 1 ? "s" : ""} plus bas dans ce classement.</p>`
+      : "",
+  ].join("");
+
+  document.getElementById("plTabs").innerHTML = `
+    <span class="filter-label">Catégorie</span>
+    <div class="filter-switch">
+      ${cats
+        .map((c) => {
+          const on = c.id === plCategory;
+          return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
+        })
+        .join("")}
+    </div>`;
+  paintRunnerPills("plRunners", plRunner);
+}
+
+// Barre de sélection du coureur, partagée par les deux cartes personnelles. La
+// pastille garde la couleur de la personne dans les deux états : elle identifie,
+// elle ne signale pas la sélection — c'est le rôle du fond blanc.
+function runnerPillsHtml() {
+  return RUNNERS.map(
+    (n) =>
+      `<button type="button" data-value="${n}"><span class="dot" style="background:${RUNNER_COLORS[n]}"></span>${n}</button>`,
+  ).join("");
+}
+
+function paintRunnerPills(elId, selected) {
+  document.querySelectorAll(`#${elId} button`).forEach((b) => {
+    const on = b.dataset.value === selected;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", String(on));
+  });
+}
+
+function initPersonal() {
+  document.getElementById("plRunners").innerHTML = runnerPillsHtml();
+  document.getElementById("plRunners").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    plRunner = btn.dataset.value;
+    renderPersonal();
+  });
+  // Délégation : les onglets de catégorie sont redessinés à chaque rendu.
+  document.getElementById("plTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    plCategory = btn.dataset.value;
+    renderPersonal();
+  });
+  renderPersonal();
+}
+
+// ---------- Trophées ----------
+// Une vitrine façon PlayStation : des paliers fixes, annoncés d'avance, qu'on
+// décroche une fois pour toutes. C'est le contraire du leaderboard — on n'y bat
+// personne, on franchit une barre — et c'est ce qui le rend jouable même pour
+// qui finira toujours dernier au palmarès collectif.
+//
+// Trois règles de conception :
+//  · un trophée porte la date où il a été gagné, pas celle du jour — on rejoue
+//    donc l'historique dans l'ordre au lieu de tester l'état final ;
+//  · aucun palier ne dépend d'une donnée inventée : ce qui n'est pas mesuré est
+//    « hors de portée », pas « verrouillé » (voir DATA_REQUIREMENTS) ;
+//  · un trophée verrouillé dit ce qui en approche le plus. Un cadenas muet
+//    n'apprend rien ; « il t'a manqué 8 secondes » fait relacer les chaussures.
+const TIERS = {
+  bronze: { emoji: "🥉", label: "Bronze" },
+  argent: { emoji: "🥈", label: "Argent" },
+  or: { emoji: "🥇", label: "Or" },
+  platine: { emoji: "🏆", label: "Platine" },
+};
+
+const daysBetween = (a, b) => (new Date(`${b}T00:00:00`) - new Date(`${a}T00:00:00`)) / 864e5;
+
+// Première séance qui remplit la condition, dans l'ordre chronologique.
+const firstWhere = (runs, pred) => (chrono(runs).find(pred) || {}).date || null;
+
+// Date à laquelle un cumul franchit son palier. Les séances suivantes ne
+// changent rien : un trophée déjà gagné ne se regagne pas.
+function crossedAt(runs, valueOf, target) {
+  let total = 0;
+  for (const r of chrono(runs)) {
+    total += valueOf(r);
+    if (total >= target) return r.date;
+  }
+  return null;
+}
+
+// La séance qui serre le palier de plus près, pour l'indice des trophées
+// verrouillés.
+function closestRun(runs, valueOf, lower) {
+  const scored = runs.map((r) => [valueOf(r), r]).filter(([v]) => v != null);
+  if (!scored.length) return null;
+  return scored.sort((a, b) => (lower ? a[0] - b[0] : b[0] - a[0]))[0][1];
+}
+
+const near = (r, text) => (r ? `${text} le ${fmtDate(r.date)}` : null);
+const fullSplits = (r) => (r.splits || []).filter((s) => !s.partial);
+
+// Les trois paliers de distance partagent le même indice : la plus longue.
+const nearDistance = (runs) => {
+  const r = closestRun(runs, (x) => x.distance);
+  return r ? near(r, `au plus loin : ${r.distance.toFixed(2)} km`) : null;
+};
+
+// Ce qu'une appli ne mesure pas ne se rattrape pas en courant : les captures
+// d'adidas Running ne donnent ni FC, ni cadence, ni dénivelé, ni splits. Ces
+// trophées-là sortent du décompte plutôt que de rester verrouillés à vie —
+// sinon le Platine se refermerait pour un motif qui n'a rien à voir avec la
+// course.
+const DATA_REQUIREMENTS = {
+  hr: { has: (r) => r.hr != null, why: "ses captures ne mesurent pas la fréquence cardiaque" },
+  cadence: { has: (r) => r.cadence != null, why: "ses captures ne mesurent pas la cadence" },
+  elevation: { has: (r) => r.elevation != null, why: "ses captures ne mesurent pas le dénivelé" },
+  splits: { has: (r) => bestFullKm(r) != null, why: "ses captures ne détaillent pas les kilomètres" },
+};
+
+const outOfReach = (t, runs) => !!t.needs && runs.length > 0 && !runs.some(DATA_REQUIREMENTS[t.needs].has);
+
+const TROPHIES = [
+  {
+    id: "first-run",
+    tier: "bronze",
+    name: "Le premier pas",
+    desc: "Enregistrer sa toute première séance. Le trophée le plus facile du tableau, et pourtant celui que le plus de gens ratent.",
+    at: (runs) => (chrono(runs)[0] || {}).date || null,
+  },
+  {
+    id: "km-10",
+    tier: "bronze",
+    name: "Dix bornes au compteur",
+    desc: "Accumuler 10 km, toutes sorties confondues.",
+    at: (runs) => crossedAt(runs, (r) => r.distance, 10),
+    progress: (runs) => [sum(runs.map((r) => r.distance)), 10, (v) => `${v.toFixed(1)} km`],
+  },
+  {
+    id: "km-marathon",
+    tier: "argent",
+    name: "Le marathon en pièces détachées",
+    desc: "Cumuler 42,195 km. En une fois c'est un exploit, en vingt fois c'est un trophée — et ça compte quand même.",
+    at: (runs) => crossedAt(runs, (r) => r.distance, 42.195),
+    progress: (runs) => [sum(runs.map((r) => r.distance)), 42.195, (v) => `${v.toFixed(1)} km`],
+  },
+  {
+    id: "km-100",
+    tier: "or",
+    name: "Centurion",
+    desc: "Cumuler 100 km depuis la première séance.",
+    at: (runs) => crossedAt(runs, (r) => r.distance, 100),
+    progress: (runs) => [sum(runs.map((r) => r.distance)), 100, (v) => `${v.toFixed(1)} km`],
+  },
+  {
+    id: "dist-5",
+    tier: "bronze",
+    name: "Le club des 5",
+    desc: "Boucler 5 km en une seule sortie. La distance qui sépare « je cours un peu » de « je cours ».",
+    at: (runs) => firstWhere(runs, (r) => r.distance >= 5),
+    near: nearDistance,
+  },
+  {
+    id: "dist-6",
+    tier: "argent",
+    name: "Six",
+    desc: "Boucler 6 km en une seule sortie.",
+    at: (runs) => firstWhere(runs, (r) => r.distance >= 6),
+    near: nearDistance,
+  },
+  {
+    id: "dist-10",
+    tier: "or",
+    name: "Dix d'un coup",
+    desc: "Boucler 10 km en une seule sortie, sans pause et sans négocier.",
+    at: (runs) => firstWhere(runs, (r) => r.distance >= 10),
+    near: nearDistance,
+  },
+  {
+    id: "sub-30",
+    tier: "or",
+    name: "Sous la barre des 30",
+    desc: "Couvrir 5 km ou plus en moins de 30 minutes. Le palier symbolique de la course à pied : 6'00 au kilomètre, tenus jusqu'au bout.",
+    at: (runs) => firstWhere(runs, (r) => r.distance >= 5 && r.duration < 1800),
+    near: (runs) => {
+      const r = closestRun(runs, (x) => (x.distance >= 5 ? x.duration : null), true);
+      return near(r, r ? `au plus près : ${fmtDuration(r.duration)}` : "");
+    },
+  },
+  {
+    id: "km-fast",
+    tier: "argent",
+    name: "Un kilomètre canon",
+    desc: "Passer un kilomètre entier sous 5'45. Un seul suffit — personne ne demande de le refaire quatre fois.",
+    needs: "splits",
+    at: (runs) => firstWhere(runs, (r) => bestFullKm(r) != null && bestFullKm(r) < 345),
+    near: (runs) => {
+      const r = closestRun(runs, bestFullKm, true);
+      return near(r, r ? `au plus près : ${fmtPace(bestFullKm(r))}` : "");
+    },
+  },
+  {
+    id: "neg-split",
+    tier: "argent",
+    name: "Négatif",
+    desc: "Finir plus vite qu'on a commencé : dernier kilomètre complet plus rapide que le premier. La marque des gens qui savent partir doucement.",
+    needs: "splits",
+    at: (runs) =>
+      firstWhere(runs, (r) => {
+        const f = fullSplits(r);
+        return f.length > 1 && f[f.length - 1].paceSec < f[0].paceSec;
+      }),
+  },
+  {
+    id: "metronome",
+    tier: "argent",
+    name: "Le métronome",
+    desc: "Tenir moins de 50 secondes d'écart entre le kilomètre le plus rapide et le plus lent d'une même sortie.",
+    needs: "splits",
+    at: (runs) =>
+      firstWhere(runs, (r) => {
+        const f = fullSplits(r).map((s) => s.paceSec);
+        return f.length > 1 && Math.max(...f) - Math.min(...f) < 50;
+      }),
+    near: (runs) => {
+      const spread = (r) => {
+        const f = fullSplits(r).map((s) => s.paceSec);
+        return f.length > 1 ? Math.max(...f) - Math.min(...f) : null;
+      };
+      const r = closestRun(runs, spread, true);
+      return near(r, r ? `au plus près : ${Math.round(spread(r))} s d'écart` : "");
+    },
+  },
+  {
+    id: "runs-10",
+    tier: "bronze",
+    name: "Le dixième",
+    desc: "Enregistrer 10 séances. Le moment où ça arrête d'être une lubie.",
+    at: (runs) => (chrono(runs)[9] || {}).date || null,
+    progress: (runs) => [runs.length, 10, (v) => `${Math.round(v)} séances`],
+  },
+  {
+    id: "three-in-seven",
+    tier: "argent",
+    name: "Trois en sept jours",
+    desc: "Courir trois fois à l'intérieur d'une même semaine glissante.",
+    at: (runs) => {
+      const s = chrono(runs);
+      for (let i = 2; i < s.length; i++) {
+        if (daysBetween(s[i - 2].date, s[i].date) <= 6) return s[i].date;
+      }
+      return null;
+    },
+  },
+  {
+    id: "month-7",
+    tier: "or",
+    name: "Le mois plein",
+    desc: "Sept séances dans un même mois calendaire. Presque deux par semaine, sans trou.",
+    at: (runs) => {
+      const count = {};
+      for (const r of chrono(runs)) {
+        const m = r.date.slice(0, 7);
+        count[m] = (count[m] || 0) + 1;
+        if (count[m] >= 7) return r.date;
+      }
+      return null;
+    },
+    progress: (runs) => {
+      const count = {};
+      runs.forEach((r) => {
+        const m = r.date.slice(0, 7);
+        count[m] = (count[m] || 0) + 1;
+      });
+      const best = Math.max(0, ...Object.values(count));
+      return [best, 7, (v) => `${Math.round(v)} séances`, "meilleur mois à ce jour"];
+    },
+  },
+  {
+    id: "comeback",
+    tier: "bronze",
+    name: "Le retour",
+    desc: "Repartir courir après au moins dix jours d'arrêt. Reprendre est plus dur que continuer, et ça méritait sa récompense.",
+    at: (runs) => {
+      const s = chrono(runs);
+      for (let i = 1; i < s.length; i++) {
+        if (daysBetween(s[i - 1].date, s[i].date) >= 10) return s[i].date;
+      }
+      return null;
+    },
+  },
+  {
+    id: "hr-125",
+    tier: "argent",
+    name: "Cœur de marbre",
+    desc: "Boucler une séance sous 125 bpm de moyenne. Le trophée de la sortie vraiment lente — celle que tout le monde saute.",
+    needs: "hr",
+    at: (runs) => firstWhere(runs, (r) => r.hr != null && r.hr < 125),
+    near: (runs) => {
+      const r = closestRun(runs, (x) => x.hr, true);
+      return near(r, r ? `au plus près : ${r.hr} bpm` : "");
+    },
+  },
+  {
+    id: "cadence-150",
+    tier: "argent",
+    name: "Foulée vive",
+    desc: "Tenir 150 pas par minute de moyenne sur une séance. Des pas plus courts, plus nombreux, et des genoux qui disent merci.",
+    needs: "cadence",
+    at: (runs) => firstWhere(runs, (r) => r.cadence != null && r.cadence >= 150),
+    near: (runs) => {
+      const r = closestRun(runs, (x) => x.cadence);
+      return near(r, r ? `au plus près : ${r.cadence} spm` : "");
+    },
+  },
+  {
+    id: "elev-10",
+    tier: "bronze",
+    name: "Un peu de relief",
+    desc: "Encaisser 10 m de dénivelé positif sur une sortie. On est loin de la montagne, mais les jambes font la différence.",
+    needs: "elevation",
+    at: (runs) => firstWhere(runs, (r) => r.elevation != null && r.elevation >= 10),
+    near: (runs) => {
+      const r = closestRun(runs, (x) => x.elevation);
+      return near(r, r ? `au plus près : ${r.elevation} m` : "");
+    },
+  },
+  {
+    id: "cal-1000",
+    tier: "bronze",
+    name: "Le premier millier",
+    desc: "Brûler 1 000 calories actives, cumulées sur toutes les sorties.",
+    at: (runs) => crossedAt(runs, (r) => r.activeCal, 1000),
+    progress: (runs) => [sum(runs.map((r) => r.activeCal)), 1000, (v) => `${Math.round(v)} cal`],
+  },
+  {
+    id: "cal-5000",
+    tier: "or",
+    name: "Fournaise",
+    desc: "Brûler 5 000 calories actives au total. De quoi justifier à peu près n'importe quel dessert.",
+    at: (runs) => crossedAt(runs, (r) => r.activeCal, 5000),
+    progress: (runs) => [sum(runs.map((r) => r.activeCal)), 5000, (v) => `${Math.round(v)} cal`],
+  },
+];
+
+// Le Platine ne se joue pas, il se constate : il tombe le jour où le dernier
+// trophée à portée se débloque. Il est donc exclu du dénominateur — c'est la
+// récompense des 100 %, pas une case de plus à cocher.
+const PLATINE = {
+  id: "platine",
+  tier: "platine",
+  name: "Le tableau complet",
+  desc: "Débloquer tous les autres trophées à sa portée. Il n'y a rien après.",
+  at: (runs) => {
+    const dates = TROPHIES.filter((t) => !outOfReach(t, runs)).map((t) => t.at(runs));
+    return dates.length && dates.every(Boolean) ? dates.sort().pop() : null;
+  },
+};
+
+function trophyState(t, runs) {
+  if (outOfReach(t, runs)) return { state: "oor", why: DATA_REQUIREMENTS[t.needs].why };
+  const date = t.at(runs);
+  return date ? { state: "unlocked", date } : { state: "locked" };
+}
+
+function trophyCard(t, runs) {
+  const { state, date, why } = trophyState(t, runs);
+  const tier = TIERS[t.tier];
+
+  let meta = "";
+  if (state === "unlocked") {
+    meta = `<div class="trophy-meta unlocked">Débloqué le ${fmtDate(date)}</div>`;
+  } else if (state === "oor") {
+    meta = `<div class="trophy-meta">Hors de portée — ${why}</div>`;
+  } else {
+    // Verrouillé : la barre de progression quand le palier s'accumule, l'indice
+    // du « plus près » quand il se joue sur une seule séance.
+    const p = t.progress ? t.progress(runs) : null;
+    const hint = t.near ? t.near(runs) : null;
+    if (p) {
+      const [now, target, fmt, label] = p;
+      const pct = Math.max(0, Math.min(100, (now / target) * 100));
+      meta = `
+        <div class="trophy-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
+        <div class="trophy-meta">${fmt(now)} / ${fmt(target)}${label ? ` · ${label}` : ""}</div>`;
+    } else if (hint) {
+      meta = `<div class="trophy-meta">🔒 ${capitalize(hint)}</div>`;
+    } else {
+      meta = `<div class="trophy-meta">🔒 Verrouillé</div>`;
+    }
+  }
+
+  return `
+    <div class="trophy ${state} tier-${t.tier}">
+      <div class="trophy-medal" aria-hidden="true">${tier.emoji}</div>
+      <div class="trophy-body">
+        <div class="trophy-name">${t.name}<span class="trophy-tier">${tier.label}</span></div>
+        <div class="trophy-desc">${t.desc}</div>
+        ${meta}
+      </div>
+    </div>`;
+}
+
+let trRunner = RUNNERS.find((n) => RUNS[n].length) || RUNNERS[0];
+
+function renderTrophies() {
+  const runs = RUNS[trRunner];
+  const reachable = TROPHIES.filter((t) => !outOfReach(t, runs));
+  const unlocked = reachable.filter((t) => t.at(runs));
+  const pct = reachable.length ? (unlocked.length / reachable.length) * 100 : 0;
+  const oor = TROPHIES.length - reachable.length;
+  const byTier = (tier) => unlocked.filter((t) => t.tier === tier).length;
+  const platine = PLATINE.at(runs);
+
+  document.getElementById("trProgress").innerHTML = `
+    <div class="tr-head">
+      <span class="tr-count">${unlocked.length} <em>/ ${reachable.length}</em></span>
+      <span class="tr-tiers">
+        ${TIERS.bronze.emoji} ${byTier("bronze")} &nbsp; ${TIERS.argent.emoji} ${byTier("argent")} &nbsp; ${TIERS.or.emoji} ${byTier("or")}
+        &nbsp;·&nbsp; ${platine ? "Platine décroché 🏆" : "Platine à décrocher"}
+      </span>
+    </div>
+    <div class="tr-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
+    <p class="lb-scope">
+      ${runs.length
+        ? `<b>${trRunner}</b> — ${Math.round(pct)} % du tableau. Les paliers sont les mêmes pour tout le monde et ne se perdent jamais : chacun porte la date du jour où il est tombé.`
+        : `<b>${trRunner}</b> — pas encore de séance : tout est verrouillé, et le premier trophée s'obtient en sortant une fois.`}
+      ${oor ? ` ${oor} trophée${oor > 1 ? "s sont hors de portée" : " est hors de portée"} faute de mesure, et ne compte${oor > 1 ? "nt" : ""} donc pas dans le total.` : ""}
+    </p>`;
+
+  document.getElementById("trGrid").innerHTML = [PLATINE, ...TROPHIES].map((t) => trophyCard(t, runs)).join("");
+  paintRunnerPills("trRunners", trRunner);
+}
+
+function initTrophies() {
+  document.getElementById("trRunners").innerHTML = runnerPillsHtml();
+  document.getElementById("trRunners").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    trRunner = btn.dataset.value;
+    renderTrophies();
+  });
+  renderTrophies();
+}
+
 // ---------- Sélecteurs globaux ----------
 // Un seul actif à la fois : c'est le comportement du sélecteur de métrique, où
 // deux courbes de nature différente sur le même axe n'auraient pas de sens.
@@ -959,6 +1563,8 @@ Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
 renderFilters();
 renderMetricSwitch();
 initLeaderboard();
+initPersonal();
+initTrophies();
 renderAll();
 
 // Déploiement de l'analyse au clic sur une ligne (délégation : survit aux re-render)

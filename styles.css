@@ -363,6 +363,149 @@ main {
 }
 .lb-note b { color: var(--text); font-weight: 600; }
 
+/* ---------- Leaderboard personnel ---------- */
+/* Même podium, autre compétition : un vert-bleu plus froid que l'or du palmarès
+   collectif, pour qu'on voie au premier coup d'œil qu'on a changé de jeu. */
+.personal {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(10,132,255,0.10), transparent 46%),
+    radial-gradient(circle at 88% 6%, rgba(48,209,88,0.08), transparent 44%),
+    var(--surface);
+}
+
+/* La pastille de couleur identifie la personne dans les deux états — c'est le
+   fond blanc qui dit lequel est sélectionné, pas elle. */
+.runner-pills button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.runner-pills .dot { width: 9px; height: 9px; }
+
+/* La date sous la distance : ensemble, les deux forment le nom de la sortie. */
+.podium-sub {
+  margin-top: 1px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--c);
+  text-align: center;
+}
+
+/* ---------- Trophées ---------- */
+.trophies {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(191,90,242,0.10), transparent 45%),
+    radial-gradient(circle at 90% 4%, rgba(255,214,10,0.08), transparent 42%),
+    var(--surface);
+}
+
+.trophy-progress { margin-bottom: 18px; }
+/* La jauge a besoin d'air : collée au paragraphe, elle se lit comme son
+   soulignement plutôt que comme la barre du compteur au-dessus. */
+.trophy-progress .lb-scope { margin: 11px 0 0; }
+.tr-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tr-count { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tr-count em { font-size: 15px; font-weight: 600; font-style: normal; color: var(--text-dim); }
+.tr-tiers { font-size: 13px; font-weight: 600; color: var(--text-dim); }
+
+/* Jauge de complétion, et son petit frère par trophée : même tracé, même
+   lecture — ce qui est fait est plein, ce qui reste est creux. */
+.tr-bar, .trophy-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.tr-bar span, .trophy-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #ffe680 0%, #f0a91c 100%);
+}
+.trophy-bar { height: 5px; margin-bottom: 5px; }
+.trophy-bar span { background: rgba(255,255,255,0.34); }
+
+.trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 10px;
+}
+
+/* Une tuile = une médaille à gauche, le texte à droite. Le liseré coloré à
+   gauche porte le rang du trophée : c'est la seule chose à lire en diagonale. */
+.trophy {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: 13px;
+  padding: 13px 15px;
+  background: var(--surface-2);
+  border-radius: 13px;
+  border-left: 3px solid transparent;
+}
+.trophy-medal { font-size: 27px; line-height: 1.15; }
+.trophy-name { font-size: 14px; font-weight: 700; }
+/* Le rang se lit une fois, en petit : la médaille le dit déjà. */
+.trophy-tier {
+  margin-left: 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.trophy-desc {
+  margin: 3px 0 7px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.trophy-meta {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.trophy-meta.unlocked { color: var(--yellow); }
+
+/* Débloqué : la couleur du rang, sur le liseré et sous la médaille. */
+.trophy.unlocked.tier-bronze  { border-left-color: #cd7f32; }
+.trophy.unlocked.tier-argent  { border-left-color: #c8ccd6; }
+.trophy.unlocked.tier-or      { border-left-color: #f0a91c; }
+.trophy.unlocked.tier-platine { border-left-color: #7ee0e6; }
+.trophy.unlocked .trophy-medal { filter: drop-shadow(0 2px 6px rgba(255,214,10,0.35)); }
+
+/* Verrouillé : la médaille en silhouette. On la garde visible — savoir ce qu'il
+   y a à gagner est la moitié de l'intérêt — mais elle ne doit pas se confondre
+   avec une médaille obtenue. */
+.trophy.locked { opacity: 0.72; }
+.trophy.locked .trophy-medal { filter: grayscale(1) brightness(1.5); opacity: 0.4; }
+.trophy.locked .trophy-name { color: var(--text-dim); }
+
+/* Hors de portée : ni gagné, ni à gagner. Le pointillé dit que la case ne se
+   remplira pas en courant, et le trophée ne compte pas dans le total. */
+.trophy.oor {
+  opacity: 0.5;
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-left: 3px dashed rgba(255,255,255,0.14);
+}
+.trophy.oor .trophy-medal { filter: grayscale(1); opacity: 0.35; }
+
+/* Le Platine ouvre la grille sur toute sa largeur : c'est la ligne d'arrivée du
+   tableau, pas une tuile parmi vingt. */
+.trophy.tier-platine {
+  grid-column: 1 / -1;
+  background: linear-gradient(120deg, rgba(126,224,230,0.13), rgba(191,90,242,0.10)), var(--surface-2);
+}
+
 .chart-wrap { position: relative; height: 340px; }
 /* Le tableau défile horizontalement sur mobile ; `contain` empêche ce défilement
    d'entraîner la page (ou le geste « retour » du navigateur) avec lui. */
@@ -597,6 +740,7 @@ footer {
   .podium-avatar { width: 42px; height: 42px; font-size: 17px; border-width: 2px; }
   .podium-crown { top: -11px; font-size: 16px; }
   .podium-name { font-size: 12.5px; margin-top: 8px; }
+  .podium-sub { font-size: 10.5px; }
   .podium-value { font-size: 11px; }
   .star { width: 14px; height: 14px; }
   .podium-stars { gap: 2px; min-height: 16px; margin-bottom: 8px; }
@@ -604,6 +748,13 @@ footer {
   .rank-1 .podium-block { height: 84px; }
   .rank-2 .podium-block { height: 62px; }
   .rank-3 .podium-block { height: 46px; }
+
+  /* Une colonne : à 268 px de tuile, deux colonnes obligeraient la description
+     à se lire sur une vingtaine de caractères. */
+  .trophy-grid { grid-template-columns: 1fr; }
+  .trophy { column-gap: 11px; padding: 11px 13px; }
+  .trophy-medal { font-size: 23px; }
+  .tr-count { font-size: 22px; }
 
   th, td { padding: 10px 6px; }
   .analysis-row > td { padding: 8px 6px 14px; }

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏃 Running Dashboard — Anaïs & Vincent</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=33" />
+  <link rel="stylesheet" href="styles.css?v=34" />
 </head>
 <body>
   <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
@@ -65,6 +65,31 @@
       <div class="lb-extra" id="lbExtra"></div>
     </section>
 
+    <!-- Leaderboard personnel : le même podium, mais entre les sorties d'une
+         seule personne. La seule compétition qu'on puisse gagner tout seul. -->
+    <section class="panel personal">
+      <div class="panel-head">
+        <h2>🥇 Leaderboard personnel</h2>
+        <div class="filter-switch runner-pills" id="plRunners"></div>
+      </div>
+      <p class="lb-scope" id="plScope"></p>
+      <div class="lb-tabs" id="plTabs"></div>
+      <p class="lb-desc" id="plDesc"></p>
+      <div class="podium" id="plPodium"></div>
+      <div class="lb-extra" id="plExtra"></div>
+    </section>
+
+    <!-- Trophées : des paliers fixes, annoncés d'avance, qu'on décroche une
+         fois pour toutes — l'inverse du leaderboard, où l'on bat quelqu'un. -->
+    <section class="panel trophies">
+      <div class="panel-head">
+        <h2>🏆 Trophées</h2>
+        <div class="filter-switch runner-pills" id="trRunners"></div>
+      </div>
+      <div class="trophy-progress" id="trProgress"></div>
+      <div class="trophy-grid" id="trGrid"></div>
+    </section>
+
     <!-- Tableau détaillé -->
     <section class="panel">
       <div class="panel-head">
@@ -97,8 +122,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=33"></script>
-  <script src="pokemon.js?v=33"></script>
-  <script src="app.js?v=33"></script>
+  <script src="data.js?v=34"></script>
+  <script src="pokemon.js?v=34"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>
