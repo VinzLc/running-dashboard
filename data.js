@@ -49,6 +49,14 @@ const RUNS = {
         { km: 6, sec: 404, paceSec: 404, hr: 166, cadence: 143 },
         { km: 7, sec: 4,   paceSec: 365, hr: 174, cadence: 141, partial: true },
       ] },
+    { date: "2026-08-12", duration: 1808, distance: 5.00, activeCal: 380, totalCal: 433, elevation: 5,  cadence: 153, paceSec: 362, hr: 163,
+      splits: [
+        { km: 1, sec: 351, paceSec: 351, hr: 147, cadence: 158 },
+        { km: 2, sec: 359, paceSec: 359, hr: 164, cadence: 154 },
+        { km: 3, sec: 374, paceSec: 374, hr: 162, cadence: 149 },
+        { km: 4, sec: 384, paceSec: 384, hr: 164, cadence: 147 },
+        { km: 5, sec: 339, paceSec: 339, hr: 177, cadence: 161 },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -277,6 +285,15 @@ const ANALYSES = {
       ],
       pokemon: "Électrode", pokemonAdj: "Impatient",
       pokemonPhrase: "Électrode : le Pokémon le plus rapide de la première génération, et le seul dont l'attaque signature s'appelle Explosion. Deux kilomètres à 6'00 de moyenne, puis boum au troisième. On ne pouvait pas mieux résumer. Impatient, parce que 6'00 au premier kilomètre d'une distance jamais courue, c'est très exactement le genre d'initiative qui se termine en Explosion." },
+    "2026-08-12": { trend: "up", verdict: "Record : le 5 km en 30:08",
+      text: [
+        { titre: "13 s/km de mieux que le 5 août", texte: "5,00 km en 30:08, soit 6'02\"/km : 13 s/km de mieux que le 6'15\" du 5 août, et 1 min 13 de moins au chrono sur la distance. C'est ton cinquième record d'allure depuis le 25 juillet, et de loin la plus grosse marche depuis cette date — les précédentes valaient 5, 4 et 9 s/km. La cadence moyenne signe elle aussi un sommet, 153 spm, +6 d'un coup." },
+        { titre: "Un vrai finish, pour une fois", texte: "Le dernier kilomètre est passé en 5'39\", à 177 bpm et 161 spm : le plus rapide de tous tes kilomètres chronométrés, et l'exact inverse du 9 août, où la fin s'effondrait à 6'44\". Tu avais donc une cartouche en réserve après quatre kilomètres — c'est une information précieuse." },
+        { titre: "Les kilomètres 3 et 4, encore", texte: "Le défaut, lui, n'a pas bougé : 5'51\" et 5'59\" au départ, puis 6'14\" et 6'24\" — 33 s/km lâchées entre le 1er et le 4e kilomètre, avec une cadence qui glisse de 158 à 147 spm. La différence, c'est que ce 5'39\" final prouve que ce n'était pas la fatigue, mais la gestion. Quatre kilomètres tenus à 6'05\" et le même dernier kilomètre, ça fait 29:59 : les 30 minutes ne demandent qu'un départ plus sage." },
+        { titre: "163 bpm, quatrième rappel", texte: "Et pour la quatrième fois : la sortie lente. FC moyenne à 163 bpm, ta plus haute jamais enregistrée, avec un pic à 177 sur la fin — six séances de qualité d'affilée sans une seule sortie facile. Ça finit toujours par plafonner, quand ça ne casse pas. La prochaine : 45 minutes à 7'15\"/km, FC sous 145, montre dans la poche." },
+      ],
+      pokemon: "Galopa", pokemonAdj: "Fougueux",
+      pokemonPhrase: "Galopa : un cheval de feu qui passe sa vie à provoquer en course tout ce qui bouge, et dont on dit qu'il ne montre sa vraie vitesse que le jour où ça l'arrange. Quatre kilomètres de trot poli, puis 5'39 sur le dernier — ça l'arrangeait. Fougueux, parce que garder ta plus belle accélération pour le moment où il ne reste plus un mètre à courir, ce n'est pas une tactique, c'est un tempérament." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
