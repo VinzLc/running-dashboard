@@ -254,6 +254,15 @@ function renderMetricSwitch() {
   buildSwitch("metricSwitch", Object.entries(METRICS).map(([k, m]) => [k, m.label]), renderEvolution);
 }
 
+// Le meilleur kilomètre d'une séance, ou null si elle n'a pas de splits. Le
+// tronçon incomplet de fin est exclu partout où ce chiffre sert (badge, podium) :
+// quarante mètres extrapolés au kilomètre donnent une allure flatteuse qui n'a
+// jamais été tenue sur mille mètres.
+function bestFullKm(r) {
+  const full = (r.splits || []).filter((s) => !s.partial);
+  return full.length ? Math.min(...full.map((s) => s.paceSec)) : null;
+}
+
 // ---------- Insights objectifs (calculés sur chaque coureur séparément) ----------
 // Pour chaque séance : la séance précédente du même coureur + drapeaux record.
 const INSIGHTS = (() => {
@@ -263,14 +272,21 @@ const INSIGHTS = (() => {
     meta[name] = {};
     let bestPace = Infinity;
     let longest = -Infinity;
+    let bestKm = Infinity;
     sorted.forEach((r, i) => {
+      // Le record du kilomètre ne se compare qu'entre séances détaillées : la
+      // première à porter des splits est la référence et ne décroche rien, comme
+      // la première séance tout court pour les deux autres records.
+      const km = bestFullKm(r);
       meta[name][r.date] = {
         prev: i > 0 ? sorted[i - 1] : null,
         isPacePR: i > 0 && r.paceSec < bestPace,
         isDistPR: i > 0 && r.distance > longest,
+        isKmPR: km != null && Number.isFinite(bestKm) && km < bestKm,
       };
       bestPace = Math.min(bestPace, r.paceSec);
       longest = Math.max(longest, r.distance);
+      if (km != null) bestKm = Math.min(bestKm, km);
     });
   });
   return meta;
@@ -398,7 +414,8 @@ function analysisHtml(r) {
 
   const prBadges =
     (m.isPacePR ? `<span class="pr">🏅 Record d'allure</span>` : "") +
-    (m.isDistPR ? `<span class="pr">🏅 Record de distance</span>` : "");
+    (m.isDistPR ? `<span class="pr">🏅 Record de distance</span>` : "") +
+    (m.isKmPR ? `<span class="pr">🏅 Record du kilomètre</span>` : "");
 
   const trend = a ? a.trend : "flat";
   const verdict = a ? a.verdict : "Analyse à venir";
@@ -535,7 +552,7 @@ function absentReason(cat, season, name) {
       ? `aucune séance depuis le ${LB_START_LABEL}`
       : `pas de séance sur cette saison`;
   }
-  return cat.absent ? cat.absent() : "pas de donnée dans cette catégorie";
+  return cat.absent ? cat.absent(name, season) : "pas de donnée dans cette catégorie";
 }
 
 // Les seaux de distance sont recalculés pour chaque saison : proposer un onglet
@@ -557,6 +574,31 @@ const distanceCategories = (season) =>
     fmt: (v) => `${fmtPace(v)}/km`,
     absent: () => `aucune séance de ${b.label.toLowerCase()} sur cette saison`,
   }));
+
+// Le seul podium qui se joue à l'intérieur des séances plutôt qu'entre elles :
+// il ne retient qu'un kilomètre, le meilleur, et se moque de ce qu'il y avait
+// autour. Comme les courses de distance, l'onglet n'est proposé qu'aux saisons
+// qui ont de quoi le remplir — les splits n'existent que depuis août 2026, et
+// avant ça le podium serait vide.
+const BEST_KM = {
+  id: "best-km",
+  tab: "⚡ Éclair",
+  title: "L'Éclair",
+  desc: "Le kilomètre le plus rapide de la période, isolé dans le détail des splits. Peu importe la séance dans laquelle il tombe, ce qu'il y avait avant ou la façon dont ça s'est fini : un seul bon kilomètre suffit à concourir. Les tronçons incomplets de fin de parcours ne comptent pas — quarante mètres extrapolés ne sont pas un kilomètre couru.",
+  lower: true,
+  score: (runs) => {
+    const best = runs.map(bestFullKm).filter((v) => v != null);
+    return best.length ? Math.min(...best) : null;
+  },
+  fmt: (v) => `${fmtPace(v)}/km`,
+  absent: (name) =>
+    RUNS[name].some((r) => r.splits && r.splits.length)
+      ? "aucune séance détaillée par kilomètre sur cette saison"
+      : "ses captures ne détaillent pas les kilomètres",
+};
+
+const bestKmCategories = (season) =>
+  RUNNERS.some((n) => seasonRuns(season, n).some((r) => bestFullKm(r) != null)) ? [BEST_KM] : [];
 
 const FUN_CATEGORIES = [
   {
@@ -678,7 +720,7 @@ function rankCategory(cat, season) {
 const scoredCache = new Map();
 function scoredCategories(season) {
   if (!scoredCache.has(season.id)) {
-    scoredCache.set(season.id, [...distanceCategories(season), ...FUN_CATEGORIES]);
+    scoredCache.set(season.id, [...distanceCategories(season), ...bestKmCategories(season), ...FUN_CATEGORIES]);
   }
   return scoredCache.get(season.id);
 }
