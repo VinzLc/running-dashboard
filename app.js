@@ -1475,6 +1475,59 @@ function initTrophies() {
   renderTrophies();
 }
 
+// ---------- Cartes repliables ----------
+// Trois cartes s'ouvrent fermées. Le palmarès, le palmarès personnel et les
+// trophées sont des à-côtés qu'on vient consulter ; dépliés, ils repoussaient
+// le détail des séances à deux écrans de défilement alors que c'est lui qu'on
+// vient lire après une sortie.
+const COLLAPSED_BY_DEFAULT = ["leaderboard", "personal", "trophies"];
+
+// L'état est retenu d'une visite à l'autre : replier une carte est un réglage,
+// pas un geste à refaire à chaque rechargement. Un stockage indisponible
+// (navigation privée, quota) ne doit rien casser — on retombe alors sur les
+// défauts ci-dessus.
+const PANEL_STATE_KEY = "runs.panels";
+
+function loadPanelState() {
+  try {
+    return JSON.parse(localStorage.getItem(PANEL_STATE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function savePanelState(key, open) {
+  try {
+    const state = loadPanelState();
+    state[key] = open;
+    localStorage.setItem(PANEL_STATE_KEY, JSON.stringify(state));
+  } catch {
+    /* rien à faire : l'état de la session reste correct, seul l'oubli est acquis */
+  }
+}
+
+function setPanelOpen(panel, open) {
+  panel.classList.toggle("collapsed", !open);
+  panel.querySelector(".panel-toggle").setAttribute("aria-expanded", String(open));
+  panel.querySelector(".panel-body").hidden = !open;
+  // Chart.js mesure son conteneur au tracé : replié, le canvas n'avait aucune
+  // taille, et le graphique revenait écrasé de son dépliage sans ce resize.
+  if (open && evoChart && panel.querySelector("#evolutionChart")) evoChart.resize();
+}
+
+function initCollapsibles() {
+  const saved = loadPanelState();
+  document.querySelectorAll(".panel[data-panel]").forEach((panel) => {
+    const key = panel.dataset.panel;
+    setPanelOpen(panel, key in saved ? saved[key] : !COLLAPSED_BY_DEFAULT.includes(key));
+    panel.querySelector(".panel-toggle").addEventListener("click", () => {
+      const open = panel.classList.contains("collapsed");
+      setPanelOpen(panel, open);
+      savePanelState(key, open);
+    });
+  });
+}
+
 // ---------- Sélecteurs globaux ----------
 // Un seul actif à la fois : c'est le comportement du sélecteur de métrique, où
 // deux courbes de nature différente sur le même axe n'auraient pas de sens.
@@ -1566,6 +1619,10 @@ initLeaderboard();
 initPersonal();
 initTrophies();
 renderAll();
+// En dernier : les panneaux sont rendus à leur taille naturelle, donc Chart.js
+// mesure un conteneur réel avant qu'on replie quoi que ce soit. Tout est
+// synchrone, rien n'est peint entre-temps.
+initCollapsibles();
 
 // Déploiement de l'analyse au clic sur une ligne (délégation : survit aux re-render)
 document.querySelector("#runsTable tbody").addEventListener("click", (e) => {

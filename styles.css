@@ -146,6 +146,44 @@ main {
   border: 1px solid rgba(255,255,255,0.06);
 }
 .panel h2 { margin: 0 0 16px; font-size: 18px; }
+
+/* ---------- Cartes repliables ---------- */
+/* Le titre EST le bouton : une cible large et évidente, et le `h2` garde son
+   rôle de titre pour la navigation au lecteur d'écran. Les contrôles voisins de
+   l'en-tête (saison, coureur) restent hors du bouton — les atteindre ne doit pas
+   refermer la carte sous le doigt. */
+.panel-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* Triangle dessiné plutôt que le glyphe « ▸ » des lignes du tableau : celui-ci
+   garde une encre minuscule quel que soit le corps, et passait pour une
+   poussière à côté d'un titre de 18 px. Ici la taille est celle qu'on demande. */
+.panel-chev {
+  width: 0;
+  height: 0;
+  border-left: 8px solid var(--text-dim);
+  border-top: 5.5px solid transparent;
+  border-bottom: 5.5px solid transparent;
+  transform: rotate(90deg);
+  transition: transform 0.2s, border-left-color 0.15s;
+}
+.panel-toggle:hover .panel-chev { border-left-color: var(--text); }
+.panel.collapsed .panel-chev { transform: rotate(0deg); }
+
+/* Replié, le panneau se réduit à sa barre de titre : l'en-tête perd sa marge
+   basse, et les contrôles qui pilotent un contenu caché s'effacent avec lui. */
+.panel.collapsed .panel-head { margin-bottom: 0; }
+.panel.collapsed .panel-head > *:not(h2) { display: none; }
 .panel-head {
   display: flex;
   align-items: center;

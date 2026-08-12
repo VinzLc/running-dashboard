@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏃 Running Dashboard — Anaïs & Vincent</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=35" />
+  <link rel="stylesheet" href="styles.css?v=36" />
 </head>
 <body>
   <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
@@ -41,78 +41,90 @@
     <section class="cards" id="summaryCards"></section>
 
     <!-- Graphique d'évolution -->
-    <section class="panel">
+    <!-- Les cinq panneaux se replient : le titre est le bouton, `data-panel`
+         la clé sous laquelle l'état est retenu d'une visite à l'autre. -->
+    <section class="panel" data-panel="evolution">
       <div class="panel-head">
-        <h2>Évolution</h2>
+        <h2><button type="button" class="panel-toggle" aria-controls="body-evolution"><span class="panel-chev" aria-hidden="true"></span>Évolution</button></h2>
         <div class="metric-switch" id="metricSwitch"></div>
       </div>
-      <p class="metric-desc" id="metricDesc"></p>
-      <div class="chart-wrap">
-        <canvas id="evolutionChart"></canvas>
+      <div class="panel-body" id="body-evolution">
+        <p class="metric-desc" id="metricDesc"></p>
+        <div class="chart-wrap">
+          <canvas id="evolutionChart"></canvas>
+        </div>
       </div>
     </section>
 
     <!-- Leaderboard : un podium par catégorie, chacune distribuant des étoiles -->
-    <section class="panel leaderboard">
+    <section class="panel leaderboard" data-panel="leaderboard">
       <div class="panel-head">
-        <h2>🏆 Leaderboard</h2>
+        <h2><button type="button" class="panel-toggle" aria-controls="body-leaderboard"><span class="panel-chev" aria-hidden="true"></span>🏆 Leaderboard</button></h2>
         <div class="filter-switch lb-seasons" id="lbSeasons"></div>
       </div>
-      <p class="lb-scope" id="lbScope"></p>
-      <div class="lb-tabs" id="lbTabs"></div>
-      <p class="lb-desc" id="lbDesc"></p>
-      <div class="podium" id="lbPodium"></div>
-      <div class="lb-extra" id="lbExtra"></div>
+      <div class="panel-body" id="body-leaderboard">
+        <p class="lb-scope" id="lbScope"></p>
+        <div class="lb-tabs" id="lbTabs"></div>
+        <p class="lb-desc" id="lbDesc"></p>
+        <div class="podium" id="lbPodium"></div>
+        <div class="lb-extra" id="lbExtra"></div>
+      </div>
     </section>
 
     <!-- Leaderboard personnel : le même podium, mais entre les sorties d'une
          seule personne. La seule compétition qu'on puisse gagner tout seul. -->
-    <section class="panel personal">
+    <section class="panel personal" data-panel="personal">
       <div class="panel-head">
-        <h2>🥇 Leaderboard personnel</h2>
+        <h2><button type="button" class="panel-toggle" aria-controls="body-personal"><span class="panel-chev" aria-hidden="true"></span>🥇 Leaderboard personnel</button></h2>
         <div class="filter-switch runner-pills" id="plRunners"></div>
       </div>
-      <p class="lb-scope" id="plScope"></p>
-      <div class="lb-tabs" id="plTabs"></div>
-      <p class="lb-desc" id="plDesc"></p>
-      <div class="podium" id="plPodium"></div>
-      <div class="lb-extra" id="plExtra"></div>
+      <div class="panel-body" id="body-personal">
+        <p class="lb-scope" id="plScope"></p>
+        <div class="lb-tabs" id="plTabs"></div>
+        <p class="lb-desc" id="plDesc"></p>
+        <div class="podium" id="plPodium"></div>
+        <div class="lb-extra" id="plExtra"></div>
+      </div>
     </section>
 
     <!-- Trophées : des paliers fixes, annoncés d'avance, qu'on décroche une
          fois pour toutes — l'inverse du leaderboard, où l'on bat quelqu'un. -->
-    <section class="panel trophies">
+    <section class="panel trophies" data-panel="trophies">
       <div class="panel-head">
-        <h2>🏆 Trophées</h2>
+        <h2><button type="button" class="panel-toggle" aria-controls="body-trophies"><span class="panel-chev" aria-hidden="true"></span>🏆 Trophées</button></h2>
         <div class="filter-switch runner-pills" id="trRunners"></div>
       </div>
-      <div class="trophy-progress" id="trProgress"></div>
-      <div class="trophy-grid" id="trGrid"></div>
+      <div class="panel-body" id="body-trophies">
+        <div class="trophy-progress" id="trProgress"></div>
+        <div class="trophy-grid" id="trGrid"></div>
+      </div>
     </section>
 
     <!-- Tableau détaillé -->
-    <section class="panel">
+    <section class="panel" data-panel="runs">
       <div class="panel-head">
-        <h2>Détail des séances</h2>
+        <h2><button type="button" class="panel-toggle" aria-controls="body-runs"><span class="panel-chev" aria-hidden="true"></span>Détail des séances</button></h2>
         <span class="hint">👆 Clique sur une séance pour l'analyse du coach</span>
       </div>
-      <div class="table-wrap">
-        <table id="runsTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Coureur</th>
-              <th>Distance</th>
-              <th>Durée</th>
-              <th>Allure</th>
-              <th>FC moy.</th>
-              <th>Cadence</th>
-              <th>Cal. actives</th>
-              <th>Dénivelé</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div class="panel-body" id="body-runs">
+        <div class="table-wrap">
+          <table id="runsTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Coureur</th>
+                <th>Distance</th>
+                <th>Durée</th>
+                <th>Allure</th>
+                <th>FC moy.</th>
+                <th>Cadence</th>
+                <th>Cal. actives</th>
+                <th>Dénivelé</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
@@ -122,8 +134,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=35"></script>
-  <script src="pokemon.js?v=35"></script>
-  <script src="app.js?v=35"></script>
+  <script src="data.js?v=36"></script>
+  <script src="pokemon.js?v=36"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>
