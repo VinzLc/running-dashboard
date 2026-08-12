@@ -81,6 +81,14 @@ const RUNS = {
         { km: 5, sec: 478, paceSec: 478 },
         { km: 6, sec: 145, paceSec: 445, partial: true },
       ] },
+    { date: "2026-08-12", duration: 1910, distance: 4.40, activeCal: 215, totalCal: 254, elevation: 5,  cadence: 144, paceSec: 434, hr: 141,
+      splits: [
+        { km: 1, sec: 407, paceSec: 407, hr: 133, cadence: 152 },
+        { km: 2, sec: 451, paceSec: 451, hr: 136, cadence: 142 },
+        { km: 3, sec: 441, paceSec: 441, hr: 141, cadence: 143 },
+        { km: 4, sec: 428, paceSec: 428, hr: 151, cadence: 148 },
+        { km: 5, sec: 179, paceSec: 446, hr: 157, cadence: 145, partial: true },
+      ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
   // une vitesse de pointe, et un seul chiffre de calories (pas de total).
@@ -399,6 +407,17 @@ const ANALYSES = {
       ],
       pokemon: "Roucarnage", pokemonAdj: "Impétueux",
       pokemonPhrase: "Roucarnage : Roucool en juin, Roucoups en juillet, l'évolution finale pile pour ton premier 5 km. Reste à lui apprendre à ne pas tout donner dès le premier battement d'ailes. Impétueux, parce que 6'46 au premier kilomètre, c'est l'évolution finale qui découvre ses ailes et oublie qu'il en reste quatre autres à parcourir." },
+    "2026-08-12": { trend: "up", verdict: "Record de cadence : 144 spm",
+      text: [
+        { titre: "Six pas par minute de plus", texte: "Ta cadence était calée à 138 spm depuis le 29 juillet, sur trois séances d'affilée. Elle passe à 144 d'un coup. Le reste de la séance suit : 7'14\"/km, à 2 s de ton record du 1er août, pour 141 bpm seulement — moins que tes trois dernières sorties. Et tu as gardé la distance courte trois jours après ton premier 5 km, ce qui était exactement la consigne." },
+        { titre: "Le départ rapide est toujours là", texte: "6'47\" sur le premier kilomètre. La consigne du 9 août était de le passer autour de 7'40\", et c'est la troisième fois que je te la donne. Sur ce point précis, rien n'a bougé." },
+        { titre: "Mais la fin ne s'écroule plus", texte: "C'est là que la séance devient intéressante. Le 9 août, tes kilomètres partaient de 6'46\" pour finir à 7'58\" : une dégringolade continue de 1'12\". Aujourd'hui c'est 6'47\", 7'31\", 7'21\", 7'08\" — tu encaisses le contrecoup sur le deuxième kilomètre, puis tu réaccélères, et ton dernier kilomètre complet est le deuxième plus rapide de la séance. L'écart tombe de 1'12\" à 21 s." },
+        { titre: "Ce que le premier kilomètre a coûté", texte: "La facture est dans la FC. 133 bpm pour courir en 6'47\", puis 151 bpm pour courir en 7'08\" : sur le quatrième kilomètre, tu vas 21 s/km moins vite avec 18 battements de plus. La courbe ne redescend jamais — 133, 136, 141, 151, 157. Voilà ce qu'un départ trop rapide fait payer pendant toute la séance, même quand les jambes suivent." },
+        { titre: "La foulée, elle, tient bon", texte: "Cadence par kilomètre : 152, 142, 143, 148, 145. Elle remonte sur la fin au lieu de s'effondrer, et c'est cohérent avec ton quatrième kilomètre accéléré. La foulée vive n'est plus un effort ponctuel, elle revient toute seule quand tu pousses." },
+        { titre: "Un dernier essai sur le premier km", texte: "Refais très exactement cette séance, mais passe le premier kilomètre à 7'40\". Avec la cadence que tu tiens maintenant, tu devrais finir sous les 7'/km sur le dernier — et à une FC qui ne sera jamais montée à 157. C'est le seul verrou qui te reste." },
+      ],
+      pokemon: "Colossinge", pokemonAdj: "Increvable",
+      pokemonPhrase: "Colossinge : il s'emballe au premier regard de travers et ne redescend plus jamais. Ta FC a fait exactement ça — 133 bpm au premier kilomètre, 157 à l'arrivée, pas un battement rendu en chemin. Increvable, parce que boucler son quatrième kilomètre plus vite que son deuxième avec 18 battements de plus au compteur, c'est un entêtement que personne ne pourra lui retirer." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
