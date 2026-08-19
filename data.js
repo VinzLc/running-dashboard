@@ -89,6 +89,14 @@ const RUNS = {
         { km: 4, sec: 428, paceSec: 428, hr: 151, cadence: 148 },
         { km: 5, sec: 179, paceSec: 446, hr: 157, cadence: 145, partial: true },
       ] },
+    { date: "2026-08-19", duration: 1865, distance: 4.40, activeCal: 217, totalCal: 254, elevation: 5,  cadence: 149, paceSec: 423, hr: 149,
+      splits: [
+        { km: 1, sec: 422, paceSec: 422, hr: 127, cadence: 150 },
+        { km: 2, sec: 426, paceSec: 426, hr: 147, cadence: 152 },
+        { km: 3, sec: 418, paceSec: 418, hr: 156, cadence: 153 },
+        { km: 4, sec: 421, paceSec: 421, hr: 158, cadence: 151 },
+        { km: 5, sec: 173, paceSec: 424, hr: 169, cadence: 142, partial: true },
+      ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
   // une vitesse de pointe, et un seul chiffre de calories (pas de total).
@@ -418,6 +426,17 @@ const ANALYSES = {
       ],
       pokemon: "Colossinge", pokemonAdj: "Increvable",
       pokemonPhrase: "Colossinge : il s'emballe au premier regard de travers et ne redescend plus jamais. Ta FC a fait exactement ça — 133 bpm au premier kilomètre, 157 à l'arrivée, pas un battement rendu en chemin. Increvable, parce que boucler son quatrième kilomètre plus vite que son deuxième avec 18 battements de plus au compteur, c'est un entêtement que personne ne pourra lui retirer." },
+    "2026-08-19": { trend: "up", verdict: "Le verrou a sauté",
+      text: [
+        { titre: "45 secondes sur le même parcours", texte: "Même distance au mètre près qu'il y a une semaine (4,40 km), même dénivelé, même boucle : le 12 août tu mettais 31:50, aujourd'hui 31:05. 45 secondes gagnées sur un terrain identique, c'est la comparaison la plus honnête qui existe. L'allure moyenne tombe à 7'03\"/km — record, 9 s/km de mieux que tes 7'12\" du 1er août." },
+        { titre: "15 secondes lâchées au départ", texte: "Trois séances de suite que je te demandais de ralentir ton premier kilomètre. Tu l'as passé en 7'02\" au lieu de 6'47\" — pas les 7'40\" que je réclamais, mais 15 secondes rendues. Et tu as fini la séance 45 secondes plus vite. C'est très exactement le mécanisme que la consigne visait : ce que tu ne dépenses pas dans les cinq premières minutes, tu le récupères plusieurs fois derrière." },
+        { titre: "Quatre kilomètres dans un mouchoir", texte: "7'02\", 7'06\", 6'58\", 7'01\". Huit secondes séparent ton kilomètre le plus rapide du plus lent, et le meilleur des quatre est le troisième. Le 12 août, l'écart entre premier et dernier kilomètre complet était de 21 secondes ; le 9 août, de 1'12\". Aujourd'hui : une seconde. Tu ne cours plus vite au début et lentement à la fin, tu cours à une allure." },
+        { titre: "La cadence ne décroche plus", texte: "149 spm de moyenne, +5 sur ton record de la semaine dernière. Par kilomètre : 150, 152, 153, 151. Le creux a disparu — le 12 août ta cadence tombait à 142 dès le deuxième kilomètre avant de remonter en fin de séance. Une foulée qui reste à 150 pendant quatre kilomètres d'affilée, c'est précisément ce qui rend cette régularité possible." },
+        { titre: "La facture : 169 bpm à l'arrivée", texte: "La FC moyenne monte à 149 bpm, ta plus haute à ce jour. Par kilomètre : 127, 147, 156, 158, puis 169 sur le tronçon final. Le départ est plus calme que la semaine dernière (127 contre 133), mais la montée est ensuite plus marquée. C'est le prix normal d'une allure tenue plutôt que subie, et sur 31 minutes d'effort il n'y a rien là qui doive t'inquiéter." },
+        { titre: "Maintenant, rallonge", texte: "Le problème de gestion est réglé sur 4,4 km : à cette distance, je n'ai plus rien à corriger. La prochaine marche est la longueur. Reprends les 5,3 km du 9 août — ceux que tu avais courus à 7'29\" en t'écroulant sur la fin — et applique la gestion d'aujourd'hui à la lettre : premier kilomètre autour de 7'05\", pas une seconde plus vite. Tu devrais passer sous les 7'20\" de moyenne, et surtout finir en tenant." },
+      ],
+      pokemon: "Magnéton", pokemonAdj: "Métronomique",
+      pokemonPhrase: "Magnéton : trois Magnéti verrouillés ensemble, qui avancent sans qu'aucun des trois ne prenne jamais les devants. 7'02\", 7'06\", 6'58\", 7'01\" — huit secondes d'amplitude sur toute la séance, c'est du vol en formation. Métronomique, parce qu'après quatre kilomètres tu repasses à une seconde de ton point de départ : à ce niveau-là on ne court plus, on bat la mesure." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
