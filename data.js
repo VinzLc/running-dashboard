@@ -57,6 +57,15 @@ const RUNS = {
         { km: 4, sec: 384, paceSec: 384, hr: 164, cadence: 147 },
         { km: 5, sec: 339, paceSec: 339, hr: 177, cadence: 161 },
       ] },
+    { date: "2026-08-19", duration: 1786, distance: 5.01, activeCal: 395, totalCal: 447, elevation: 5,  cadence: 156, paceSec: 356, hr: 165,
+      splits: [
+        { km: 1, sec: 372, paceSec: 372 },
+        { km: 2, sec: 352, paceSec: 352 },
+        { km: 3, sec: 362, paceSec: 362 },
+        { km: 4, sec: 365, paceSec: 365 },
+        { km: 5, sec: 328, paceSec: 328 },
+        { km: 6, sec: 4,   paceSec: 278, partial: true },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -310,6 +319,17 @@ const ANALYSES = {
       ],
       pokemon: "Galopa", pokemonAdj: "Fougueux",
       pokemonPhrase: "Galopa : un cheval de feu qui passe sa vie à provoquer en course tout ce qui bouge, et dont on dit qu'il ne montre sa vraie vitesse que le jour où ça l'arrange. Quatre kilomètres de trot poli, puis 5'39 sur le dernier — ça l'arrangeait. Fougueux, parce que garder ta plus belle accélération pour le moment où il ne reste plus un mètre à courir, ce n'est pas une tactique, c'est un tempérament." },
+    "2026-08-19": { trend: "up", verdict: "Le 5 km sous les 30 minutes 🎉",
+      text: [
+        { titre: "Le calcul du 12 août tenait", texte: "Il y a une semaine j'écrivais : quatre kilomètres tenus à 6'05\" et le même dernier kilomètre, ça fait 29:59, les 30 minutes ne demandent qu'un départ plus sage. Tu as fait très exactement ça, et tu passes en 29:46 — 13 secondes sous le calcul. 5,01 km à 5'56\"/km, sixième record d'allure depuis le 25 juillet, 6 s/km de mieux que le 12 août." },
+        { titre: "21 secondes lâchées au départ", texte: "Le premier kilomètre passe en 6'12\", contre 5'51\" la semaine dernière. C'est la première fois depuis le début que tu pars volontairement plus lentement que ton allure cible, et c'est toute la séance qui change de forme. Sur la même distance, tu as gagné 22 secondes au chrono en partant 21 secondes plus lentement — retiens ce chiffre, il vaut tous les discours." },
+        { titre: "Les kilomètres 3 et 4 ne lâchent plus", texte: "Le défaut que je te signalais depuis trois séances a disparu. 6'12\", 5'52\", 6'02\", 6'05\" : sept secondes séparent ton premier kilomètre du quatrième, et dans le bon sens. Le 12 août tu en lâchais 33 sur ce même segment, le 9 août près de 50. Ce n'était donc ni la forme ni la fatigue, c'était la gestion — la démonstration est faite." },
+        { titre: "Le dernier kilomètre en 5:28", texte: "Et il restait de la marge : 5'28\" sur le dernier kilomètre complet, le plus rapide que tu aies jamais chronométré (le précédent record était le 5'39\" du 12 août), puis les derniers mètres sur un rythme de 4'38\". Deux séances de suite que tu finis plus vite que tu ne commences. La cadence moyenne suit, 156 spm, encore un sommet." },
+        { titre: "165 bpm, cinquième rappel", texte: "Maintenant la partie qui va moins te plaire. FC moyenne à 165 bpm, ta plus haute jamais enregistrée — encore une fois — et effort ressenti « Hard ». Ça fait sept séances de qualité d'affilée, et cinq fois que je te demande la même chose. Je ne trouverai pas de formulation plus convaincante que les quatre précédentes, alors je vais le dire autrement : la seule variable de ton entraînement que tu n'aies jamais testée, c'est le repos." },
+        { titre: "Ce que je veux voir la prochaine", texte: "45 minutes à 7'15\"/km, FC sous 145, montre dans la poche. Pas un record, pas un test, pas un 6 km. Tu viens de prouver qu'un départ maîtrisé valait 22 secondes ; le corollaire, c'est qu'une semaine contenant une vraie sortie facile vaut probablement le record suivant. Après ça, on ira chercher les 29 minutes." },
+      ],
+      pokemon: "Dracaufeu", pokemonAdj: "Flamboyant",
+      pokemonPhrase: "Dracaufeu : Salamèche le 23 juin, Reptincel le 10 juillet, et l'évolution finale pile pour ton premier 5 km sous les 30 minutes. Deux mois pour boucler la chaîne, c'est le rythme d'un dresseur sérieux. Flamboyant, parce qu'un dernier kilomètre en 5'28 après quatre autres tenus au cordeau, ce n'est pas une arrivée, c'est une sortie de scène." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
