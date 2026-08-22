@@ -120,6 +120,11 @@ function setChartEmpty(canvasId, message) {
 // ---------- Cartes récap ----------
 function renderCards() {
   const el = document.getElementById("summaryCards");
+  // Une seule personne filtrée : la carte prend toute la largeur au lieu de
+  // rester seule dans la colonne de gauche, moitié de dashboard vide à sa
+  // droite. C'est la grille qui change, pas la carte — elle ne sait rien du
+  // nombre de ses voisines.
+  el.classList.toggle("single", viewRunners.length === 1);
   el.innerHTML = viewRunners.map((name) => {
     const runs = runsOf(name);
     const color = RUNNER_COLORS[name];
@@ -250,8 +255,25 @@ function renderEvolution(metricKey = currentMetric) {
   }
 }
 
+// Un seul seau de kilométrage entier coché — « 5 km », « 6 km » — et toutes les
+// séances affichées tiennent dans la même tranche d'un kilomètre : la courbe de
+// distance devient une ligne plate qui n'apprend rien. On retire alors la
+// métrique du sélecteur plutôt que de la laisser mener à un graphique sans
+// relief. « Moins de 5 km » garde la sienne (de 2 à 4,9 km, il y a une pente à
+// lire), et deux seaux cochés aussi : la courbe dit alors laquelle des deux
+// distances a été courue ce jour-là.
+const distanceIsFlat = () => viewBuckets.length === 1 && viewBuckets[0] !== SUB_5;
+
+const visibleMetrics = () =>
+  Object.entries(METRICS).filter(([k]) => !(k === "distance" && distanceIsFlat()));
+
 function renderMetricSwitch() {
-  buildSwitch("metricSwitch", Object.entries(METRICS).map(([k, m]) => [k, m.label]), renderEvolution);
+  const metrics = visibleMetrics();
+  // La métrique regardée peut être celle qui vient de disparaître : on retombe
+  // sur l'allure, la première de la liste restante, plutôt que sur un panneau
+  // dont plus aucun bouton n'est allumé.
+  if (!metrics.some(([k]) => k === currentMetric)) currentMetric = metrics[0][0];
+  buildSwitch("metricSwitch", metrics.map(([k, m]) => [k, m.label]), renderEvolution, currentMetric);
 }
 
 // Le meilleur kilomètre d'une séance, ou null si elle n'a pas de splits. Le
@@ -970,13 +992,13 @@ function rankRuns(cat, runs) {
 // distingue, et les deux ensemble suffisent à la retrouver dans le tableau.
 const runLabel = (r) => `${r.distance.toFixed(2)} km · ${fmtDate(r.date)}`;
 
-function runPodiumSlot(entry, cat, index, total) {
+function runPodiumSlot(name, entry, cat, index, total) {
   const place = Math.min(entry.rank + 1, 3);
-  const color = RUNNER_COLORS[plRunner];
+  const color = RUNNER_COLORS[name];
   const order = total >= 3 ? [2, 1, 3][index] || index + 1 : index + 1;
   return `
     <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
-      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${plRunner[0]}</div>
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${name[0]}</div>
       <div class="podium-name">${entry.run.distance.toFixed(2)} km</div>
       <div class="podium-sub">${fmtDate(entry.run.date)}</div>
       <div class="podium-value">${cat.fmt(entry.value)}</div>
@@ -984,59 +1006,100 @@ function runPodiumSlot(entry, cat, index, total) {
     </div>`;
 }
 
-let plRunner = RUNNERS.find((n) => RUNS[n].length) || RUNNERS[0];
 let plCategory = RUN_CATEGORIES[0].id;
 
-function renderPersonal() {
-  const runs = RUNS[plRunner];
-  const cats = personalCategories(runs);
-  // L'onglet regardé peut ne pas exister chez la personne suivante : on retombe
-  // sur le premier disponible plutôt que sur un panneau vide.
-  const cat = cats.find((c) => c.id === plCategory) || cats[0];
-  if (cat) plCategory = cat.id;
+// Les deux cartes personnelles avaient chacune sa barre de pastilles : le même
+// réglage que le filtre coureur du haut, posé une troisième fois. Elles lisent
+// maintenant `viewRunners`, et rendent un bloc par personne quand la sélection
+// en compte plusieurs. Celles qui n'ont rien déposé sont écartées d'office —
+// avec « Tous », un podium vide au nom de Ju ne dit rien de plus que son
+// absence du tableau.
+const personalRunners = () => viewRunners.filter((n) => RUNS[n].length);
 
-  const scope = document.getElementById("plScope");
-  const podium = document.getElementById("plPodium");
-  const extra = document.getElementById("plExtra");
-
-  if (!cat) {
-    scope.innerHTML = `<b>${plRunner}</b> — pas encore de séance déposée.`;
-    document.getElementById("plTabs").innerHTML = "";
-    document.getElementById("plDesc").innerHTML = "";
-    podium.innerHTML = `<p class="empty-note">Le podium s'ouvrira à la première sortie.</p>`;
-    extra.innerHTML = "";
-    paintRunnerPills("plRunners", plRunner);
-    return;
-  }
-
+// Le palmarès d'une personne dans la catégorie affichée. `solo` retire le titre
+// nominatif : à une seule personne, le paragraphe de cadrage la nomme déjà.
+function personalBlock(name, cat, solo) {
+  const runs = RUNS[name];
+  const head = solo
+    ? ""
+    : `<h3 class="pl-runner"><span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${name}</h3>`;
   const ranked = rankRuns(cat, runs);
-  scope.innerHTML =
-    `<b>${plRunner}</b> — ses ${runs.length} séances en concurrence les unes avec les autres, sur tout son historique. ` +
-    `Aucune étoile en jeu et aucune comparaison avec les autres : c'est un palmarès privé. Les filtres du haut ne s'y appliquent pas.`;
-  document.getElementById("plDesc").innerHTML = `<b>${cat.title}</b> — ${cat.desc}`;
-  podium.innerHTML = ranked
-    .slice(0, 3)
-    .map((e, i) => runPodiumSlot(e, cat, i, Math.min(ranked.length, 3)))
-    .join("");
+
+  // La catégorie vient de la sélection entière : elle peut manquer à l'un de
+  // ses membres — Didi n'a ni FC ni cadence. Son bloc reste, pour qu'on ne
+  // croie pas l'avoir décoché par mégarde.
+  if (!ranked.length) {
+    return `<div class="pl-block">${head}<p class="empty-note">Son appli ne mesure pas cette donnée — rien à classer ici.</p></div>`;
+  }
 
   // La suite du classement s'arrête à la 8e : au-delà, ce n'est plus un palmarès
   // mais le tableau des séances, qui existe déjà plus bas.
   const rest = ranked.slice(3, 8);
-  extra.innerHTML = [
-    rest.length
-      ? `<ol class="lb-rest" start="4">${rest
-          .map(
-            (e) =>
-              `<li><span class="dot" style="background:${RUNNER_COLORS[plRunner]}"></span>${runLabel(e.run)}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`,
-          )
-          .join("")}</ol>`
-      : "",
-    ranked.length > 8
-      ? `<p class="lb-note">…et ${ranked.length - 8} autre${ranked.length - 8 > 1 ? "s" : ""} séance${ranked.length - 8 > 1 ? "s" : ""} plus bas dans ce classement.</p>`
-      : "",
-  ].join("");
+  const others = ranked.length - 8;
+  return `
+    <div class="pl-block">
+      ${head}
+      <div class="podium">
+        ${ranked
+          .slice(0, 3)
+          .map((e, i) => runPodiumSlot(name, e, cat, i, Math.min(ranked.length, 3)))
+          .join("")}
+      </div>
+      <div class="lb-extra">
+        ${rest.length
+          ? `<ol class="lb-rest" start="4">${rest
+              .map(
+                (e) =>
+                  `<li><span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${runLabel(e.run)}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`,
+              )
+              .join("")}</ol>`
+          : ""}
+        ${others > 0
+          ? `<p class="lb-note">…et ${others} autre${others > 1 ? "s" : ""} séance${others > 1 ? "s" : ""} plus bas dans ce classement.</p>`
+          : ""}
+      </div>
+    </div>`;
+}
 
-  document.getElementById("plTabs").innerHTML = `
+function renderPersonal() {
+  const names = personalRunners();
+  const solo = names.length === 1;
+  const scope = document.getElementById("plScope");
+  const tabs = document.getElementById("plTabs");
+  const desc = document.getElementById("plDesc");
+  const blocks = document.getElementById("plBlocks");
+
+  // Un onglet est proposé dès qu'une des personnes affichées peut le remplir :
+  // le retirer parce que Didi n'a pas de FC priverait Vincent de sa catégorie
+  // dans la même sélection.
+  const cats = RUN_CATEGORIES.filter((c) =>
+    names.some((n) => RUNS[n].some((r) => c.value(r) != null)),
+  );
+  // L'onglet regardé peut ne pas exister dans la sélection suivante : on
+  // retombe sur le premier disponible plutôt que sur un panneau vide.
+  const cat = cats.find((c) => c.id === plCategory) || cats[0];
+  if (cat) plCategory = cat.id;
+
+  if (!cat) {
+    scope.innerHTML = "Personne d'affiché n'a encore déposé de séance.";
+    tabs.innerHTML = "";
+    desc.innerHTML = "";
+    blocks.innerHTML = `<p class="empty-note">Le podium s'ouvrira à la première sortie.</p>`;
+    return;
+  }
+
+  // Le filtre de distance, lui, ne s'applique toujours pas : un palmarès
+  // personnel amputé de la moitié des sorties n'en est plus un.
+  const note =
+    "Aucune étoile en jeu et aucune comparaison avec les autres : c'est un palmarès privé. " +
+    "Le filtre coureur du haut choisit qui apparaît ici ; le filtre de distance ne s'y applique pas.";
+  scope.innerHTML = solo
+    ? `<b>${names[0]}</b> — ses ${RUNS[names[0]].length} séances en concurrence les unes avec les autres, sur tout son historique. ${note}`
+    : `Un palmarès par personne — chacun ses propres sorties en concurrence les unes avec les autres, sur tout son historique. ${note}`;
+  desc.innerHTML = `<b>${cat.title}</b> — ${cat.desc}`;
+  blocks.innerHTML = names.map((n) => personalBlock(n, cat, solo)).join("");
+
+  tabs.innerHTML = `
     <span class="filter-label">Catégorie</span>
     <div class="filter-switch">
       ${cats
@@ -1046,35 +1109,9 @@ function renderPersonal() {
         })
         .join("")}
     </div>`;
-  paintRunnerPills("plRunners", plRunner);
-}
-
-// Barre de sélection du coureur, partagée par les deux cartes personnelles. La
-// pastille garde la couleur de la personne dans les deux états : elle identifie,
-// elle ne signale pas la sélection — c'est le rôle du fond blanc.
-function runnerPillsHtml() {
-  return RUNNERS.map(
-    (n) =>
-      `<button type="button" data-value="${n}"><span class="dot" style="background:${RUNNER_COLORS[n]}"></span>${n}</button>`,
-  ).join("");
-}
-
-function paintRunnerPills(elId, selected) {
-  document.querySelectorAll(`#${elId} button`).forEach((b) => {
-    const on = b.dataset.value === selected;
-    b.classList.toggle("active", on);
-    b.setAttribute("aria-pressed", String(on));
-  });
 }
 
 function initPersonal() {
-  document.getElementById("plRunners").innerHTML = runnerPillsHtml();
-  document.getElementById("plRunners").addEventListener("click", (e) => {
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    plRunner = btn.dataset.value;
-    renderPersonal();
-  });
   // Délégation : les onglets de catégorie sont redessinés à chaque rendu.
   document.getElementById("plTabs").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
@@ -1082,7 +1119,6 @@ function initPersonal() {
     plCategory = btn.dataset.value;
     renderPersonal();
   });
-  renderPersonal();
 }
 
 // ---------- Trophées ----------
@@ -1433,10 +1469,12 @@ function trophyCard(t, runs) {
     </div>`;
 }
 
-let trRunner = RUNNERS.find((n) => RUNS[n].length) || RUNNERS[0];
-
-function renderTrophies() {
-  const runs = RUNS[trRunner];
+// La vitrine d'une personne : son compteur, sa jauge, sa grille. Comme le
+// palmarès personnel, elle suit le filtre coureur du haut et se répète quand
+// plusieurs personnes sont cochées — les paliers étant les mêmes pour tout le
+// monde, deux vitrines côte à côte se comparent d'un coup d'œil.
+function trophyBlock(name) {
+  const runs = RUNS[name];
   const reachable = TROPHIES.filter((t) => !outOfReach(t, runs));
   const unlocked = reachable.filter((t) => t.at(runs));
   const pct = reachable.length ? (unlocked.length / reachable.length) * 100 : 0;
@@ -1444,36 +1482,38 @@ function renderTrophies() {
   const byTier = (tier) => unlocked.filter((t) => t.tier === tier).length;
   const platine = PLATINE.at(runs);
 
-  document.getElementById("trProgress").innerHTML = `
-    <div class="tr-head">
-      <span class="tr-count">${unlocked.length} <em>/ ${reachable.length}</em></span>
-      <span class="tr-tiers">
-        ${TIERS.bronze.emoji} ${byTier("bronze")} &nbsp; ${TIERS.argent.emoji} ${byTier("argent")} &nbsp; ${TIERS.or.emoji} ${byTier("or")}
-        &nbsp;·&nbsp; ${platine ? "Platine décroché 🏆" : "Platine à décrocher"}
-      </span>
-    </div>
-    <div class="tr-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
-    <p class="lb-scope">
-      ${runs.length
-        ? `<b>${trRunner}</b> — ${Math.round(pct)} % du tableau. Les paliers sont les mêmes pour tout le monde et ne se perdent jamais : chacun porte la date du jour où il est tombé.`
-        : `<b>${trRunner}</b> — pas encore de séance : tout est verrouillé, et le premier trophée s'obtient en sortant une fois.`}
-      ${oor ? ` ${oor} trophée${oor > 1 ? "s sont hors de portée" : " est hors de portée"} faute de mesure, et ne compte${oor > 1 ? "nt" : ""} donc pas dans le total.` : ""}
-    </p>`;
-
-  document.getElementById("trGrid").innerHTML = [PLATINE, ...TROPHIES].map((t) => trophyCard(t, runs)).join("");
-  paintRunnerPills("trRunners", trRunner);
+  return `
+    <div class="tr-block">
+      <div class="trophy-progress">
+        <div class="tr-head">
+          <span class="tr-count">${unlocked.length} <em>/ ${reachable.length}</em></span>
+          <span class="tr-tiers">
+            ${TIERS.bronze.emoji} ${byTier("bronze")} &nbsp; ${TIERS.argent.emoji} ${byTier("argent")} &nbsp; ${TIERS.or.emoji} ${byTier("or")}
+            &nbsp;·&nbsp; ${platine ? "Platine décroché 🏆" : "Platine à décrocher"}
+          </span>
+        </div>
+        <div class="tr-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
+        <p class="lb-scope">
+          <b>${name}</b> — ${Math.round(pct)} % du tableau. Les paliers sont les mêmes pour tout le monde et ne se perdent jamais : chacun porte la date du jour où il est tombé.
+          ${oor ? ` ${oor} trophée${oor > 1 ? "s sont hors de portée" : " est hors de portée"} faute de mesure, et ne compte${oor > 1 ? "nt" : ""} donc pas dans le total.` : ""}
+        </p>
+      </div>
+      <div class="trophy-grid">
+        ${[PLATINE, ...TROPHIES].map((t) => trophyCard(t, runs)).join("")}
+      </div>
+    </div>`;
 }
 
-function initTrophies() {
-  document.getElementById("trRunners").innerHTML = runnerPillsHtml();
-  document.getElementById("trRunners").addEventListener("click", (e) => {
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    trRunner = btn.dataset.value;
-    renderTrophies();
-  });
-  renderTrophies();
+function renderTrophies() {
+  const names = personalRunners();
+  const el = document.getElementById("trBlocks");
+  // Aucune séance dans la sélection : la vitrine entière serait verrouillée, et
+  // quinze cadenas alignés se lisent comme une panne plutôt que comme un début.
+  el.innerHTML = names.length
+    ? names.map(trophyBlock).join("")
+    : `<p class="empty-note">Personne d'affiché n'a encore déposé de séance : la vitrine s'ouvrira à la première sortie.</p>`;
 }
+
 
 // ---------- Cartes repliables ----------
 // Trois cartes s'ouvrent fermées. Le palmarès, le palmarès personnel et les
@@ -1531,10 +1571,12 @@ function initCollapsibles() {
 // ---------- Sélecteurs globaux ----------
 // Un seul actif à la fois : c'est le comportement du sélecteur de métrique, où
 // deux courbes de nature différente sur le même axe n'auraient pas de sens.
-function buildSwitch(elId, options, onPick) {
+// `active` : la barre est redessinée quand le filtre de distance change, et
+// l'actif n'est alors pas forcément le premier bouton — il faut le lui dire.
+function buildSwitch(elId, options, onPick, active = options[0][0]) {
   const el = document.getElementById(elId);
   el.innerHTML = options
-    .map(([k, label], i) => `<button data-value="${k}" class="${i === 0 ? "active" : ""}">${label}</button>`)
+    .map(([k, label]) => `<button data-value="${k}" class="${k === active ? "active" : ""}">${label}</button>`)
     .join("");
   el.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1590,10 +1632,16 @@ function buildMultiSwitch(elId, allLabel, options, onChange) {
 
 // Tout ce qui dépend des deux filtres globaux, y compris le décompte du pied
 // de page — sinon il annoncerait 34 séances sous un dashboard qui n'en montre 6.
-// Le leaderboard, lui, n'en dépend pas et n'est rendu qu'à l'init.
+// Le palmarès collectif, lui, n'en dépend pas et n'est rendu qu'à l'init : il
+// compare tout le monde par construction.
 function renderAll() {
   renderCards();
+  // Avant le graphique : le sélecteur peut changer la métrique courante quand
+  // celle qu'on regardait vient d'être retirée par le filtre de distance.
+  renderMetricSwitch();
   renderEvolution();
+  renderPersonal();
+  renderTrophies();
   renderTable();
   document.getElementById("totalRuns").textContent = sum(viewRunners.map((n) => runsOf(n).length));
 }
@@ -1614,10 +1662,8 @@ Chart.defaults.color = "#98989d";
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
 renderFilters();
-renderMetricSwitch();
 initLeaderboard();
 initPersonal();
-initTrophies();
 renderAll();
 // En dernier : les panneaux sont rendus à leur taille naturelle, donc Chart.js
 // mesure un conteneur réel avant qu'on replie quoi que ce soit. Tout est

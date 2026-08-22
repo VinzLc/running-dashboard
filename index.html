@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🏃 Running Dashboard — Anaïs & Vincent</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=39" />
+  <link rel="stylesheet" href="styles.css?v=40" />
 </head>
 <body>
   <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
@@ -25,7 +25,9 @@
   </header>
 
   <main>
-    <!-- Filtres globaux : coureur et distance -->
+    <!-- Filtres globaux : coureur et distance. Le filtre coureur pilote tout ce
+         qui est nominatif, cartes récap et cartes personnelles comprises — ces
+         dernières avaient leur propre sélecteur, c'était le même réglage deux fois. -->
     <div class="filter-bar">
       <div class="filter-group">
         <span class="filter-label">Coureur <em>(sélection multiple)</em></span>
@@ -76,14 +78,12 @@
     <section class="panel personal" data-panel="personal">
       <div class="panel-head">
         <h2><button type="button" class="panel-toggle" aria-controls="body-personal"><span class="panel-chev" aria-hidden="true"></span>🥇 Leaderboard personnel</button></h2>
-        <div class="filter-switch runner-pills" id="plRunners"></div>
       </div>
       <div class="panel-body" id="body-personal">
         <p class="lb-scope" id="plScope"></p>
         <div class="lb-tabs" id="plTabs"></div>
         <p class="lb-desc" id="plDesc"></p>
-        <div class="podium" id="plPodium"></div>
-        <div class="lb-extra" id="plExtra"></div>
+        <div id="plBlocks"></div>
       </div>
     </section>
 
@@ -92,11 +92,9 @@
     <section class="panel trophies" data-panel="trophies">
       <div class="panel-head">
         <h2><button type="button" class="panel-toggle" aria-controls="body-trophies"><span class="panel-chev" aria-hidden="true"></span>🏆 Trophées</button></h2>
-        <div class="filter-switch runner-pills" id="trRunners"></div>
       </div>
       <div class="panel-body" id="body-trophies">
-        <div class="trophy-progress" id="trProgress"></div>
-        <div class="trophy-grid" id="trGrid"></div>
+        <div id="trBlocks"></div>
       </div>
     </section>
 
@@ -134,8 +132,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=39"></script>
-  <script src="pokemon.js?v=39"></script>
-  <script src="app.js?v=39"></script>
+  <script src="data.js?v=40"></script>
+  <script src="pokemon.js?v=40"></script>
+  <script src="app.js?v=40"></script>
 </body>
 </html>

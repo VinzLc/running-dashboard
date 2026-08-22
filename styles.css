@@ -114,6 +114,12 @@ main {
   gap: 16px;
   margin-bottom: 28px;
 }
+/* Filtré sur une seule personne, il n'y a plus de voisine à attendre : la carte
+   prend toute la largeur au lieu de rester dans la colonne de gauche, et ses
+   huit chiffres s'étalent sur quatre colonnes — deux colonnes sur 1200 px
+   laisseraient un blanc entre le libellé et sa valeur. */
+.cards.single { grid-template-columns: 1fr; }
+.cards.single .stat-grid { grid-template-columns: repeat(4, 1fr); }
 .runner-card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -411,14 +417,27 @@ main {
     var(--surface);
 }
 
-/* La pastille de couleur identifie la personne dans les deux états — c'est le
-   fond blanc qui dit lequel est sélectionné, pas elle. */
-.runner-pills button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+/* Une personne cochée = un bloc, empilés quand le filtre du haut en garde
+   plusieurs. Le filet dit où finit un palmarès et où commence le suivant ;
+   entre deux vitrines de trophées, il sépare deux grilles qui se ressemblent
+   trait pour trait. */
+.pl-block + .pl-block,
+.tr-block + .tr-block {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
-.runner-pills .dot { width: 9px; height: 9px; }
+/* Le titre nominatif n'apparaît qu'à plusieurs : seul, le paragraphe de cadrage
+   nomme déjà la personne juste au-dessus. */
+.pl-runner {
+  margin: 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+/* Collé au titre, le podium perdait la marge qui le décolle du texte. */
+.pl-runner + .podium { margin-top: 20px; }
 
 /* La date sous la distance : ensemble, les deux forment le nom de la sortie. */
 .podium-sub {
@@ -762,7 +781,8 @@ footer {
   .hero { padding: 28px 16px 18px; }
   .panel { padding: 14px; border-radius: 14px; }
   .runner-card { padding: 16px; }
-  .cards { grid-template-columns: 1fr; gap: 12px; }
+  .cards, .cards.single { grid-template-columns: 1fr; gap: 12px; }
+  .cards.single .stat-grid { grid-template-columns: 1fr 1fr; }
   .stat-grid { gap: 12px; }
   .stat .value { font-size: 19px; }
   .chart-wrap { height: 280px; }
