@@ -9,6 +9,11 @@ const RUNNERS = Object.keys(RUNS);
 // lecteurs qui gèrent le cas vide.
 let viewRunners = [...RUNNERS];
 
+// « Rien de coché » et « tout coché » donnent le même `viewRunners` mais ne
+// veulent pas dire la même chose : les cartes personnelles s'ouvrent quand on a
+// demandé quelqu'un, et restent repliées quand on n'a rien demandé.
+let runnerFilterOn = false;
+
 // ---------- Filtre de distance ----------
 // Comparer ce qui est comparable : une séance appartient au seau de son
 // kilométrage entier (5,39 km → « 5 km »), et tout ce qui est sous 5 km tient
@@ -916,9 +921,9 @@ function renderLeaderboard() {
   const absents = RUNNERS.filter((n) => !ranked.some((e) => e.name === n));
   document.getElementById("lbExtra").innerHTML = [
     rest.length
-      ? `<ol class="lb-rest" start="4">${rest
+      ? `<ul class="lb-rest">${rest
           .map((e) => `<li>${placeHtml(e.rank)}<span class="dot" style="background:${RUNNER_COLORS[e.name]}"></span>${e.name}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`)
-          .join("")}</ol>`
+          .join("")}</ul>`
       : "",
     rawCat.views && lbDistanceView === "time"
       ? `<p class="lb-note">Vue chrono : ce podium classe des temps, pas des allures. Les étoiles de la catégorie, elles, se jouent sur la vue allure et ne bougent pas d'ici.</p>`
@@ -947,10 +952,10 @@ function renderLeaderboard() {
 // alors qu'un seul choix est actif à la fois. Redessiné à chaque changement de
 // saison, puisque les courses de distance proposées en dépendent.
 function renderLeaderboardTabs(season, cats, rawCat) {
-  const group = (label, buttons) => `
+  const group = (label, buttons, grid) => `
     <div class="lb-tabs-group">
       <span class="filter-label">${label}</span>
-      <div class="filter-switch">${buttons}</div>
+      <div class="filter-switch${grid ? " tab-grid" : ""}">${buttons}</div>
     </div>`;
 
   const competitions = cats
@@ -970,7 +975,7 @@ function renderLeaderboardTabs(season, cats, rawCat) {
     : "";
 
   document.getElementById("lbTabs").innerHTML =
-    group("Compétition", competitions) + (views ? group("Vue", views) : "");
+    group("Compétition", competitions, true) + (views ? group("Vue", views) : "");
 }
 
 function initLeaderboard() {
@@ -1122,29 +1127,72 @@ let plCategory = RUN_CATEGORIES[0].id;
 // absence du tableau.
 const personalRunners = () => viewRunners.filter((n) => RUNS[n].length);
 
+// Quatre palmarès et quatre vitrines dépliés d'un coup, c'est trois écrans de
+// défilement pour des cartes qu'on vient consulter, pas lire de bout en bout.
+// Sans filtre coureur, chaque bloc est donc replié sur son titre ; dès qu'on a
+// demandé quelqu'un, ses blocs s'ouvrent — c'est qu'on venait les voir. Le clic
+// sur un titre passe outre, et l'état tient jusqu'au prochain coup de filtre.
+let plOpen = new Set();
+let trOpen = new Set();
+
+function resetBlocks() {
+  const open = runnerFilterOn ? personalRunners() : [];
+  plOpen = new Set(open);
+  trOpen = new Set(open);
+}
+
+// Le titre d'un bloc : une pastille, un nom, et de quoi le replier. `teaser`
+// n'apparaît qu'une fois replié — c'est ce qui reste à lire quand le contenu
+// est caché, sinon il redit ce qui est juste en dessous.
+function blockHead(name, open, teaser) {
+  return `
+    <h3 class="block-head">
+      <button type="button" class="block-toggle" data-runner="${name}" aria-expanded="${open}">
+        <span class="panel-chev" aria-hidden="true"></span>
+        <span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${name}
+        ${!open && teaser ? `<span class="block-teaser">${teaser}</span>` : ""}
+      </button>
+    </h3>`;
+}
+
+// Délégation partagée : les blocs sont redessinés à chaque rendu.
+function initBlockToggles(elId, open, render) {
+  document.getElementById(elId).addEventListener("click", (e) => {
+    const btn = e.target.closest(".block-toggle");
+    if (!btn) return;
+    const name = btn.dataset.runner;
+    if (!open().delete(name)) open().add(name);
+    render();
+  });
+}
+
 // Le palmarès d'une personne dans la catégorie affichée. `solo` retire le titre
-// nominatif : à une seule personne, le paragraphe de cadrage la nomme déjà.
+// nominatif et le repli : à une seule personne, le paragraphe de cadrage la
+// nomme déjà, et il n'y a rien à replier pour faire de la place.
 function personalBlock(name, cat, solo) {
   const runs = RUNS[name];
+  const ranked = rankRuns(cat, runs);
+  const open = solo || plOpen.has(name);
+  // Replié, le titre porte le vainqueur de la catégorie : c'est la ligne pour
+  // laquelle on aurait déplié.
   const head = solo
     ? ""
-    : `<h3 class="pl-runner"><span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${name}</h3>`;
-  const ranked = rankRuns(cat, runs);
+    : blockHead(name, open, ranked.length ? `${runLabel(ranked[0].run)} — ${cat.fmt(ranked[0].value)}` : "donnée non mesurée");
+  const wrap = (body) =>
+    `<div class="pl-block${open ? "" : " collapsed"}">${head}<div class="block-body"${open ? "" : " hidden"}>${body}</div></div>`;
 
   // La catégorie vient de la sélection entière : elle peut manquer à l'un de
   // ses membres — Didi n'a ni FC ni cadence. Son bloc reste, pour qu'on ne
   // croie pas l'avoir décoché par mégarde.
   if (!ranked.length) {
-    return `<div class="pl-block">${head}<p class="empty-note">Son appli ne mesure pas cette donnée — rien à classer ici.</p></div>`;
+    return wrap(`<p class="empty-note">Son appli ne mesure pas cette donnée — rien à classer ici.</p>`);
   }
 
   // La suite du classement s'arrête à la 8e : au-delà, ce n'est plus un palmarès
   // mais le tableau des séances, qui existe déjà plus bas.
   const rest = ranked.slice(3, 8);
   const others = ranked.length - 8;
-  return `
-    <div class="pl-block">
-      ${head}
+  return wrap(`
       <div class="podium">
         ${ranked
           .slice(0, 3)
@@ -1153,18 +1201,17 @@ function personalBlock(name, cat, solo) {
       </div>
       <div class="lb-extra">
         ${rest.length
-          ? `<ol class="lb-rest" start="4">${rest
+          ? `<ul class="lb-rest">${rest
               .map(
                 (e) =>
                   `<li>${placeHtml(e.rank)}<span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${runLabel(e.run)}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`,
               )
-              .join("")}</ol>`
+              .join("")}</ul>`
           : ""}
         ${others > 0
           ? `<p class="lb-note">…et ${others} autre${others > 1 ? "s" : ""} séance${others > 1 ? "s" : ""} plus bas dans ce classement.</p>`
           : ""}
-      </div>
-    </div>`;
+      </div>`);
 }
 
 function renderPersonal() {
@@ -1210,7 +1257,7 @@ function renderPersonal() {
   tabs.innerHTML = `
     <div class="lb-tabs-group">
       <span class="filter-label">Catégorie</span>
-      <div class="filter-switch">
+      <div class="filter-switch tab-grid">
         ${cats
           .map((c) => {
             const on = c.id === plCategory;
@@ -1222,6 +1269,7 @@ function renderPersonal() {
 }
 
 function initPersonal() {
+  initBlockToggles("plBlocks", () => plOpen, renderPersonal);
   // Délégation : les onglets de catégorie sont redessinés à chaque rendu.
   document.getElementById("plTabs").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
@@ -1583,7 +1631,7 @@ function trophyCard(t, runs) {
 // palmarès personnel, elle suit le filtre coureur du haut et se répète quand
 // plusieurs personnes sont cochées — les paliers étant les mêmes pour tout le
 // monde, deux vitrines côte à côte se comparent d'un coup d'œil.
-function trophyBlock(name) {
+function trophyBlock(name, solo) {
   const runs = RUNS[name];
   const reachable = TROPHIES.filter((t) => !outOfReach(t, runs));
   const unlocked = reachable.filter((t) => t.at(runs));
@@ -1592,8 +1640,14 @@ function trophyBlock(name) {
   const byTier = (tier) => unlocked.filter((t) => t.tier === tier).length;
   const platine = PLATINE.at(runs);
 
+  const open = solo || trOpen.has(name);
+  // Replié, il ne reste que le titre et son compteur : la vingtaine de tuiles,
+  // la jauge et le paragraphe d'explication — le même pour tout le monde —
+  // attendent qu'on les demande.
   return `
-    <div class="tr-block">
+    <div class="tr-block${open ? "" : " collapsed"}">
+      ${solo ? "" : blockHead(name, open, `${unlocked.length} / ${reachable.length} · ${Math.round(pct)} %`)}
+      <div class="block-body"${open ? "" : " hidden"}>
       <div class="trophy-progress">
         <div class="tr-head">
           <span class="tr-count">${unlocked.length} <em>/ ${reachable.length}</em></span>
@@ -1611,7 +1665,12 @@ function trophyBlock(name) {
       <div class="trophy-grid">
         ${[PLATINE, ...TROPHIES].map((t) => trophyCard(t, runs)).join("")}
       </div>
+      </div>
     </div>`;
+}
+
+function initTrophies() {
+  initBlockToggles("trBlocks", () => trOpen, renderTrophies);
 }
 
 function renderTrophies() {
@@ -1620,7 +1679,7 @@ function renderTrophies() {
   // Aucune séance dans la sélection : la vitrine entière serait verrouillée, et
   // quinze cadenas alignés se lisent comme une panne plutôt que comme un début.
   el.innerHTML = names.length
-    ? names.map(trophyBlock).join("")
+    ? names.map((n) => trophyBlock(n, names.length === 1)).join("")
     : `<p class="empty-note">Personne d'affiché n'a encore déposé de séance : la vitrine s'ouvrira à la première sortie.</p>`;
 }
 
@@ -1759,6 +1818,8 @@ function renderAll() {
 function renderFilters() {
   buildMultiSwitch("runnerFilter", "Tous", RUNNERS.map((n) => [n, n]), (sel) => {
     viewRunners = sel.length ? sel : [...RUNNERS];
+    runnerFilterOn = sel.length > 0;
+    resetBlocks();
     renderAll();
   });
   buildMultiSwitch("distanceFilter", "Toutes", DISTANCE_BUCKETS.map((b) => [b.key, b.label]), (sel) => {
@@ -1774,6 +1835,8 @@ Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
 renderFilters();
 initLeaderboard();
 initPersonal();
+initTrophies();
+resetBlocks();
 renderAll();
 // En dernier : les panneaux sont rendus à leur taille naturelle, donc Chart.js
 // mesure un conteneur réel avant qu'on replie quoi que ce soit. Tout est

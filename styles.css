@@ -258,6 +258,24 @@ main {
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
+  width: 100%;
+}
+/* Douze compétitions dont les libellés vont de « 5 km » à « Chasseur de
+   records » : en flex, chaque bouton fait la largeur de son texte, la deuxième
+   rangée démarre où la première s'est arrêtée, et rien ne tombe en face de
+   rien. En grille à colonnes égales, chaque onglet occupe une case de même
+   largeur et les rangées se superposent. Réservé aux menus longs — la bascule
+   allure/chrono, qui n'a que deux entrées, garde ses boutons à leur taille. */
+.filter-switch.tab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  width: 100%;
+}
+.filter-switch.tab-grid button {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Le sélecteur de saison est le cran au-dessus des onglets de catégorie : il
@@ -442,16 +460,56 @@ main {
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 /* Le titre nominatif n'apparaît qu'à plusieurs : seul, le paragraphe de cadrage
-   nomme déjà la personne juste au-dessus. */
-.pl-runner {
-  margin: 0;
-  font-size: 16px;
+   nomme déjà la personne juste au-dessus. C'est aussi le bouton de repli du
+   bloc — le même geste que sur un panneau, un cran plus bas dans la page. */
+.block-head { margin: 0; font-size: 16px; }
+.block-toggle {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 9px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-/* Collé au titre, le podium perdait la marge qui le décolle du texte. */
-.pl-runner + .podium { margin-top: 20px; }
+/* Un chevron un peu plus petit que celui des panneaux : la hiérarchie se lit à
+   la taille du triangle autant qu'à celle du titre. */
+.block-toggle .panel-chev {
+  border-left-width: 7px;
+  border-top-width: 5px;
+  border-bottom-width: 5px;
+}
+.block-toggle:hover .panel-chev { border-left-color: var(--text); }
+.pl-block.collapsed .panel-chev,
+.tr-block.collapsed .panel-chev { transform: rotate(0deg); }
+/* Ce qui reste à lire quand le bloc est replié : le vainqueur de la catégorie,
+   ou le compteur de trophées. Sans lui, l'accordéon fermé n'est qu'une liste de
+   prénoms. */
+.block-teaser {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.tr-block .block-body { margin-top: 14px; }
+/* `hidden` doit gagner : le navigateur le pose à la priorité la plus faible, et
+   n'importe quelle règle d'affichage le recouvre sans le vouloir — la grille de
+   trophées, en `display: grid`, restait dépliée sous un bloc replié. */
+[hidden] { display: none !important; }
+/* Replié, un bloc tient sur deux lignes : le filet de séparation n'a plus
+   besoin de la même respiration qu'entre deux podiums. */
+.pl-block.collapsed + .pl-block,
+.tr-block.collapsed + .tr-block {
+  margin-top: 16px;
+  padding-top: 14px;
+}
 
 /* La date sous la distance : ensemble, les deux forment le nom de la sortie. */
 .podium-sub {
