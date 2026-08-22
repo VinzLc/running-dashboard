@@ -40,6 +40,10 @@ const DISTANCE_BUCKETS = bucketsIn(RUNNERS.flatMap((n) => RUNS[n]));
 
 const bucketLabel = (key) => (DISTANCE_BUCKETS.find((b) => b.key === key) || {}).label || "";
 
+// Le même seau, glissé dans une phrase : « vs 6 km du 9 août », « première
+// sortie de moins de 5 km ». Le libellé du bouton garde sa majuscule, pas lui.
+const bucketPhrase = (key) => (key === SUB_5 ? "moins de 5 km" : bucketLabel(key).toLowerCase());
+
 // Séances d'un coureur, filtre de distance appliqué.
 const runsOf = (name) =>
   viewBuckets.length ? RUNS[name].filter((r) => viewBuckets.includes(bucketOf(r))) : RUNS[name];
@@ -74,8 +78,13 @@ const fmtDuration = (sec) => {
   const s = Math.round(sec % 60);
   return `${m}:${String(s).padStart(2, "0")}`;
 };
-const fmtDate = (iso) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+// « 1 août » n'existe pas en français, et l'étiquette « vs 5 km du 1 août » le
+// donnait à lire en toutes lettres : le premier du mois prend son rang.
+const fmtDate = (iso) => {
+  const d = new Date(iso + "T00:00:00");
+  const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return d.getDate() === 1 ? label.replace(/^1\b/, "1er") : label;
+};
 
 const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 const sum = (arr) => arr.reduce((a, b) => a + b, 0);
@@ -295,6 +304,12 @@ const INSIGHTS = (() => {
     let bestPace = Infinity;
     let longest = -Infinity;
     let bestKm = Infinity;
+    // Dernière séance vue dans chaque seau de distance : c'est elle, et non la
+    // séance de la veille, qui rend l'écart lisible. Comparer un 6 km au 5 km
+    // qui le précède annonce « distance ▲ 1,02 km, allure ▲ 11 s/km » — deux
+    // chiffres exacts qui, ensemble, ne disent rien : on court forcément moins
+    // vite un kilomètre de plus.
+    const lastInBucket = {};
     sorted.forEach((r, i) => {
       // Le record du kilomètre ne se compare qu'entre séances détaillées : la
       // première à porter des splits est la référence et ne décroche rien, comme
@@ -302,10 +317,12 @@ const INSIGHTS = (() => {
       const km = bestFullKm(r);
       meta[name][r.date] = {
         prev: i > 0 ? sorted[i - 1] : null,
+        prevSame: lastInBucket[bucketOf(r)] || null,
         isPacePR: i > 0 && r.paceSec < bestPace,
         isDistPR: i > 0 && r.distance > longest,
         isKmPR: km != null && Number.isFinite(bestKm) && km < bestKm,
       };
+      lastInBucket[bucketOf(r)] = r;
       bestPace = Math.min(bestPace, r.paceSec);
       longest = Math.max(longest, r.distance);
       if (km != null) bestKm = Math.min(bestKm, km);
@@ -418,21 +435,37 @@ function analysisHtml(r) {
   const m = INSIGHTS[r.name][r.date];
   const a = (typeof ANALYSES !== "undefined" && ANALYSES[r.name]) ? ANALYSES[r.name][r.date] : null;
 
+  // La référence : la dernière sortie de la même distance quand il y en a une,
+  // la séance précédente sinon. Une première sortie sur une distance n'a rien
+  // de comparable — on le dit plutôt que de faire semblant.
+  const cmp = m.prevSame || m.prev;
+  const sameBucket = cmp === m.prevSame;
+
   let deltas;
-  if (m.prev) {
-    const dPace = r.paceSec - m.prev.paceSec; // < 0 = plus rapide
-    const dDist = r.distance - m.prev.distance;
+  if (cmp) {
+    const dPace = r.paceSec - cmp.paceSec; // < 0 = plus rapide
+    const dDist = r.distance - cmp.distance;
     deltas =
       deltaChip("Allure", dPace, (v) => Math.round(v) + " s/km", dPace < 0) +
       deltaChip("Distance", dDist, (v) => v.toFixed(2) + " km", dDist > 0);
     // Pas de puce FC quand l'une des deux séances ne la mesure pas : un écart
     // calculé sur une valeur absente vaudrait NaN.
-    if (r.hr != null && m.prev.hr != null) {
-      deltas += deltaChip("FC", r.hr - m.prev.hr, (v) => Math.round(v) + " bpm", null);
+    if (r.hr != null && cmp.hr != null) {
+      deltas += deltaChip("FC", r.hr - cmp.hr, (v) => Math.round(v) + " bpm", null);
+    }
+    if (!sameBucket) {
+      deltas += `<span class="delta-chip flat">Première sortie de ${bucketPhrase(bucketOf(r))}</span>`;
     }
   } else {
     deltas = `<span class="delta-chip flat">Première séance — référence de départ</span>`;
   }
+
+  // « vs 6 km précédent » se lit ; « vs moins de 5 km précédent », non.
+  const deltaLabel = !cmp
+    ? ""
+    : sameBucket && cmp !== m.prev
+      ? `vs ${bucketPhrase(bucketOf(r))} du ${fmtDate(cmp.date)} :`
+      : "vs séance précédente :";
 
   const prBadges =
     (m.isPacePR ? `<span class="pr">🏅 Record d'allure</span>` : "") +
@@ -449,7 +482,7 @@ function analysisHtml(r) {
         <span class="verdict trend-${trend}">${verdict}</span>
         ${prBadges}
       </div>
-      <div class="delta-row">${m.prev ? '<span class="delta-label">vs séance précédente :</span>' : ""}${deltas}</div>
+      <div class="delta-row">${deltaLabel ? `<span class="delta-label">${deltaLabel}</span>` : ""}${deltas}</div>
       ${splitsHtml(r)}
       ${coachHtml(text)}
       ${pokemonHtml(a)}
@@ -577,25 +610,63 @@ function absentReason(cat, season, name) {
   return cat.absent ? cat.absent(name, season) : "pas de donnée dans cette catégorie";
 }
 
+// Deux façons de lire une course de distance, et elles ne désignent pas toujours
+// le même vainqueur : l'allure compare des kilomètres, le chrono compare des
+// séances. Dans le seau « 5 km », un 5,39 km demande deux minutes de plus qu'un
+// 5,01 km à allure égale — le chrono récompense donc autant la distance choisie
+// que la vitesse, et c'est pour ça que les étoiles restent attachées à l'allure.
+// Un bouton d'affichage ne doit pas rebattre le classement général.
+let lbDistanceView = "pace";
+
+// Le drapeau à damier sert déjà d'emblème aux courses de distance : le
+// reprendre pour une vue le ferait lire comme une compétition de plus.
+const DISTANCE_VIEWS = [
+  ["pace", "🏃 Allure"],
+  ["time", "⏱️ Chrono"],
+];
+
 // Les seaux de distance sont recalculés pour chaque saison : proposer un onglet
 // « 6 km » à un mois où personne n'a couru 6 km mènerait vers un podium vide.
+// Les sorties de moins de 5 km n'ont pas d'onglet : le seau va de la mise en
+// route de 2 km au 4,9 km, ce qui n'est pas une distance mais un fourre-tout —
+// deux séances y courent rarement la même course.
 const distanceCategories = (season) =>
-  bucketsIn(RUNNERS.flatMap((n) => seasonRuns(season, n))).map((b) => ({
-    id: `km-${b.key}`,
-    // Le drapeau met les courses de distance au même rang visuel que les autres
-    // compétitions : dans un menu unique, un onglet sans emoji se lit comme une
-    // rubrique plutôt que comme un choix.
-    tab: `🏁 ${b.label}`,
-    title: `Le plus rapide sur ${b.label.toLowerCase()}`,
-    desc: `Meilleure allure réalisée sur une séance de ${b.label.toLowerCase()}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
-    lower: true,
-    score: (runs) => {
-      const rs = runs.filter((r) => bucketOf(r) === b.key);
-      return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
-    },
-    fmt: (v) => `${fmtPace(v)}/km`,
-    absent: () => `aucune séance de ${b.label.toLowerCase()} sur cette saison`,
-  }));
+  bucketsIn(RUNNERS.flatMap((n) => seasonRuns(season, n)))
+    .filter((b) => b.key !== SUB_5)
+    .map((b) => {
+      const label = b.label.toLowerCase();
+      const inBucket = (runs) => runs.filter((r) => bucketOf(r) === b.key);
+      return {
+        id: `km-${b.key}`,
+        // Le drapeau met les courses de distance au même rang visuel que les
+        // autres compétitions : dans un menu unique, un onglet sans emoji se lit
+        // comme une rubrique plutôt que comme un choix.
+        tab: `🏁 ${b.label}`,
+        title: `Le plus rapide sur ${label}`,
+        desc: `Meilleure allure réalisée sur une séance de ${label}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
+        lower: true,
+        score: (runs) => {
+          const rs = inBucket(runs);
+          return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
+        },
+        fmt: (v) => `${fmtPace(v)}/km`,
+        absent: () => `aucune séance de ${label} sur cette saison`,
+        // La vue chrono ne remplace que ce qui change : le score, son format et
+        // la façon de le présenter. Tout le reste — onglet, motif d'absence —
+        // reste celui de la catégorie.
+        views: {
+          time: {
+            title: `Le meilleur chrono sur ${label}`,
+            desc: `Le meilleur temps total réalisé sur une séance de ${label}, chronomètre brut. À lire en sachant ce que le seau contient : il va de ${b.key},00 à ${b.key},99 km, et une séance plus longue de 300 m coûte près de deux minutes à allure égale. Cette vue récompense donc aussi le fait de s'arrêter près de la borne — c'est pourquoi les étoiles de la catégorie restent attribuées à l'allure.`,
+            score: (runs) => {
+              const rs = inBucket(runs);
+              return rs.length ? Math.min(...rs.map((r) => r.duration)) : null;
+            },
+            fmt: (v) => fmtDuration(v),
+          },
+        },
+      };
+    });
 
 // Le seul podium qui se joue à l'intérieur des séances plutôt qu'entre elles :
 // il ne retient qu'un kilomètre, le meilleur, et se moque de ce qu'il y avait
@@ -780,6 +851,20 @@ const STANDINGS = {
 
 const categoriesOf = (season) => [STANDINGS, ...scoredCategories(season)];
 
+// La catégorie telle qu'elle est regardée : en vue chrono, le score et son
+// format changent, et la catégorie ne distribue plus d'étoiles — elles sont
+// déjà distribuées sur l'allure, en dessiner d'autres ici afficherait deux
+// vérités contradictoires sur le même podium.
+function viewed(cat) {
+  const v = cat.views && cat.views[lbDistanceView];
+  return v ? { ...cat, ...v, noStars: true } : cat;
+}
+
+// « 4e », « 5e »… La suite du classement commençait à un numéro que seul le
+// podium au-dessus laissait deviner. C'est le rang qui est écrit, pas la
+// position dans la liste : deux ex æquo portent le même, comme sur les marches.
+const placeHtml = (rank) => `<span class="lb-rest-place">${rank + 1}<sup>e</sup></span>`;
+
 const starsHtml = (n) =>
   Array.from({ length: n }, () => `<svg class="star" aria-hidden="true"><use href="#mp-star" /></svg>`).join("");
 
@@ -810,8 +895,9 @@ function renderLeaderboard() {
   // Les onglets de distance changent d'une saison à l'autre : celui qu'on
   // regardait peut ne pas exister dans la nouvelle. On retombe alors sur le
   // classement aux étoiles plutôt que sur un panneau vide.
-  const cat = cats.find((c) => c.id === lbCategory) || STANDINGS;
-  lbCategory = cat.id;
+  const rawCat = cats.find((c) => c.id === lbCategory) || STANDINGS;
+  lbCategory = rawCat.id;
+  const cat = viewed(rawCat);
 
   const ranked = rankCategory(cat, season);
   const desc = typeof cat.desc === "function" ? cat.desc(season) : cat.desc;
@@ -831,8 +917,11 @@ function renderLeaderboard() {
   document.getElementById("lbExtra").innerHTML = [
     rest.length
       ? `<ol class="lb-rest" start="4">${rest
-          .map((e) => `<li><span class="dot" style="background:${RUNNER_COLORS[e.name]}"></span>${e.name}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`)
+          .map((e) => `<li>${placeHtml(e.rank)}<span class="dot" style="background:${RUNNER_COLORS[e.name]}"></span>${e.name}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`)
           .join("")}</ol>`
+      : "",
+    rawCat.views && lbDistanceView === "time"
+      ? `<p class="lb-note">Vue chrono : ce podium classe des temps, pas des allures. Les étoiles de la catégorie, elles, se jouent sur la vue allure et ne bougent pas d'ici.</p>`
       : "",
     ranked.length === 1 && !cat.noStars
       ? `<p class="lb-note">Un seul concourant : cette catégorie ne distribue pas d'étoiles.</p>`
@@ -844,7 +933,7 @@ function renderLeaderboard() {
       : "",
   ].join("");
 
-  renderLeaderboardTabs(season, cats);
+  renderLeaderboardTabs(season, cats, rawCat);
   document.querySelectorAll("#lbSeasons button").forEach((b) => {
     const on = b.dataset.value === season.id;
     b.classList.toggle("active", on);
@@ -857,17 +946,31 @@ function renderLeaderboard() {
 // distance » et « Catégories fun » laissait croire à trois réglages distincts
 // alors qu'un seul choix est actif à la fois. Redessiné à chaque changement de
 // saison, puisque les courses de distance proposées en dépendent.
-function renderLeaderboardTabs(season, cats) {
-  document.getElementById("lbTabs").innerHTML = `
-    <span class="filter-label">Compétition</span>
-    <div class="filter-switch">
-      ${cats
-        .map((c) => {
-          const on = c.id === lbCategory;
-          return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
-        })
-        .join("")}
+function renderLeaderboardTabs(season, cats, rawCat) {
+  const group = (label, buttons) => `
+    <div class="lb-tabs-group">
+      <span class="filter-label">${label}</span>
+      <div class="filter-switch">${buttons}</div>
     </div>`;
+
+  const competitions = cats
+    .map((c) => {
+      const on = c.id === lbCategory;
+      return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
+    })
+    .join("");
+
+  // La bascule allure/chrono n'apparaît que là où elle veut dire quelque chose :
+  // une seule des douze compétitions se lit de deux façons.
+  const views = rawCat.views
+    ? DISTANCE_VIEWS.map(([id, label]) => {
+        const on = id === lbDistanceView;
+        return `<button type="button" data-view="${id}" class="${on ? "active" : ""}" aria-pressed="${on}">${label}</button>`;
+      }).join("")
+    : "";
+
+  document.getElementById("lbTabs").innerHTML =
+    group("Compétition", competitions) + (views ? group("Vue", views) : "");
 }
 
 function initLeaderboard() {
@@ -883,10 +986,13 @@ function initLeaderboard() {
     lbSeason = btn.dataset.value;
     renderLeaderboard();
   });
+  // La même barre porte deux réglages : la compétition regardée et, pour les
+  // courses de distance, la façon de la lire.
   document.getElementById("lbTabs").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
-    lbCategory = btn.dataset.value;
+    if (btn.dataset.view) lbDistanceView = btn.dataset.view;
+    else lbCategory = btn.dataset.value;
     renderLeaderboard();
   });
 
@@ -1050,7 +1156,7 @@ function personalBlock(name, cat, solo) {
           ? `<ol class="lb-rest" start="4">${rest
               .map(
                 (e) =>
-                  `<li><span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${runLabel(e.run)}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`,
+                  `<li>${placeHtml(e.rank)}<span class="dot" style="background:${RUNNER_COLORS[name]}"></span>${runLabel(e.run)}<span class="lb-rest-value">${cat.fmt(e.value)}</span></li>`,
               )
               .join("")}</ol>`
           : ""}
@@ -1099,15 +1205,19 @@ function renderPersonal() {
   desc.innerHTML = `<b>${cat.title}</b> — ${cat.desc}`;
   blocks.innerHTML = names.map((n) => personalBlock(n, cat, solo)).join("");
 
+  // Même enveloppe que le palmarès collectif : `.lb-tabs` espace des groupes,
+  // pas un libellé et sa rangée.
   tabs.innerHTML = `
-    <span class="filter-label">Catégorie</span>
-    <div class="filter-switch">
-      ${cats
-        .map((c) => {
-          const on = c.id === plCategory;
-          return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
-        })
-        .join("")}
+    <div class="lb-tabs-group">
+      <span class="filter-label">Catégorie</span>
+      <div class="filter-switch">
+        ${cats
+          .map((c) => {
+            const on = c.id === plCategory;
+            return `<button type="button" data-value="${c.id}" class="${on ? "active" : ""}" aria-pressed="${on}">${c.tab}</button>`;
+          })
+          .join("")}
+      </div>
     </div>`;
 }
 

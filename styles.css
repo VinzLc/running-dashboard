@@ -250,8 +250,14 @@ main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 14px;
   margin-bottom: 18px;
+}
+.lb-tabs-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 /* Le sélecteur de saison est le cran au-dessus des onglets de catégorie : il
@@ -392,6 +398,14 @@ main {
   border-radius: 10px;
 }
 .lb-rest li + li { margin-top: 6px; }
+.lb-rest-place {
+  min-width: 22px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.lb-rest-place sup { font-size: 0.75em; }
 .lb-rest-value {
   margin-left: auto;
   font-weight: 500;
