@@ -76,6 +76,15 @@ const RUNS = {
         { km: 6, sec: 370, paceSec: 370, hr: 169, cadence: 158 },
         { km: 7, sec: 11,  paceSec: 374, hr: 177, cadence: 106, partial: true },
       ] },
+    { date: "2026-08-26", duration: 1848, distance: 5.02, activeCal: 389, totalCal: 443, elevation: 4,  cadence: 158, paceSec: 368, hr: 161,
+      splits: [
+        { km: 1, sec: 370, paceSec: 370, hr: 141, cadence: 161 },
+        { km: 2, sec: 374, paceSec: 374, hr: 159, cadence: 159 },
+        { km: 3, sec: 362, paceSec: 362, hr: 166, cadence: 159 },
+        { km: 4, sec: 374, paceSec: 374, hr: 166, cadence: 159 },
+        { km: 5, sec: 352, paceSec: 352, hr: 173, cadence: 157 },
+        { km: 6, sec: 14,  paceSec: 507, hr: 179, cadence: 141, partial: true },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -115,6 +124,15 @@ const RUNS = {
         { km: 3, sec: 418, paceSec: 418, hr: 156, cadence: 153 },
         { km: 4, sec: 421, paceSec: 421, hr: 158, cadence: 151 },
         { km: 5, sec: 173, paceSec: 424, hr: 169, cadence: 142, partial: true },
+      ] },
+    { date: "2026-08-26", duration: 2158, distance: 5.06, activeCal: 249, totalCal: 293, elevation: 3,  cadence: 146, paceSec: 426, hr: 144,
+      splits: [
+        { km: 1, sec: 420, paceSec: 420, hr: 126, cadence: 152 },
+        { km: 2, sec: 437, paceSec: 437, hr: 140, cadence: 149 },
+        { km: 3, sec: 431, paceSec: 431, hr: 146, cadence: 145 },
+        { km: 4, sec: 445, paceSec: 445, hr: 147, cadence: 144 },
+        { km: 5, sec: 399, paceSec: 399, hr: 164, cadence: 150 },
+        { km: 6, sec: 23,  paceSec: 350, hr: 169, cadence: 135, partial: true },
       ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
@@ -351,6 +369,17 @@ const ANALYSES = {
       ],
       pokemon: "Rhinocorne", pokemonAdj: "Inarrêtable",
       pokemonPhrase: "Rhinocorne : il charge tout droit, et le Pokédex précise que son cerveau est si petit qu'il en oublie en route pourquoi il s'est élancé. Trois kilomètres à 5'40 de moyenne sur une sortie de 6 km, on tient la démonstration. Inarrêtable, parce que le seul moment où tu as vraiment freiné, c'est le kilomètre 4 — et ce n'est pas toi qui as pris la décision." },
+    "2026-08-26": { trend: "flat", verdict: "Cadence record, effort « Easy »",
+      text: [
+        { titre: "Pas de chrono à battre", texte: "5,02 km en 30:48, soit 6'08\"/km : 12 s/km au-dessus de ton record du 19 août, et c'est la première fois depuis le 25 juillet que tu ne pars pas chercher une performance. L'effort ressenti repasse à « Easy », ce qui n'était plus arrivé depuis le 1er août — sauf que ce jour-là, « Easy » valait 6'24\"/km. Ton allure confortable a gagné 16 s/km en vingt-cinq jours." },
+        { titre: "Vingt-deux secondes d'amplitude", texte: "6'10\", 6'14\", 6'02\", 6'14\", 5'52\" : vingt-deux secondes séparent ton kilomètre le plus rapide du plus lent, et quatre secondes seulement le premier du quatrième. C'est de loin la séance la plus régulière de tous tes relevés de splits — l'amplitude était de 44 secondes le 19 août, de 45 le 12 août et de 70 le 21 août." },
+        { titre: "Jamais plus de quatre pas d'écart", texte: "161, 159, 159, 159, 157 spm. Ta foulée ne perd jamais plus de quatre pas par minute sur toute la sortie, et la moyenne signe un sommet à 158 spm. Le 21 août, elle glissait de 158 à 140 entre le troisième et le cinquième kilomètre, et c'est très exactement là que la séance s'était écroulée. Ce décrochage a disparu : c'est le vrai progrès du jour, bien plus que le chrono." },
+        { titre: "22 s/km plus vite pour 3 bpm", texte: "La comparaison qui résume le mois : le 9 août tu courais à 6'30\"/km pour 158 bpm et un effort « Hard ». Aujourd'hui, 6'08\"/km pour 161 bpm et un effort « Easy ». Vingt-deux secondes au kilomètre de mieux, trois battements de plus, et le ressenti qui passe de dur à facile — en dix-sept jours. L'adaptation aérobie n'est plus une hypothèse." },
+        { titre: "Et il restait de la marge", texte: "5'52\" sur le cinquième kilomètre, le plus rapide de la séance, à 173 bpm et 157 spm. C'est la quatrième sortie d'affilée où ton dernier kilomètre complet va plus vite que l'avant-dernier. Une séance annoncée facile qui se termine par son meilleur kilomètre, ça veut dire que le réservoir était encore loin d'être vide." },
+        { titre: "161 bpm, septième rappel", texte: "Reste le point qui ne bouge pas. « Easy » au sens d'Apple n'est pas la sortie lente que je te réclame depuis le 1er août : 161 bpm de moyenne, un pic à 179, et neuf séances d'affilée sans une seule sortie en récupération. Tu as appliqué la moitié de la consigne, celle qui consistait à ne pas viser un record, et laissé de côté l'autre, qui est la seule à faire quelque chose pour ton cœur. 45 minutes à 7'15\"/km, FC sous 145. Après ça, on ira chercher les 29 minutes." },
+      ],
+      pokemon: "Insécateur", pokemonAdj: "Méthodique",
+      pokemonPhrase: "Insécateur : ses lames vont si vite qu'on ne voit jamais le geste, seulement le résultat, et le Pokédex insiste sur la précision plutôt que sur la puissance. Quatre kilomètres dans un mouchoir de douze secondes et une cadence qui ne varie jamais de plus de quatre pas, c'est de la découpe au millimètre. Méthodique, parce qu'il faut une certaine rigueur pour n'appliquer très exactement que la moitié d'une consigne donnée six fois." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
@@ -478,6 +507,18 @@ const ANALYSES = {
       ],
       pokemon: "Magnéton", pokemonAdj: "Métronomique",
       pokemonPhrase: "Magnéton : trois Magnéti verrouillés ensemble, qui avancent sans qu'aucun des trois ne prenne jamais les devants. 7'02\", 7'06\", 6'58\", 7'01\" — huit secondes d'amplitude sur toute la séance, c'est du vol en formation. Métronomique, parce qu'après quatre kilomètres tu repasses à une seconde de ton point de départ : à ce niveau-là on ne court plus, on bat la mesure." },
+    "2026-08-26": { trend: "up", verdict: "Ton kilomètre le plus rapide, en dernier",
+      text: [
+        { titre: "La consigne appliquée à la lettre", texte: "Le 19 août je te demandais trois choses : rallonger, passer le premier kilomètre autour de 7'05\" et descendre sous 7'20\" de moyenne. Tu as couru 5,06 km — 660 m de plus que la semaine dernière — avec un premier kilomètre en 7'00\" et une moyenne de 7'06\"/km. Les trois cases sont cochées, et la troisième avec 14 secondes d'avance." },
+        { titre: "23 s/km de mieux que le 9 août", texte: "La comparaison qui compte est celle de ton autre sortie de 5 km, le 9 août : 5,32 km à 7'29\"/km. Aujourd'hui, 7'06\"/km. Vingt-trois secondes au kilomètre reprises en dix-sept jours sur une distance équivalente. Et ton record d'allure du 19 août (7'03\") tenait sur 4,40 km : tu viens de courir 660 m de plus pour 3 s/km seulement." },
+        { titre: "6'39\" au cinquième kilomètre", texte: "C'est le kilomètre le plus rapide que tu aies jamais couru. Ton précédent meilleur était le 6'46\" du 9 août, et c'était le premier de la séance ; celui-ci arrive à la trentième minute. Puis tu boucles les derniers mètres sur un rythme de 5'50\". Le défaut qui te suivait depuis juillet n'est pas seulement corrigé, il est retourné." },
+        { titre: "Du positive au negative split", texte: "Regarde la série : le 9 août tu lâchais 1'12\" entre ton premier et ton dernier kilomètre complet, le 12 août 21 secondes, le 19 août une seconde. Aujourd'hui tu en reprends 21. Tu ne te contentes plus de tenir ton allure, tu finis plus vite que tu n'as commencé — et sur ta plus longue sortie depuis le 9 août." },
+        { titre: "144 bpm, ta FC la plus basse du mois", texte: "126, 140, 146, 147, puis 164 sur le kilomètre accéléré. Quatre kilomètres passés entre 126 et 147 bpm, et une moyenne de 144 : plus bas que le 19 août (149) et que le 9 août (145), alors que tu cours plus loin que le premier et plus vite que le second. La montée n'arrive qu'au moment où tu décides d'accélérer, ce qui est exactement l'ordre normal des choses." },
+        { titre: "Le trou du quatrième kilomètre", texte: "Il reste un point, et un seul : 7'25\" au quatrième, ton kilomètre le plus lent. Ce n'est pas la fatigue, la FC y est à 147 bpm, deux battements au-dessus du troisième. C'est la cadence : 152, 149, 145, 144, puis 150 dès que tu relances. Ta foulée se ramollit de huit pas par minute avant que l'allure ne baisse, et elle revient intacte dès que tu pousses. Ce n'est pas une question de moyens, c'est une question d'attention." },
+        { titre: "La consigne : 148 spm au 4e km", texte: "Refais cette distance et surveille un seul chiffre, la cadence de ton quatrième kilomètre. Objectif 148 spm, pas moins. Tu as prouvé aujourd'hui que tu savais courir à 150 spm après 28 minutes d'effort : il s'agit juste de ne plus attendre le cinquième kilomètre pour y penser. Avec ce trou comblé, tu passes sous les 7'/km sur 5 km, et ce sera mérité." },
+      ],
+      pokemon: "Triopikeur", pokemonAdj: "Sournois",
+      pokemonPhrase: "Triopikeur : Taupiqueur savait déjà jaillir du sol d'un coup, mais à trois on peut se permettre d'attendre son moment. Quatre kilomètres passés sagement sous terre, puis 6'39 au cinquième, le plus rapide que tu aies jamais couru. Sournois, parce que sortir sa meilleure allure à la trentième minute, ce n'est plus une fin de course, c'est une embuscade." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
