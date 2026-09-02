@@ -85,6 +85,15 @@ const RUNS = {
         { km: 5, sec: 352, paceSec: 352, hr: 173, cadence: 157 },
         { km: 6, sec: 14,  paceSec: 507, hr: 179, cadence: 141, partial: true },
       ] },
+    { date: "2026-08-31", duration: 1761, distance: 5.02, activeCal: 377, totalCal: 428, elevation: 2,  cadence: 151, paceSec: 351, hr: 166,
+      splits: [
+        { km: 1, sec: 338, paceSec: 338, hr: 150, cadence: 161 },
+        { km: 2, sec: 320, paceSec: 320, hr: 173, cadence: 158 },
+        { km: 3, sec: 367, paceSec: 367, hr: 168, cadence: 145 },
+        { km: 4, sec: 388, paceSec: 388, hr: 162, cadence: 141 },
+        { km: 5, sec: 339, paceSec: 339, hr: 178, cadence: 155 },
+        { km: 6, sec: 4,   paceSec: 179, hr: 183, cadence: 165, partial: true },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -380,6 +389,17 @@ const ANALYSES = {
       ],
       pokemon: "Insécateur", pokemonAdj: "Méthodique",
       pokemonPhrase: "Insécateur : ses lames vont si vite qu'on ne voit jamais le geste, seulement le résultat, et le Pokédex insiste sur la précision plutôt que sur la puissance. Quatre kilomètres dans un mouchoir de douze secondes et une cadence qui ne varie jamais de plus de quatre pas, c'est de la découpe au millimètre. Méthodique, parce qu'il faut une certaine rigueur pour n'appliquer très exactement que la moitié d'une consigne donnée six fois." },
+    "2026-08-31": { trend: "up", verdict: "Record : le 5 km en 29:21",
+      text: [
+        { titre: "25 secondes reprises au 19 août", texte: "5,02 km en 29:21, soit 5'51\"/km : septième record d'allure depuis le 25 juillet, 5 s/km de mieux que le 5'56\" du 19 août, et 25 secondes reprises au chrono sur la distance. Deuxième passage sous les 30 minutes, et cette fois avec de la marge." },
+        { titre: "5'20 au deuxième kilomètre", texte: "Le deuxième kilomètre est passé en 5'20\" : le plus rapide de tout ton historique de splits, huit secondes devant le 5'28\" du 19 août. Kilomètre par kilomètre face à ce jour-là : −34 s, −32 s, +5 s, +23 s, +11 s. Après deux kilomètres tu avais 66 secondes d'avance sur ton propre record ; tu en as rendu 39 sur les trois suivants." },
+        { titre: "Le décrochage était en vacances", texte: "Puis 6'07\" et 6'28\". Soixante-huit secondes séparent ton kilomètre le plus rapide du plus lent, la deuxième plus grosse amplitude de tous tes relevés — le record reste les 70 secondes du 21 août. La cadence raconte la même histoire : 158 spm au deuxième kilomètre, 141 au quatrième, vingt pas par minute évaporés. Le 26 août elle ne bougeait jamais de plus de quatre pas, et je t'écrivais que ce décrochage avait disparu. Il était juste en vacances." },
+        { titre: "Dix centimètres de foulée en plus", texte: "Le détail qui compte : ta cadence moyenne tombe à 151 spm, sept pas sous le sommet du 26 août, et tu cours pourtant 17 s/km plus vite. Le calcul est sans appel — environ 4 430 pas aujourd'hui contre 4 870 le 26 août pour la même distance, soit 1,13 m par foulée contre 1,03 m. Depuis le 5 août, ta vitesse venait de la fréquence des pas ; celle-ci vient de leur longueur. C'est un mécanisme neuf, et il vaut d'être noté." },
+        { titre: "Les 29 minutes étaient là", texte: "Reprends ces splits en remplaçant les deux du milieu par un honnête 6'00\" — pas 5'20\", juste 6'00\" — et le chrono tombe à 28:41. Même en y collant tes kilomètres 3 et 4 du 19 août, ceux d'une séance pourtant moins rapide, tu passes en 28:48. Tu n'as donc pas besoin d'aller plus vite pour aller chercher les 29 minutes : tu as besoin de ne pas passer le deuxième kilomètre à 5'20\"." },
+        { titre: "« All Out », huitième rappel", texte: "Reste le point qui ne bouge pas. Effort ressenti « All Out », le premier de tout ton historique, FC moyenne à 166 bpm — encore un sommet — et un pic à 183 sur les derniers mètres. Dix séances de qualité d'affilée, huit fois que je te réclame la même chose. Alors je vais cesser de la formuler comme une punition : la sortie lente n'est pas le prix de ce que tu viens de faire, c'est ce qui rend le prochain 28 possible. 45 minutes à 7'15\"/km, FC sous 145, montre dans la poche." },
+      ],
+      pokemon: "Arcanin", pokemonAdj: "Incorrigible",
+      pokemonPhrase: "Arcanin : le Caninos du 14 juin a fini par évoluer, et le Pokédex lui prête 10 000 km en 24 heures sans jamais faiblir. Toi, tu as tenu sa légende pendant exactement 5 minutes et 20 secondes. Incorrigible, parce qu'il aura fallu huit demandes de sortie lente pour obtenir le premier « All Out » de ton historique." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
