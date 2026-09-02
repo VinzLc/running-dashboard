@@ -153,6 +153,14 @@ const RUNS = {
     { date: "2026-08-01", duration: 1945, distance: 5.01, activeCal: 348, paceSec: 388, maxSpeed: 10.4 },
     { date: "2026-08-05", duration: 1902, distance: 5.01, activeCal: 347, paceSec: 379, maxSpeed: 13.9 },
     { date: "2026-08-09", duration: 1889, distance: 5.00, activeCal: 345, paceSec: 377, maxSpeed: 11.2 },
+    { date: "2026-08-31", duration: 1868, distance: 5.00, activeCal: 346, paceSec: 373, maxSpeed: 11.0,
+      splits: [
+        { km: 1, sec: 383, paceSec: 383 },
+        { km: 2, sec: 355, paceSec: 355 },
+        { km: 3, sec: 377, paceSec: 377 },
+        { km: 4, sec: 372, paceSec: 372 },
+        { km: 5, sec: 378, paceSec: 378 },
+      ] },
   ],
   // Ju a rejoint le dashboard mais n'a pas encore déposé de capture : le tableau
   // vide lui réserve sa place (carte, filtre, couleur) au lieu de la faire
@@ -588,6 +596,16 @@ const ANALYSES = {
       ],
       pokemon: "Persian", pokemonAdj: "Impérial",
       pokemonPhrase: "Persian : rapide, silencieux, et absolument pas du genre à se donner en spectacle. Troisième record d'affilée sans jamais dépasser 11,2 km/h, c'est la classe à la Persian. Impérial, parce que gagner sans même avoir besoin d'accélérer, c'est la démarche de quelqu'un qui sait très bien qu'on le regarde." },
+    "2026-08-31": { trend: "up", verdict: "Quatrième record, après trois semaines",
+      text: [
+        { titre: "Vingt-deux jours, et 21 secondes", texte: "5,00 km en 31:08, soit 6'13\"/km : quatrième record d'affilée, 4 s/km de mieux que le 9 août et 21 secondes reprises au chrono. Le vrai chiffre de la séance, c'est pourtant l'autre : vingt-deux jours sans courir avant celle-ci. Une coupure de trois semaines se paie presque toujours à la reprise — la tienne t'a rendu ton meilleur temps. Ça veut dire que ce que tu as construit en juillet est solidement en place." },
+        { titre: "21 s/km depuis le 23 juillet", texte: "Repère du chemin parcouru : 6'34\"/km le 23 juillet, 6'13\" aujourd'hui, soit 21 s/km en trente-neuf jours, sur un parcours identique à chaque sortie. Et une deuxième fois de suite sans sprint final — pointe à 11,0 km/h, ta valeur la plus basse depuis le début. Ce chrono ne doit rien à un coup d'accélérateur : il est tenu du premier au dernier kilomètre." },
+        { titre: "Tes premiers splits", texte: "Nouveauté : on a enfin le détail par kilomètre. 6'23\", 5'55\", 6'17\", 6'12\", 6'18\". Ton kilomètre le plus lent est le premier, le plus rapide est le deuxième, et vingt-huit secondes seulement séparent les deux extrêmes. Partir prudemment puis ne plus rien lâcher, c'est exactement la façon dont on est censé courir un 5 km — beaucoup de coureurs mettent des mois à y arriver." },
+        { titre: "Le cinquième km et ses 25 mètres", texte: "Un détail qui vaut le coup d'œil : le dernier kilomètre est celui qui monte le plus, 25 m de dénivelé positif contre 8 à 17 sur les quatre premiers. Tu le passes en 6'18\", à cinq secondes de ton allure moyenne. Finir sur la portion la plus dure sans que le chrono bouge, c'est le marqueur d'endurance le plus net de la séance." },
+        { titre: "Allonger, c'est toujours la suite", texte: "Le conseil du 9 août reste entier, et il est maintenant encore mieux justifié : 6 ou 7 km à allure franchement tranquille, sans regarder le chrono. Tes 5 km sont acquis au point de résister à trois semaines d'arrêt — c'est précisément le moment d'élargir la base plutôt que de gratter des secondes." },
+      ],
+      pokemon: "Ronflex", pokemonAdj: "Reposé",
+      pokemonPhrase: "Ronflex : il dort vingt heures par jour, ne s'entraîne jamais, et reste l'un des Pokémon les plus difficiles à faire bouger de la première génération. Vingt-deux jours sans courir puis un record de 21 secondes, on est dans la même école. Reposé, parce que la seule chose que tu aies ajoutée à ton entraînement depuis le 9 août, ce sont trois semaines de canapé — et c'est ce qui a le mieux marché jusqu'ici." },
   },
   // Ju : pas encore de séance, donc pas encore d'analyse.
   Ju: {},

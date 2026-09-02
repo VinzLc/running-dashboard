@@ -178,6 +178,6 @@ const POKEMON_ADJECTIFS = [
   "Méthodique", "Consciencieux", "Distrait", "Discipliné", "Explosif", "Impérial",
   "Bougon", "Sautillant", "Chafouin", "Vantard", "Pataud", "Rêveur", "Sournois",
   "Zélé", "Godillot", "Malicieux", "Éreinté", "Tenace", "Boiteux", "Grognon",
-  "Fougueux", "Métronomique", "Flamboyant", "Inarrêtable", "Incorrigible",
+  "Fougueux", "Métronomique", "Flamboyant", "Inarrêtable", "Incorrigible", "Reposé",
 ];
 
