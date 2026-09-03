@@ -13,8 +13,9 @@
 // `splits` (optionnel) : le détail kilomètre par kilomètre, lu sur la 2e capture
 // (écran « Splits »). `sec` = temps passé sur ce tronçon, `paceSec` = allure
 // ramenée au km — identiques sauf sur le dernier tronçon, incomplet (`partial`).
-// Apple n'affiche FC et cadence par km que sur certaines montres : ces deux clés
-// sont donc facultatives. Les séances d'avant août 2026 n'ont pas de splits.
+// Apple n'affiche pas toujours FC et cadence par km — ça dépend de la capture,
+// pas du coureur : ces deux clés sont donc facultatives (voir le 19 août de
+// Vincent et le 9 août d'Anaïs). Les séances d'avant août 2026 n'ont pas de splits.
 
 const RUNS = {
   Vincent: [

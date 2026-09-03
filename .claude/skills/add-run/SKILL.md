@@ -33,7 +33,7 @@ avant de supposer quoi que ce soit :
 
 | Coureur | Appli | Captures par séance | Mesures |
 |---|---|---|---|
-| Vincent, Anaïs | Apple Fitness | **2** — récapitulatif + splits | tout, sauf FC/cadence par km chez Anaïs |
+| Vincent, Anaïs | Apple Fitness | **2** — récapitulatif + splits | tout ; FC/cadence par km presque toujours, mais pas garanties |
 | Didi | adidas Running | **1** | ni FC, ni cadence, ni dénivelé ; en plus : vitesse de pointe |
 | Ju | — | pas encore de séance | — |
 
@@ -98,7 +98,10 @@ splits: [
 - `sec` = temps passé sur le tronçon, `paceSec` = allure ramenée au km. Identiques
   sur un kilomètre complet ; différents sur le dernier, marqué `partial: true`.
 - `hr` et `cadence` sont **facultatifs** : les omettre quand la capture ne les
-  affiche pas (c'est le cas d'Anaïs) plutôt que d'inventer une valeur.
+  affiche pas plutôt que d'inventer une valeur. Ce n'est pas une question de
+  coureur mais de capture — la colonne manque parfois chez Vincent (19 août)
+  comme chez Anaïs (9 août), et elle est présente partout depuis. Regarde
+  l'écran, ne te fie pas au dossier.
 - **Vérification** : la somme des `sec` doit tomber à quelques secondes de
   `duration` (Apple arrondit chaque ligne).
 
