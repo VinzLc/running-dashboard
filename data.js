@@ -105,6 +105,16 @@ const RUNS = {
         { km: 6, sec: 356, paceSec: 356, hr: 167, cadence: 159 },
         { km: 7, sec: 5,   paceSec: 413, hr: 171, cadence: 94,  partial: true },
       ] },
+    { date: "2026-09-11", duration: 2168, distance: 6.03, activeCal: 445, totalCal: 509, elevation: 4,  cadence: 148, paceSec: 359, hr: 164,
+      splits: [
+        { km: 1, sec: 361, paceSec: 361, hr: 140, cadence: 156 },
+        { km: 2, sec: 372, paceSec: 372, hr: 162, cadence: 150 },
+        { km: 3, sec: 342, paceSec: 342, hr: 167, cadence: 151 },
+        { km: 4, sec: 378, paceSec: 378, hr: 167, cadence: 143 },
+        { km: 5, sec: 370, paceSec: 370, hr: 164, cadence: 143 },
+        { km: 6, sec: 332, paceSec: 332, hr: 178, cadence: 152 },
+        { km: 7, sec: 15,  paceSec: 421, hr: 185, cadence: 82,  partial: true },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -170,6 +180,15 @@ const RUNS = {
         { km: 4, sec: 452, paceSec: 452, hr: 146, cadence: 144 },
         { km: 5, sec: 439, paceSec: 439, hr: 154, cadence: 150 },
         { km: 6, sec: 42,  paceSec: 392, hr: 165, cadence: 151, partial: true },
+      ] },
+    { date: "2026-09-11", duration: 2248, distance: 5.35, activeCal: 261, totalCal: 307, elevation: 2,  cadence: 153, paceSec: 420, hr: 150,
+      splits: [
+        { km: 1, sec: 419, paceSec: 419, hr: 130, cadence: 153 },
+        { km: 2, sec: 436, paceSec: 436, hr: 147, cadence: 152 },
+        { km: 3, sec: 419, paceSec: 419, hr: 151, cadence: 151 },
+        { km: 4, sec: 418, paceSec: 418, hr: 156, cadence: 157 },
+        { km: 5, sec: 419, paceSec: 419, hr: 160, cadence: 155 },
+        { km: 6, sec: 133, paceSec: 369, hr: 169, cadence: 161, partial: true },
       ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
@@ -446,6 +465,16 @@ const ANALYSES = {
       ],
       pokemon: "Ectoplasma", pokemonAdj: "Distrait",
       pokemonPhrase: "Ectoplasma : on ne le voit jamais arriver ni repartir, on constate simplement qu'il n'était plus là. Ton quatrième kilomètre en 7'04, cadence à 143, puis un sixième en 5'56 — pendant sept minutes, personne ne courait à ta place. Distrait, parce que c'est le seul kilomètre de la séance où ton cœur ralentit : ce n'est pas la fatigue qui t'a rattrapé, c'est ton attention qui est passée à travers le mur." },
+    "2026-09-11": { trend: "up", verdict: "Le 6 km passe sous les 6'",
+      text: [
+        { titre: "46 secondes sur la même distance", texte: "6,03 km en 36:08, soit 5'59\"/km. C'est au mètre près la distance du 21 août, où tu avais mis 36:54 à 6'07\" : quarante-six secondes reprises sur le même terrain, et ton premier 6 km sous les 6 minutes au kilomètre. Face à tes deux autres sorties de cette longueur l'écart est encore plus net — 6'25\" le 3 septembre, 6'30\" le 9 août. Ton record absolu reste les 5'51\" du 31 août, mais il tenait sur 5,02 km ; sur 6, tu viens de prendre 8 s/km à ta meilleure marque." },
+        { titre: "164 bpm pour un effort « Moderate »", texte: "Le 3 septembre, ce même ressenti « Moderate » correspondait à 156 bpm et à 6'25\"/km. Le 31 août, 166 bpm te valaient un « All Out ». Aujourd'hui tu cours 26 s/km plus vite qu'il y a huit jours pour huit battements de plus, et la séance ne t'a pas paru dure. C'est la meilleure information du relevé, et elle ne se lit ni dans le chrono ni dans la FC pris séparément." },
+        { titre: "143 spm au quatrième, trois fois", texte: "6'18\" au quatrième kilomètre, cadence à 143 spm. Le 3 septembre : 143. Le 21 août : 143. Trois fois le même nombre au même endroit. Je t'écrivais la dernière fois que ce n'était plus une coïncidence mais une signature ; elle vient de se signer une troisième fois à l'unité près. Et ce n'est toujours pas la fatigue : 167 bpm au troisième kilomètre que tu boucles en 5'42\", et encore 167 au quatrième que tu mets 36 secondes de plus à parcourir. Le moteur tourne pareil, c'est la foulée qui raccourcit." },
+        { titre: "152 spm au sixième, 5'32\" derrière", texte: "Le 3 septembre je te demandais une chose précise : à la trentième minute, regarder ta cadence et la remettre à 152. Ta trentième minute tombe à la toute fin du cinquième kilomètre, où tu étais à 143. Tu es repassé à 152 sur le sixième — un kilomètre trop tard — et ce sixième est tombé en 5'32\", ton meilleur du jour, vingt-quatre secondes devant celui du 3 septembre. La consigne fonctionne, tu l'as appliquée en retard, et elle t'a quand même donné ça." },
+        { titre: "La sortie lente, dixième rappel", texte: "Reste le point qui ne bouge pas. 7'15\"/km, FC sous 145, montre dans la poche : tu as couru à 5'59\" et 164 bpm. Le 3 septembre tu en avais fait les trois quarts, cette séance repart dans l'autre sens. Je ne vais pas faire semblant qu'elle n'est pas excellente — elle l'est. Mais c'est aussi la raison pour laquelle ton quatrième kilomètre s'affaisse depuis trois semaines : la base aérobie n'a jamais eu l'occasion de s'épaissir. Alors au minimum, la prochaine fois, ne remets pas la cadence à 152 à la trentième minute — mets-la dès le quatrième kilomètre, et regarde ce que devient ce 36:08." },
+      ],
+      pokemon: "Hypnomade", pokemonAdj: "Reposé",
+      pokemonPhrase: "Hypnomade : le Soporifik du 9 juin a fini par évoluer, et il passe toujours son temps à balancer son pendule — sauf qu'ici, la seule victime, c'est lui. Deux kilomètres à 143 spm en plein milieu, puis un réveil à 5'32 sur le dernier. Reposé, parce que boucler un record de 6 km par son kilomètre le plus rapide après avoir dormi sur les deux précédents, ce n'est pas un negative split, c'est une grasse matinée bien gérée." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
@@ -605,6 +634,17 @@ const ANALYSES = {
       ],
       pokemon: "Métamorph", pokemonAdj: "Consciencieux",
       pokemonPhrase: "Métamorph : son unique talent au monde est de reproduire ce qu'il a sous les yeux, à la virgule près, sans jamais se demander si c'était une bonne idée. Je t'avais demandé de refaire cette distance ; tu l'as refaite avec exactement les mêmes 144 spm au quatrième kilomètre. Consciencieux, parce que copier une séance jusque dans son seul défaut, c'est un souci du détail que personne ne pourra lui retirer." },
+    "2026-09-11": { trend: "up", verdict: "7'00\"/km, pile sur la ligne",
+      text: [
+        { titre: "Record d'allure, plus longue sortie", texte: "5,35 km en 37:28, soit 7'00\"/km. C'est à la fois ta plus longue sortie à ce jour — 30 mètres de plus que le 9 août — et ton record d'allure, 3 s/km sous les 7'03\" du 19 août qui, eux, tenaient sur 4,40 km seulement. La comparaison la plus parlante reste celle du 9 août, ta seule autre sortie de cette longueur : 7'29\"/km ce jour-là. Vingt-neuf secondes au kilomètre reprises en trente-trois jours. Et depuis ta première séance du 17 mai, ce sont 1'13\"/km." },
+        { titre: "157 spm au quatrième kilomètre", texte: "Depuis le 26 août je te demandais un seul chiffre : 148 spm au quatrième kilomètre, et c'était un minimum. Tu y es à 157, la cadence la plus haute de tes cinq kilomètres complets. Les deux fois précédentes elle tombait à 144, et ce quatrième kilomètre était à chaque fois le plus lent de la séance. Aujourd'hui c'est le plus rapide, 6'58\". Le creux n'est pas atténué, il a disparu : 153, 152, 151, 157, 155, tu ne descends jamais sous 151 spm. Ta moyenne de 153 spm est un record, 4 de plus que le 19 août." },
+        { titre: "Quatre kilomètres, une seconde d'écart", texte: "6'59\", 7'16\", 6'59\", 6'58\", 6'59\". En dehors du deuxième, qui était une consigne, une seule seconde sépare tes quatre autres kilomètres complets. Ton premier et ton dernier tombent au même chrono exactement, et tu bascules le tronçon final sur un rythme de 6'09\". Le 19 août tu avais huit secondes d'amplitude sur quatre kilomètres et j'en disais déjà le plus grand bien : tu tiens aujourd'hui la même chose sur cinq, et plus vite." },
+        { titre: "Le deuxième kilomètre, enfin rendu", texte: "L'autre consigne du 3 septembre était de passer le deuxième kilomètre autour de 7'10\" au lieu des 6'56\" que tu y avais claqués. Tu l'as couru en 7'16\", six secondes encore plus prudemment que demandé, et c'est ton kilomètre le plus lent du jour. C'était toute l'idée : la cartouche que tu tirais à la dixième minute, tu l'as gardée. Elle ressort sur les 350 derniers mètres, à 6'09\" d'allure et 161 spm." },
+        { titre: "9 bpm à allure strictement identique", texte: "Il reste une chose, et c'est la seule. Ta FC par kilomètre : 130, 147, 151, 156, 160, puis 169 sur la fin. Entre ton troisième et ton cinquième kilomètre l'allure ne bouge pas d'une seconde — 6'59\", 6'58\", 6'59\" — et le cœur prend neuf battements. C'est de la dérive cardiaque, c'est normal sur ta plus longue sortie, mais ta moyenne de 150 bpm est la plus haute que tu aies enregistrée, et elle monte de séance en séance : 144 le 26 août, 145 le 3 septembre, 150 aujourd'hui." },
+        { titre: "La prochaine marche : 6 km", texte: "Sur 5 km je n'ai plus de défaut de gestion à te signaler — le départ trop rapide, le creux du quatrième, la fin qui s'écroule, les trois sont réglés. Ce qui reste à construire est ailleurs. Passe à 6 km, et cette fois ne cherche pas le chrono : premier kilomètre à 7'30\", et une seule consigne, que ta FC ne dépasse pas 155 avant le cinquième kilomètre. Tu vas trouver ça très lent. C'est précisément ce qui fera redescendre ta moyenne cardiaque, et c'est ce qui te manque pour allonger sans que le cœur monte avec la distance." },
+      ],
+      pokemon: "Dodrio", pokemonAdj: "Unanime",
+      pokemonPhrase: "Dodrio : Doduo courait avec deux têtes et aucune notion de l'arrêt, il en a gagné une troisième et une vraie pointe de vitesse. Le premier, le troisième et le cinquième kilomètre bouclés en 6'59 — une tête par chrono, pas une seconde de désaccord. Unanime, parce qu'il aura fallu trois cerveaux pour qu'aucun ne propose de lever le pied au quatrième kilomètre, ce qui, vu les deux séances précédentes, n'allait pas de soi." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.

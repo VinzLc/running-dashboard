@@ -179,5 +179,6 @@ const POKEMON_ADJECTIFS = [
   "Bougon", "Sautillant", "Chafouin", "Vantard", "Pataud", "Rêveur", "Sournois",
   "Zélé", "Godillot", "Malicieux", "Éreinté", "Tenace", "Boiteux", "Grognon",
   "Fougueux", "Métronomique", "Flamboyant", "Inarrêtable", "Incorrigible", "Reposé",
+  "Unanime",
 ];
 
