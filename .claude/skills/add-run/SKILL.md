@@ -34,7 +34,8 @@ avant de supposer quoi que ce soit :
 | Coureur | Appli | Captures par séance | Mesures |
 |---|---|---|---|
 | Vincent, Anaïs | Apple Fitness | **2** — récapitulatif + splits | tout ; FC/cadence par km presque toujours, mais pas garanties |
-| Didi | adidas Running | **1** | ni FC, ni cadence, ni dénivelé ; en plus : vitesse de pointe |
+| Didi | **Garmin Connect** depuis le 9 sept. 2026 | **1 à 6** — une par onglet | tout, FC et cadence comprises ; + longueur de foulée et zones |
+| Didi | adidas Running jusqu'au 5 sept. 2026 | **1** | ni FC, ni cadence, ni dénivelé ; en plus : vitesse de pointe |
 | Ju | — | pas encore de séance | — |
 
 Pour Vincent et Anaïs, depuis août 2026 :
@@ -64,11 +65,42 @@ créer un doublon.
 | Avg. Pace (ex. 7'23"/km) | `paceSec` | en **secondes/km** (7×60+23 = 443) |
 | Avg. Heart Rate (ex. 144 bpm) | `hr` | nombre |
 
-L'écran adidas Running (Didi) est plus pauvre — date **et heure** en haut sous le
-titre, puis `DISTANCE`, `DURATION`, `AVG. PACE`, `CALORIES` (un seul chiffre →
-`activeCal`, pas de `totalCal`), `AVG. SPEED`, `MAX. SPEED` (→ `maxSpeed`, en
-km/h) et `DEHYDRATION`. Il n'y a **ni FC, ni cadence, ni dénivelé** : ces clés
-sont simplement absentes de l'objet.
+L'écran adidas Running (Didi jusqu'au 5 septembre 2026) est plus pauvre —
+`DISTANCE`, `DURÉE`, `CALORIES` (un seul chiffre → `activeCal`, pas de
+`totalCal`), `RYTHME MOY.`, `VITESSE MOY.`, `VITESSE MAX` (→ `maxSpeed`, en
+km/h). Il n'y a **ni FC, ni cadence, ni dénivelé** : ces clés sont simplement
+absentes de l'objet. Attention, **cet écran ne porte pas toujours de date** : le
+titre peut afficher « À L'INSTANT », ce qui veut dire que la course venait de se
+terminer quand la capture a été prise. Dans ce cas, la date se lit dans les
+métadonnées du fichier :
+
+```bash
+mdls -name kMDItemContentCreationDate Didi/prev.XXXX.jpeg
+```
+
+### Garmin Connect (Didi, depuis le 9 septembre 2026)
+
+Didi a changé de montre. L'appli est en français et l'activité s'étale sur
+plusieurs onglets — **Aperçu**, **Statistiques**, **Circuits**, **Graphiques** —
+donc plusieurs captures pour une seule séance, et elles ne se recouvrent pas.
+Recoupe-les par la durée totale, qui s'affiche partout.
+
+| Onglet | Ce qu'on en tire |
+|---|---|
+| Aperçu | **date et heure** (ex. « 9 sept. @ 17:18 »), distance, FC moyenne, allure moyenne, temps total, calories |
+| Statistiques | allure moyenne / meilleure, vitesse moyenne / **max** (→ `maxSpeed`), temps total / de déplacement / écoulé, FC moyenne et max |
+| Graphiques | courbe de FC, **cadence** moyenne et max, **longueur de foulée**, altitude, temps par zone de FC |
+| Circuits | l'équivalent des splits par km, s'il est capturé |
+
+- `activeCal` reçoit le chiffre de l'onglet Aperçu, bien qu'il soit libellé
+  « calories dépensées au total ». C'est la seule valeur que l'appli donne à ce
+  niveau, et c'est celle qui prolonge la série adidas — le dashboard n'affiche
+  que `activeCal`.
+- **L'altitude min/max n'est pas du dénivelé positif.** Sans chiffre de dénivelé
+  explicite, on omet `elevation`.
+- La longueur de foulée et les zones de FC ne sont pas stockées, mais elles font
+  d'excellents paragraphes d'analyse : `cadence × longueur de foulée` redonne la
+  vitesse moyenne, ce qui désigne précisément le levier à travailler.
 
 > **N'invente jamais une valeur manquante, et ne mets pas 0.** Le dashboard sait
 > afficher « — » et retirer un axe du radar, mais un `hr: 0` se lit comme une

@@ -115,6 +115,15 @@ const RUNS = {
         { km: 6, sec: 332, paceSec: 332, hr: 178, cadence: 152 },
         { km: 7, sec: 15,  paceSec: 421, hr: 185, cadence: 82,  partial: true },
       ] },
+    { date: "2026-09-17", duration: 2097, distance: 6.00, activeCal: 444, totalCal: 506, elevation: 5,  cadence: 150, paceSec: 350, hr: 167,
+      splits: [
+        { km: 1, sec: 340, paceSec: 340, hr: 148, cadence: 160 },
+        { km: 2, sec: 336, paceSec: 336, hr: 168, cadence: 156 },
+        { km: 3, sec: 349, paceSec: 349, hr: 169, cadence: 148 },
+        { km: 4, sec: 347, paceSec: 347, hr: 171, cadence: 150 },
+        { km: 5, sec: 367, paceSec: 367, hr: 171, cadence: 144 },
+        { km: 6, sec: 358, paceSec: 358, hr: 172, cadence: 149 },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -208,6 +217,9 @@ const RUNS = {
         { km: 4, sec: 372, paceSec: 372 },
         { km: 5, sec: 378, paceSec: 378 },
       ] },
+    { date: "2026-09-05", duration: 2700, distance: 7.01, activeCal: 488, paceSec: 385, maxSpeed: 11.5 },
+    // Depuis le 9 septembre : Garmin Connect. FC et cadence enfin mesurées.
+    { date: "2026-09-09", duration: 1865, distance: 5.01, activeCal: 302, cadence: 167, paceSec: 373, hr: 161, maxSpeed: 11.5 },
   ],
   // Ju a rejoint le dashboard mais n'a pas encore déposé de capture : le tableau
   // vide lui réserve sa place (carte, filtre, couleur) au lieu de la faire
@@ -475,6 +487,15 @@ const ANALYSES = {
       ],
       pokemon: "Hypnomade", pokemonAdj: "Reposé",
       pokemonPhrase: "Hypnomade : le Soporifik du 9 juin a fini par évoluer, et il passe toujours son temps à balancer son pendule — sauf qu'ici, la seule victime, c'est lui. Deux kilomètres à 143 spm en plein milieu, puis un réveil à 5'32 sur le dernier. Reposé, parce que boucler un record de 6 km par son kilomètre le plus rapide après avoir dormi sur les deux précédents, ce n'est pas un negative split, c'est une grasse matinée bien gérée." },
+    "2026-09-17": { trend: "up", verdict: "6 km en 34:57",
+      text: [
+        { titre: "5'50\"/km, ton meilleur toutes distances", texte: "6 km en 34:57. Ton record d'allure ne tenait plus que sur 5 km — 5'51\" le 31 août — et tu viens de faire mieux d'une seconde au kilomètre sur vingt pour cent de distance en plus. Sur 6 km, la marche est franche : 5'59\" le 11 septembre, 6'07\" le 21 août, 6'25\" le 3 septembre. Neuf secondes au kilomètre reprises en six jours, cinquante-quatre secondes de chrono." },
+        { titre: "Le quatrième kilomètre est réglé", texte: "Trois fois de suite il tombait à 143 spm, et trois fois de suite il était ton kilomètre le plus lent — 6'18\" le 11 septembre. La consigne était de remonter la cadence dès son début, sans attendre la trentième minute. Tu y es à 150 spm et il passe en 5'47\" : trente et une secondes reprises au même endroit, et c'est maintenant ton troisième kilomètre le plus rapide de la séance. La signature des trois dernières sorties a disparu en une fois." },
+        { titre: "Le creux a reculé d'un kilomètre", texte: "Il n'a pas disparu, il s'est déplacé. Ton cinquième tombe à 144 spm et 6'07\", dix-sept secondes au-dessus de ta moyenne du jour — exactement le motif que tenait le quatrième avant lui, qui pesait dix-neuf secondes de plus que la moyenne le 11 septembre. Le coût est le même, l'endroit a changé : la cadence lâche, l'allure suit. Pour la prochaine, décale la vérification d'un kilomètre. C'est au cinquième, désormais, que tu dois penser à repasser à 150." },
+        { titre: "167 bpm, le taux de change", texte: "148 au premier kilomètre, 172 au sixième, 167 de moyenne, effort ressenti « Hard ». C'est ta FC moyenne la plus haute, et elle se lit en face du reste : le 11 septembre, 164 bpm te donnaient 5'59\". Trois battements pour neuf secondes au kilomètre, le change est très favorable. Le détail qui le paie : 5'40\" et 5'36\" sur les deux premiers kilomètres, et te voilà à 168 bpm dès le deuxième. C'est là que se joue la tenue du cinquième." },
+      ],
+      pokemon: "Ptéra", pokemonAdj: "Ressuscité",
+      pokemonPhrase: "Ptéra : rendu à la vie à partir d'un éclat d'ambre, et d'une humeur de chien depuis. Ton quatrième kilomètre était fossilisé à 143 spm depuis le 21 août ; il ressort aujourd'hui en 5'47\" à 150 spm. Ressuscité, parce que ce kilomètre-là, tu l'avais enterré trois fois en mettant ça sur le compte de la fatigue — il lui manquait sept pas par minute." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
@@ -704,6 +725,23 @@ const ANALYSES = {
       ],
       pokemon: "Ronflex", pokemonAdj: "Reposé",
       pokemonPhrase: "Ronflex : il dort vingt heures par jour, ne s'entraîne jamais, et reste l'un des Pokémon les plus difficiles à faire bouger de la première génération. Vingt-deux jours sans courir puis un record de 21 secondes, on est dans la même école. Reposé, parce que la seule chose que tu aies ajoutée à ton entraînement depuis le 9 août, ce sont trois semaines de canapé — et c'est ce qui a le mieux marché jusqu'ici." },
+    "2026-09-05": { trend: "up", verdict: "Premier 7 km",
+      text: [
+        { titre: "Deux kilomètres de plus d'un coup", texte: "7,01 km en 45:00, soit 6'25\"/km. Tu n'avais jamais dépassé 5,02 km : tu ajoutes quarante pour cent de distance en une seule sortie, cinq jours après ton record sur 5 km. Et l'allure ne s'effondre pas pour autant — 6'25\" contre 6'13\" le 31 août. Douze secondes au kilomètre pour deux kilomètres de plus, c'est très peu." },
+        { titre: "Le conseil appliqué en cinq jours", texte: "Le 31 août, la suite annoncée était d'allonger : 6 ou 7 km tranquilles plutôt que de gratter des secondes sur 5. Tu as pris l'option haute, et tout de suite. Le repère qui dit ce que ça vaut : le 23 juillet, ton 5 km se courait à 6'34\"/km. Tu tiens aujourd'hui 6'25\" sur sept kilomètres — tu cours désormais plus vite sur 7 km que tu ne courais sur 5 il y a sept semaines." },
+        { titre: "La pointe à 11,5 km/h", texte: "Vitesse de pointe à 11,5 km/h, ta plus haute depuis le 5 août, et elle tombe au bout de sept kilomètres et non de cinq. Ce n'est pas une séance où tu as survécu à la distance : c'est une séance où il te restait de quoi accélérer. Garde ces 7 km comme nouvelle référence et contente-toi, la prochaine fois, de les reprendre à la même allure. Le chrono viendra tout seul." },
+      ],
+      pokemon: "Tauros", pokemonAdj: "Inarrêtable",
+      pokemonPhrase: "Tauros : une fois lancé, il fonce droit devant en se fouettant les flancs de ses trois queues, et rien ne le fait dévier de sa trajectoire. Ton compteur passe 5 km — le plafond de toutes tes sorties depuis juillet — et il continue encore deux bornes. Inarrêtable, parce qu'il aura fallu que la route se termine pour que tu t'arrêtes." },
+    "2026-09-09": { trend: "up", verdict: "Record du 5 km, cardio à l'appui",
+      text: [
+        { titre: "Trois secondes, et dix mètres de plus", texte: "5,01 km en 31:05, contre 5,00 km en 31:08 le 31 août : ton meilleur 5 km, repris de trois secondes, quatre jours après en avoir couru sept. Depuis le 23 juillet et ses 32:51, ce sont 1 min 46 de gagnées sur la même distance et le même parcours. La progression n'a pas ralenti d'un mois sur l'autre, elle a seulement changé de forme." },
+        { titre: "La montre voit enfin ton cœur", texte: "Nouveauté considérable : ton appli remonte maintenant la fréquence cardiaque et la cadence. 161 bpm de moyenne, 181 au maximum, 167 pas par minute. Jusqu'ici tes séances ne pouvaient se juger qu'au chrono ; à partir d'aujourd'hui, on voit aussi ce qu'elles te coûtent. C'est la différence entre savoir quoi changer et le deviner." },
+        { titre: "95 % du temps au seuil ou au-dessus", texte: "Le relevé est sans ambiguïté : 18:34 en zone 4, 11:20 en zone 5, et 42 secondes seulement en zone 3. Ta FC part de 150 et finit à 180 alors que ton allure, elle, ne bouge pas. Ce décrochage progressif est le vrai plafond de ton 5 km : ce ne sont pas tes jambes qui te tiennent à 6'13\", c'est le moment où le cœur part devant. Consigne pour la prochaine : premier kilomètre sous 155 bpm, quitte à le courir en 6'30\". Le décrochage arrivera plus tard, et c'est comme ça qu'on passe sous 31 minutes." },
+        { titre: "167 pas de 96 centimètres", texte: "Le chiffre le plus utile du relevé est ailleurs : ta longueur de foulée, 0,96 m de moyenne. Multiplie-la par tes 167 pas par minute, tu retombes exactement sur tes 9,7 km/h. Ta cadence est déjà haute, il n'y a donc plus grand-chose à aller y chercher — mais quatre centimètres de foulée en plus, à cadence identique, te mettent à 10 km/h, soit 6'00\"/km. Voilà ta marge, et elle se travaille en poussant le sol vers l'arrière, pas en agitant les pieds plus vite." },
+      ],
+      pokemon: "Staross", pokemonAdj: "Flamboyant",
+      pokemonPhrase: "Staross : tout son intérêt tient dans son noyau central, qui clignote de sept couleurs et que personne n'avait jamais pu observer de près. Le tien est branché depuis le 9 septembre — 161 bpm de moyenne, 181 au maximum. Flamboyant, parce que sur les cinq barres de couleur de ton relevé de zones, c'est la rouge qui déborde." },
   },
   // Ju : pas encore de séance, donc pas encore d'analyse.
   Ju: {},

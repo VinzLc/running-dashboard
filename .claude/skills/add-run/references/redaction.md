@@ -48,10 +48,13 @@ en quatre jours » vaut mieux que « Progression ».
   contre Anaïs : ce dashboard n'est pas un classement.
 - **Cite des chiffres réels** et les écarts. « 9 s/km de mieux que le 1er août »
   vaut mieux que « belle progression ».
-- **Sans FC ni cadence** (Didi, sur adidas Running), l'adaptation aérobie n'est
-  pas observable : appuie-toi sur l'allure, la régularité d'une sortie à l'autre,
-  le temps de pause, la vitesse de pointe. Quand le parcours est identique à
-  chaque fois, le chrono devient la mesure la plus honnête qui soit — dis-le.
+- **Sans FC ni cadence** (Didi jusqu'au 5 septembre 2026, sur adidas Running),
+  l'adaptation aérobie n'est pas observable : appuie-toi sur l'allure, la
+  régularité d'une sortie à l'autre, le temps de pause, la vitesse de pointe.
+  Quand le parcours est identique à chaque fois, le chrono devient la mesure la
+  plus honnête qui soit — dis-le. Depuis sa Garmin, Didi remonte tout, zones de
+  FC et longueur de foulée comprises : les séances d'avant restent cependant
+  jugeables au seul chrono, ne leur invente pas un cardio rétrospectif.
 - **N'invente aucun contexte personnel.** Pour quelqu'un dont on ne connaît ni
   l'âge ni le passé sportif, tiens-t'en aux chiffres. Évite aussi les accords
   qui présument du genre (« ton allure est passée de… » plutôt que
