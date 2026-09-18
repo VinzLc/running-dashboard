@@ -299,6 +299,46 @@ function bestFullKm(r) {
   return full.length ? Math.min(...full.map((s) => s.paceSec)) : null;
 }
 
+// Un 5 km couru à l'intérieur d'un 6 km reste un 5 km. Les splits permettent de
+// le retrouver : on fait glisser une fenêtre de `n` kilomètres complets sur la
+// séance et on garde la plus rapide. Sans ça, le meilleur 5 km de quelqu'un peut
+// être enfermé dans une sortie étiquetée « 6 km » et n'apparaître nulle part.
+// En dessous de 5 km on ne suit rien : le kilomètre isolé a déjà son podium, et
+// les distances intermédiaires ne sont visées par personne.
+const BLOCK_MIN = 5;
+
+function bestBlock(r, n) {
+  const full = (r.splits || []).filter((s) => !s.partial);
+  if (full.length < n) return null;
+  let best = Infinity;
+  for (let i = 0; i + n <= full.length; i++) {
+    let t = 0;
+    for (let k = i; k < i + n; k++) t += full[k].sec;
+    best = Math.min(best, t);
+  }
+  return best;
+}
+
+// Ce qu'une séance vaut sur une distance ronde de `n` km : le bloc mesuré quand
+// les splits sont là, sinon l'allure moyenne de la séance ramenée à `n` km quand
+// elle tombe dans le seau. Ce repli n'est pas un détail — sans lui, toutes les
+// séances d'avant août 2026 et toutes celles de Didi sur adidas disparaîtraient
+// des courses de distance, faute de détail par kilomètre. On extrapole plutôt
+// qu'on ne prend le chrono brut : celui-ci couvre 5,39 km dans le seau des 5 km,
+// et le comparer à un bloc de 5 000 m exacts ferait perdre la séance la plus
+// longue sur des mètres qu'elle est la seule à avoir courus.
+function runTimeOver(r, n) {
+  const block = bestBlock(r, n);
+  if (block != null) return block;
+  return bucketOf(r) === String(n) ? Math.round(r.paceSec * n) : null;
+}
+
+// Les distances rondes qu'il vaut la peine de suivre : celles que quelqu'un a
+// atteintes au moins une fois.
+const BLOCK_DISTANCES = [...new Set(RUNNERS.flatMap((n) => RUNS[n]).map((r) => Math.floor(r.distance)))]
+  .filter((n) => n >= BLOCK_MIN)
+  .sort((a, b) => a - b);
+
 // ---------- Insights objectifs (calculés sur chaque coureur séparément) ----------
 // Pour chaque séance : la séance précédente du même coureur + drapeaux record.
 const INSIGHTS = (() => {
@@ -309,6 +349,7 @@ const INSIGHTS = (() => {
     let bestPace = Infinity;
     let longest = -Infinity;
     let bestKm = Infinity;
+    const blockBests = {};
     // Dernière séance vue dans chaque seau de distance : c'est elle, et non la
     // séance de la veille, qui rend l'écart lisible. Comparer un 6 km au 5 km
     // qui le précède annonce « distance ▲ 1,02 km, allure ▲ 11 s/km » — deux
@@ -320,12 +361,28 @@ const INSIGHTS = (() => {
       // première à porter des splits est la référence et ne décroche rien, comme
       // la première séance tout court pour les deux autres records.
       const km = bestFullKm(r);
+      // Records de distance ronde battus par cette séance. Comme pour le
+      // kilomètre, la première fois ne décroche rien : il n'y avait pas de marque
+      // à battre, et « Record de distance » dit déjà l'essentiel.
+      const blockPRs = [];
+      BLOCK_DISTANCES.filter((n) => n <= Math.floor(r.distance)).forEach((n) => {
+        const t = runTimeOver(r, n);
+        if (t == null) return;
+        if (blockBests[n] != null && t < blockBests[n]) blockPRs.push(n);
+        if (blockBests[n] == null || t < blockBests[n]) blockBests[n] = t;
+      });
       meta[name][r.date] = {
         prev: i > 0 ? sorted[i - 1] : null,
         prevSame: lastInBucket[bucketOf(r)] || null,
         isPacePR: i > 0 && r.paceSec < bestPace,
         isDistPR: i > 0 && r.distance > longest,
         isKmPR: km != null && Number.isFinite(bestKm) && km < bestKm,
+        blockPRs,
+        blockTimes: Object.fromEntries(
+          BLOCK_DISTANCES.filter((n) => n <= Math.floor(r.distance))
+            .map((n) => [n, runTimeOver(r, n)])
+            .filter(([, t]) => t != null),
+        ),
       };
       lastInBucket[bucketOf(r)] = r;
       bestPace = Math.min(bestPace, r.paceSec);
@@ -472,10 +529,18 @@ function analysisHtml(r) {
       ? `vs ${bucketPhrase(bucketOf(r))} du ${fmtDate(cmp.date)} :`
       : "vs séance précédente :";
 
+  // Le chrono accompagne le record de distance ronde : quand les 5 km tombent à
+  // l'intérieur d'un 6 km, ce temps-là ne s'affiche nulle part ailleurs sur la
+  // carte — le badge serait invérifiable sans lui.
+  const blockBadges = (m.blockPRs || [])
+    .map((n) => `<span class="pr">🏅 Record du ${n} km · ${fmtDuration(m.blockTimes[n])}</span>`)
+    .join("");
+
   const prBadges =
     (m.isPacePR ? `<span class="pr">🏅 Record d'allure</span>` : "") +
     (m.isDistPR ? `<span class="pr">🏅 Record de distance</span>` : "") +
-    (m.isKmPR ? `<span class="pr">🏅 Record du kilomètre</span>` : "");
+    (m.isKmPR ? `<span class="pr">🏅 Record du kilomètre</span>` : "") +
+    blockBadges;
 
   const trend = a ? a.trend : "flat";
   const verdict = a ? a.verdict : "Analyse à venir";
@@ -615,12 +680,11 @@ function absentReason(cat, season, name) {
   return cat.absent ? cat.absent(name, season) : "pas de donnée dans cette catégorie";
 }
 
-// Deux façons de lire une course de distance, et elles ne désignent pas toujours
-// le même vainqueur : l'allure compare des kilomètres, le chrono compare des
-// séances. Dans le seau « 5 km », un 5,39 km demande deux minutes de plus qu'un
-// 5,01 km à allure égale — le chrono récompense donc autant la distance choisie
-// que la vitesse, et c'est pour ça que les étoiles restent attachées à l'allure.
-// Un bouton d'affichage ne doit pas rebattre le classement général.
+// Deux façons de lire une course de distance, et depuis que la distance est
+// exacte — le bloc de N kilomètres consécutifs, et non la séance qui va de 5,00
+// à 5,99 km — elles désignent le même vainqueur : le chrono divisé par N, c'est
+// l'allure. Le bouton ne change donc que l'unité de lecture, et les étoiles
+// restent attachées à l'allure pour qu'un seul podium fasse foi.
 let lbDistanceView = "pace";
 
 // Le drapeau à damier sert déjà d'emblème aux courses de distance : le
@@ -635,43 +699,57 @@ const DISTANCE_VIEWS = [
 // Les sorties de moins de 5 km n'ont pas d'onglet : le seau va de la mise en
 // route de 2 km au 4,9 km, ce qui n'est pas une distance mais un fourre-tout —
 // deux séances y courent rarement la même course.
-const distanceCategories = (season) =>
-  bucketsIn(RUNNERS.flatMap((n) => seasonRuns(season, n)))
-    .filter((b) => b.key !== SUB_5)
-    .map((b) => {
-      const label = b.label.toLowerCase();
-      const inBucket = (runs) => runs.filter((r) => bucketOf(r) === b.key);
+const distanceCategories = (season) => {
+  const seasonAll = RUNNERS.flatMap((n) => seasonRuns(season, n));
+  const keys = new Set(
+    bucketsIn(seasonAll)
+      .filter((b) => b.key !== SUB_5)
+      .map((b) => Number(b.key)),
+  );
+  // Un 5 km couru à l'intérieur d'un 6 km fait exister la catégorie, même si
+  // personne n'a posé de séance étiquetée 5 km sur la saison.
+  seasonAll.forEach((r) =>
+    BLOCK_DISTANCES.forEach((n) => {
+      if (bestBlock(r, n) != null) keys.add(n);
+    }),
+  );
+  return [...keys]
+    .sort((a, b) => a - b)
+    .map((n) => {
+      const label = `${n} km`;
+      const best = (runs) => {
+        const ts = runs.map((r) => runTimeOver(r, n)).filter((v) => v != null);
+        return ts.length ? Math.min(...ts) : null;
+      };
       return {
-        id: `km-${b.key}`,
+        id: `km-${n}`,
         // Le drapeau met les courses de distance au même rang visuel que les
         // autres compétitions : dans un menu unique, un onglet sans emoji se lit
         // comme une rubrique plutôt que comme un choix.
-        tab: `🏁 ${b.label}`,
+        tab: `🏁 ${label}`,
         title: `Le plus rapide sur ${label}`,
-        desc: `Meilleure allure réalisée sur une séance de ${label}. Une seule séance suffit à concourir : c'est le record qui compte, pas la moyenne.`,
+        desc: `Le meilleur ${label} de la période, qu'il ait été couru seul ou pris à l'intérieur d'une sortie plus longue : le détail par kilomètre permet d'y retrouver les ${n} kilomètres consécutifs les plus rapides. Tout le monde concourt ainsi sur exactement la même distance, et un ${label} ne se perd pas parce que la séance qui le contient porte une autre étiquette. Les séances sans détail par kilomètre entrent avec leur allure moyenne ramenée à ${label}.`,
         lower: true,
         score: (runs) => {
-          const rs = inBucket(runs);
-          return rs.length ? Math.min(...rs.map((r) => r.paceSec)) : null;
+          const t = best(runs);
+          return t == null ? null : t / n;
         },
         fmt: (v) => `${fmtPace(v)}/km`,
-        absent: () => `aucune séance de ${label} sur cette saison`,
+        absent: () => `aucun ${label} couru sur cette saison`,
         // La vue chrono ne remplace que ce qui change : le score, son format et
         // la façon de le présenter. Tout le reste — onglet, motif d'absence —
         // reste celui de la catégorie.
         views: {
           time: {
             title: `Le meilleur chrono sur ${label}`,
-            desc: `Le meilleur temps total réalisé sur une séance de ${label}, chronomètre brut. À lire en sachant ce que le seau contient : il va de ${b.key},00 à ${b.key},99 km, et une séance plus longue de 300 m coûte près de deux minutes à allure égale. Cette vue récompense donc aussi le fait de s'arrêter près de la borne — c'est pourquoi les étoiles de la catégorie restent attribuées à l'allure.`,
-            score: (runs) => {
-              const rs = inBucket(runs);
-              return rs.length ? Math.min(...rs.map((r) => r.duration)) : null;
-            },
+            desc: `Le même ${label} que la vue allure, lu au chronomètre plutôt qu'au kilomètre. Les deux désignent forcément le même vainqueur : la distance étant exacte, l'allure n'est rien d'autre que ce chrono divisé par ${n}.`,
+            score: (runs) => best(runs),
             fmt: (v) => fmtDuration(v),
           },
         },
       };
     });
+};
 
 // Le seul podium qui se joue à l'intérieur des séances plutôt qu'entre elles :
 // il ne retient qu'un kilomètre, le meilleur, et se moque de ce qu'il y avait
@@ -1080,6 +1158,19 @@ const RUN_CATEGORIES = [
     value: (r) => r.elevation,
     fmt: (v) => `${Math.round(v)} m`,
   },
+  // Un onglet par distance ronde atteinte : le podium des 5 km d'une personne
+  // classe aussi bien ses séances de 5 km que les 5 km qu'elle a laissés dans
+  // une sortie plus longue. `personalCategories` écarte ensuite ceux qu'elle n'a
+  // pas de quoi remplir.
+  ...BLOCK_DISTANCES.map((n) => ({
+    id: `block-${n}`,
+    tab: `🏅 ${n} km`,
+    title: `Les meilleurs ${n} km`,
+    desc: `Le temps mis pour couvrir ${n} kilomètres d'affilée, où qu'ils tombent dans la séance. Une sortie plus longue concourt avec ses ${n} meilleurs kilomètres consécutifs ; une séance sans détail par kilomètre entre avec son allure moyenne ramenée à ${n} km, si elle fait la bonne distance.`,
+    lower: true,
+    value: (r) => runTimeOver(r, n),
+    fmt: (v) => fmtDuration(v),
+  })),
 ];
 
 // Une catégorie n'est proposée que si la personne a de quoi la remplir : Didi
