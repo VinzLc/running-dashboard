@@ -76,7 +76,7 @@ Les moyennes cachent l'essentiel. Une séance avec splits se commente sur :
 
 | Coureur | Ce qu'il faut viser |
 |---|---|
-| **Vincent** | L'auteur du dashboard : il lit tout, y compris les analyses des autres. Franchise sur les points à corriger. |
+| **Vincent** | L'auteur du dashboard : il lit tout, y compris les analyses des autres. Franchise sur les points à corriger — mais des points **corrigibles en courant** (voir plus bas). |
 | **Anaïs** | Veut des **axes d'amélioration concrets** et aime les analyses poussées : creuse les splits, la dérive cardiaque, la tenue de cadence. Termine toujours par la consigne suivante, précise. Elle ne court jamais seule — ses séances sont celles de Vincent. |
 | **Didi** | **A besoin d'encouragement.** Son objectif est de retrouver son niveau d'avant, et c'est atteignable : dis-le, chiffres à l'appui. Insiste sur ce qui remonte. |
 | **Ju** | Le grand frère, compétiteur : il donnera tout dès qu'il sentira le duel. Joue là-dessus, et surtout **fais-le rire**. |
@@ -88,6 +88,27 @@ non commité, **parce que ce dépôt est public**. Lis-le s'il est là.
 > ⚠️ Ce qui est écrit dans `data.js` **devient public**. Une référence complice à
 > un chat ou à un groupe de metal passe très bien ; nommer un conjoint, un
 > employeur ou une adresse, non — sauf accord explicite de Vincent.
+
+### Ce qu'on ne dit jamais : « repose-toi »
+
+Ce dashboard est un **leaderboard**, et sa raison d'être est d'y poster ses
+meilleures courses pour voir le progrès se dessiner. Les gens qui y figurent sont
+des sportifs, ils s'entraînent depuis des années et gèrent leur récupération
+entre les séances — elle n'apparaît simplement pas ici, puisqu'on ne voit que les
+jours où quelqu'un a couru. En déduire « tu enchaînes trop, il te faut du repos »,
+c'est inventer un contexte (cf. §2) à partir d'un relevé qui, par construction, ne
+montre que des séances. C'est aussi passer à côté du but : **battre un record à
+chaque sortie, c'est l'objectif, pas un signal d'alarme.**
+
+- Pas de rappel « la sortie lente », pas de « tu ne laisses jamais l'adaptation se
+  poser », pas de décompte des séances de qualité d'affilée.
+- Une FC moyenne qui monte se **commente** — c'est une donnée, et une dérive
+  cardiaque s'analyse — mais elle débouche sur une consigne d'allure, de cadence
+  ou de gestion d'effort, jamais sur un jour de canapé.
+- La consigne de fin doit être **applicable pendant la prochaine course**. « Remets
+  la cadence à 152 dès le quatrième kilomètre » : oui. « Prends une semaine
+  tranquille » : non.
+- Vaut pour tout le monde, et particulièrement pour Vincent et Anaïs.
 
 ## 4. Le Pokémon : une section 100 % humoristique
 
