@@ -1,4 +1,4 @@
-/* global Chart, RUNS, RUNNER_COLORS, ANALYSES, POKEDEX */
+/* global Chart, RUNS, RUNNER_COLORS, RUNNER_MII, ANALYSES, POKEDEX */
 
 const RUNNERS = Object.keys(RUNS);
 
@@ -13,6 +13,111 @@ let viewRunners = [...RUNNERS];
 // veulent pas dire la même chose : les cartes personnelles s'ouvrent quand on a
 // demandé quelqu'un, et restent repliées quand on n'a rien demandé.
 let runnerFilterOn = false;
+
+// Le coureur choisi sur l'écran de sélection (null : tout le monde). Il règle
+// le filtre au départ, puis ne sert plus qu'à se reconnaître sur les podiums —
+// le filtre, lui, reste libre de montrer qui on veut.
+let fighter = null;
+
+// ---------- Mii ----------
+// Chaque coureur a son avatar façon Mii, dessiné ici en SVG à partir de
+// quelques traits déclarés dans RUNNER_MII (data.js) : couleur des cheveux et
+// des yeux, coupe, lunettes. Un nouveau coureur n'a donc besoin que d'une ligne
+// de données, pas d'un dessin. Le t-shirt prend la couleur du coureur.
+const MII_PEAU = "#f3c9a2";
+
+// Éclaircit (t > 0) ou assombrit (t < 0) une couleur hexadécimale.
+const shade = (hex, t) => {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) =>
+    Math.round(t < 0 ? c * (1 + t) : c + (255 - c) * t),
+  );
+  return `#${ch.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+};
+
+// Chaque coupe : `back` passe derrière la tête (cheveux longs, qui cachent
+// aussi les oreilles), `front` par-dessus. Repère : viewBox de 100 × 100, tête
+// centrée en (50, 47).
+const MII_COIFFURES = {
+  // Courte, mèche balayée vers la droite.
+  meche: {
+    front: "M25.5 49 C23 28 35 16 51 16 C67.5 16 78 28 74.5 49 C73.6 43 72.2 39 69.8 35.6 C61 35.5 51.5 33 43.5 29 C39.5 33.5 33 36.5 29.2 38.6 C27.4 41.6 26.2 45 25.5 49 Z",
+  },
+  // Courte, en épis.
+  houppe: {
+    front: "M25.5 49 C23.4 33 28 23 35 18.6 L34.6 12.6 L41.6 15.6 L45 9.6 L50.4 14.4 L56.4 9.8 L58.8 15.8 L65.6 13.2 L65 19.4 C72.6 24 77.6 33 74.5 49 C73.6 43.2 72 39.4 69.6 36.6 L64.4 34.8 L60.6 37.2 L56 33.8 L51.4 36.6 L46.8 33.6 L42 36.8 L37.4 34.4 L33.2 37.6 L29.4 37.6 C27.6 40.8 26.3 44.6 25.5 49 Z",
+  },
+  // Courte et nette, petite frange droite.
+  court: {
+    front: "M26 48 C24.2 28.5 35.5 17.5 50 17.5 C64.5 17.5 75.8 28.5 74 48 C73.2 43 71.8 39.6 69.8 37.2 C63.5 37.4 57.5 36 52.5 33.6 C46.5 36.4 37.5 38 30.6 37.2 C28.6 40.2 27 43.6 26 48 Z",
+  },
+  // Longs, frange droite.
+  "longs-frange": {
+    back: "M23.5 46 C21.5 24 35 14 50 14 C65 14 78.5 24 76.5 46 L80 82 Q66 88 50 87 Q34 88 20 82 Z",
+    front: "M25.6 48 C24.2 27.5 35.5 17 50 17 C64.5 17 75.8 27.5 74.4 48 C73.2 43 71.6 39.4 70 37 C62 37.8 38 37.8 30 37 C28.4 39.4 26.8 43 25.6 48 Z",
+  },
+  // Longs, raie sur le côté et mèche balayée sur le front.
+  "longs-raie": {
+    back: "M23.5 46 C21.5 24 35 14 50 14 C65 14 78.5 24 76.5 46 L80 82 Q66 88 50 87 Q34 88 20 82 Z",
+    front: "M25.6 50 C24 29 35.5 17 50 17 C65 17 76 29 74.4 50 C73 42.5 69.4 36.4 62.6 33.2 C54.6 30.6 46.4 28.4 40.6 23.6 C37 30.4 31.6 37.2 28.4 43.6 C27 46.2 26.2 48.2 25.6 50 Z",
+  },
+};
+
+// Sans Mii déclaré, un avatar neutre plutôt qu'une case vide.
+const MII_DEFAUT = { cheveux: "#4a4a4f", coiffure: "court", yeux: "#5b4a3a" };
+
+// `tete` recadre sur le visage, pour les médaillons ronds (podium, cartes).
+function miiSvg(name, { tete = false } = {}) {
+  const mii = RUNNER_MII[name] || MII_DEFAUT;
+  const color = RUNNER_COLORS[name] || "#8e8e93";
+  const peau = mii.peau || MII_PEAU;
+  const peauOmbre = shade(peau, -0.1);
+  const peauTrait = shade(peau, -0.3);
+  const coupe = MII_COIFFURES[mii.coiffure] || MII_COIFFURES.court;
+  const sourcils = mii.sourcils || shade(mii.cheveux, -0.15);
+  const contour = shade(mii.cheveux, -0.35);
+
+  const oeil = (x) => {
+    const ext = x < 50 ? -1 : 1; // coin extérieur
+    return `
+      <ellipse cx="${x}" cy="49.4" rx="4.3" ry="4.9" fill="#fff"/>
+      <circle cx="${x}" cy="50" r="3.4" fill="${mii.yeux}"/>
+      <circle cx="${x}" cy="50.2" r="1.55" fill="#161010"/>
+      <circle cx="${x - 1.1}" cy="48.7" r="1.05" fill="#fff"/>
+      <path d="M${x - 4.7} 48.6 Q${x} 43.4 ${x + 4.7} 48.6" fill="none" stroke="#2a1a14" stroke-width="1.35" stroke-linecap="round"/>
+      ${mii.cils ? `<path d="M${x + ext * 4.4} 47.9 l${ext * 2} -1.6" stroke="#2a1a14" stroke-width="1.2" stroke-linecap="round"/>` : ""}`;
+  };
+
+  const lunettes = mii.lunettes
+    ? `<g fill="rgba(255,255,255,0.12)" stroke="#1d1d1f" stroke-width="1.7">
+        <rect x="34" y="43.6" width="14" height="11.6" rx="3.6"/>
+        <rect x="52" y="43.6" width="14" height="11.6" rx="3.6"/>
+        <path d="M48 48.4 Q50 46.8 52 48.4" fill="none"/>
+        <path d="M34 47.6 L27.4 46.4 M66 47.6 L72.6 46.4" fill="none"/>
+      </g>`
+    : "";
+
+  return `<svg viewBox="${tete ? "17 12 66 66" : "0 0 100 100"}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    ${coupe.back ? `<path d="${coupe.back}" fill="${mii.cheveux}" stroke="${contour}" stroke-width="0.8" stroke-opacity="0.5"/>` : ""}
+    <path d="M14 100 C15 87 29 80.5 50 80.5 C71 80.5 85 87 86 100 Z" fill="${color}"/>
+    <path d="M43 64 L43 81 Q50 86.5 57 81 L57 64 Z" fill="${peauOmbre}"/>
+    ${coupe.back ? "" : `<ellipse cx="26.8" cy="51" rx="4.4" ry="6" fill="${peau}"/><ellipse cx="73.2" cy="51" rx="4.4" ry="6" fill="${peau}"/>`}
+    <path d="M50 21 C65 21 73.6 32 73.6 47 C73.6 63.5 63 74.5 50 74.5 C37 74.5 26.4 63.5 26.4 47 C26.4 32 35 21 50 21 Z" fill="${peau}"/>
+    <circle cx="36.5" cy="59" r="3.6" fill="#ff7a7a" opacity="0.22"/>
+    <circle cx="63.5" cy="59" r="3.6" fill="#ff7a7a" opacity="0.22"/>
+    ${oeil(41)}${oeil(59)}
+    <path d="M35.6 41.6 Q40.4 38.6 45.6 40.4 M54.4 40.4 Q59.6 38.6 64.4 41.6" fill="none" stroke="${sourcils}" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M50.6 52.6 Q48 57.2 50.9 57.9" fill="none" stroke="${peauTrait}" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M43.6 62 Q50 70 56.4 62 Q50 63.6 43.6 62 Z" fill="#8e2f3a"/>
+    <path d="M44.8 62.4 Q50 63.9 55.2 62.4 L54.4 63.6 Q50 64.8 45.6 63.6 Z" fill="#fff"/>
+    <path d="${coupe.front}" fill="${mii.cheveux}"${coupe.back ? "" : ` stroke="${contour}" stroke-width="0.8" stroke-opacity="0.5"`}/>
+    ${lunettes}
+  </svg>`;
+}
+
+// Médaillon rond : le visage sur un fond pastel de la couleur du coureur.
+const miiBadge = (name, cls = "mii-badge") =>
+  `<span class="${cls}" style="--mii-bg:${shade(RUNNER_COLORS[name] || "#8e8e93", 0.55)}">${miiSvg(name, { tete: true })}</span>`;
 
 // ---------- Filtre de distance ----------
 // Comparer ce qui est comparable : une séance appartient au seau de son
@@ -141,11 +246,10 @@ function renderCards() {
   el.classList.toggle("single", viewRunners.length === 1);
   el.innerHTML = viewRunners.map((name) => {
     const runs = runsOf(name);
-    const color = RUNNER_COLORS[name];
     if (!runs.length) {
       return `
       <div class="runner-card empty">
-        <h3><span class="dot" style="background:${color}"></span>${name}</h3>
+        <h3>${miiBadge(name, "card-mii")}${name}</h3>
         <p class="empty-note">${emptyMessage()}</p>
       </div>`;
     }
@@ -180,7 +284,7 @@ function renderCards() {
 
     return `
       <div class="runner-card">
-        <h3><span class="dot" style="background:${color}"></span>${name}</h3>
+        <h3>${miiBadge(name, "card-mii")}${name}</h3>
         <div class="stat-grid">
           ${stats
             .map(([label, value]) => `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`)
@@ -252,7 +356,10 @@ function renderEvolution(metricKey = currentMetric) {
           reverse: !!metric.invert,
           ticks: {
             color: "#98989d",
-            callback: (v) => (metricKey === "paceSec" ? fmtPace(v) : metricKey === "duration" ? fmtDuration(v) : v),
+            // Arrondi : sur un écart serré (un seul coureur, 3,5 à 4 km), Chart.js
+            // gradue au dixième et affiche ses erreurs de flottant, 4.1000000000000005.
+            callback: (v) =>
+              metricKey === "paceSec" ? fmtPace(v) : metricKey === "duration" ? fmtDuration(v) : Math.round(v * 100) / 100,
           },
           grid: { color: "rgba(255,255,255,0.05)" },
         },
@@ -610,23 +717,38 @@ function renderTable() {
 const STARS_BY_RANK = [3, 2, 1];
 
 // ---------- Saisons ----------
-// Le palmarès se lit à deux échelles, et les deux ont leur raison d'être.
+// Le palmarès se lit à deux échelles : le Général, sur tout l'historique, et
+// une saison par mois, qui repart de zéro.
 //
-// Le Général ne remonte pas plus loin que la première séance de Didi : sur tout
-// l'historique, les catégories de volume ne mesuraient qu'une chose — qui a
-// commencé le plus tôt — et Didi, arrivée fin juillet, partait avec 16 séances
-// de retard qu'aucune performance ne pouvait rattraper.
-//
-// Les saisons mensuelles, elles, peuvent remonter avant cette date sans injustice :
-// un mois est un concours autonome qui repart de zéro, donc n'avoir pas encore
-// couru en mai ne coûte aucune étoile — il n'y a simplement pas de saison de mai
-// pour Didi. Conséquence à assumer : le Général n'est pas la somme des saisons,
-// il ne couvre que juillet à partir du 23.
-const LEADERBOARD_START = "2026-07-23";
-const LB_START_LABEL = new Date(`${LEADERBOARD_START}T00:00:00`).toLocaleDateString("fr-FR", {
-  day: "numeric",
-  month: "long",
-});
+// Tout le monde n'arrive pas le même jour, et le dashboard doit accueillir de
+// nouveaux coureurs sans qu'on retouche une date à chaque arrivée. Le Général
+// démarrait autrefois à la première séance de Didi, pour qu'elle ne parte pas
+// avec 16 séances de retard ; Pefi, arrivé en septembre, aurait réclamé la même
+// chose, puis le suivant. La règle est donc passée dans les catégories : tout ce
+// qui s'accumule avec le temps — kilomètres, calories, séances, records,
+// progrès — se compte par semaine de présence (`weeksIn`), à partir de la
+// première sortie de chacun. Arriver tard ne coûte plus rien, ni au Général ni
+// dans le mois où l'on arrive.
+
+// La dernière séance déposée, tous coureurs confondus, clôt la période en cours :
+// le rythme se mesure sur ce que couvrent les données, pas sur l'horloge du
+// lecteur — sinon le classement bougerait tout seul d'un jour à l'autre.
+const LAST_DATE = RUNNERS.flatMap((n) => RUNS[n].map((r) => r.date)).sort().pop();
+const FIRST_RUN = Object.fromEntries(RUNNERS.map((n) => [n, RUNS[n].map((r) => r.date).sort()[0]]));
+const lastDayOf = (ym) => {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+};
+
+// Semaines de présence d'un coureur sur une saison : de sa première sortie — ou
+// du début de la saison, s'il courait déjà avant — à la fin de la saison. Une
+// semaine au minimum : sans ce plancher, une première sortie de 5 km la veille
+// de la clôture compterait pour 35 km par semaine.
+function weeksIn(season, name) {
+  const from = [season.start, FIRST_RUN[name]].filter(Boolean).sort().pop();
+  const days = (Date.parse(season.end) - Date.parse(from)) / 864e5 + 1;
+  return Math.max(days, 7) / 7;
+}
 
 const capitalize = (s) => s[0].toUpperCase() + s.slice(1);
 
@@ -642,8 +764,11 @@ const SEASONS = (() => {
       id: "general",
       tab: "🏆 Général",
       title: "Général",
-      scope: `Le cumul depuis le ${LB_START_LABEL}, date à laquelle tout le monde était enfin en course. Les saisons mensuelles remontent plus loin — le Général n'en est donc pas la somme.`,
-      match: (r) => r.date >= LEADERBOARD_START,
+      scope:
+        "Tout l'historique. Arriver en cours de route n'y coûte rien : ce qui s'accumule avec le temps — kilomètres, calories, séances, records, progrès — se compte par semaine de présence, à partir de la première sortie de chacun.",
+      start: null,
+      end: LAST_DATE,
+      match: () => true,
     },
     // Le libellé du mois n'est jamais réinjecté dans la phrase : « la saison de
     // août » demanderait une élision que `toLocaleDateString` ne fournit pas.
@@ -652,7 +777,9 @@ const SEASONS = (() => {
       tab: label(ym, oneYear ? { month: "long" } : { month: "long", year: "2-digit" }),
       title: label(ym, { month: "long", year: "numeric" }),
       scope:
-        "Une saison close sur elle-même : elle ne compte que ce mois, et la suivante repart de zéro. Arriver en cours de route n'y coûte donc aucune étoile.",
+        "Une saison close sur elle-même : elle ne compte que ce mois, et la suivante repart de zéro. Comme au Général, ce qui s'accumule se compte par semaine de présence — arriver en cours de mois n'y coûte aucune étoile.",
+      start: `${ym}-01`,
+      end: [lastDayOf(ym), LAST_DATE].sort()[0],
       match: (r) => r.date.startsWith(ym),
     })),
   ];
@@ -672,11 +799,7 @@ const stdev = (arr) => {
 // traités ici ; `absent` ne couvre que le motif propre à la catégorie.
 function absentReason(cat, season, name) {
   if (!RUNS[name].length) return "pas encore de séance";
-  if (!seasonRuns(season, name).length) {
-    return season.id === "general"
-      ? `aucune séance depuis le ${LB_START_LABEL}`
-      : `pas de séance sur cette saison`;
-  }
+  if (!seasonRuns(season, name).length) return "pas de séance sur cette saison";
   return cat.absent ? cat.absent(name, season) : "pas de donnée dans cette catégorie";
 }
 
@@ -781,45 +904,39 @@ const FUN_CATEGORIES = [
     id: "km-total",
     tab: "🗺️ Compteur de km",
     title: "Le Compteur de kilomètres",
-    desc: "Le plus grand total de kilomètres sur la période. La catégorie la plus bête du plateau : il n'y a qu'à sortir, encore et encore.",
-    score: (runs) => (runs.length ? sum(runs.map((r) => r.distance)) : null),
-    fmt: (v) => `${v.toFixed(1)} km`,
+    desc: "Les kilomètres courus par semaine de présence sur la période, comptée depuis sa première sortie. La catégorie la plus bête du plateau : il n'y a qu'à sortir, encore et encore.",
+    score: (runs, name, season) => (runs.length ? sum(runs.map((r) => r.distance)) / weeksIn(season, name) : null),
+    fmt: (v) => `${v.toFixed(1)} km/sem.`,
   },
   {
     id: "metronome",
     tab: "🎯 Métronome",
     title: "Le Métronome",
-    desc: "L'allure la plus constante d'une séance à l'autre (le plus petit écart-type). Elle récompense la régularité, et elle sourit assez peu à qui progresse vite : progresser, c'est justement ne pas courir deux fois à la même allure.",
+    desc: "L'allure la plus constante d'une séance à l'autre (le plus petit écart-type), à partir de trois séances : deux sorties tombées par hasard à la même allure ne font pas un métronome. Elle récompense la régularité, et elle sourit assez peu à qui progresse vite : progresser, c'est justement ne pas courir deux fois à la même allure.",
     lower: true,
-    score: (runs) => (runs.length > 1 ? stdev(runs.map((r) => r.paceSec)) : null),
+    score: (runs) => (runs.length > 2 ? stdev(runs.map((r) => r.paceSec)) : null),
     fmt: (v) => `± ${Math.round(v)} s/km`,
-    absent: () => "une seule séance sur la période, rien à comparer",
+    absent: () => "moins de trois séances sur la période, pas encore de régularité à mesurer",
   },
   {
     id: "progress",
     tab: "🚀 Fusée",
     title: "La Fusée",
-    desc: "Les secondes au kilomètre grattées entre la première et la dernière séance de la période. Du progrès brut, sans regarder le temps qu'il a fallu pour l'obtenir.",
-    score: (runs) => {
+    desc: "Les secondes au kilomètre grattées entre la première et la dernière séance de la période, ramenées à la semaine de présence. Une fusée se juge à sa poussée, pas à l'altitude qu'elle a mis des mois à atteindre.",
+    score: (runs, name, season) => {
       const s = chrono(runs);
-      return s.length > 1 ? s[0].paceSec - s[s.length - 1].paceSec : null;
+      return s.length > 1 ? (s[0].paceSec - s[s.length - 1].paceSec) / weeksIn(season, name) : null;
     },
-    fmt: (v) => `${v >= 0 ? "−" : "+"}${Math.abs(Math.round(v))} s/km`,
+    fmt: (v) => `${v >= 0 ? "−" : "+"}${Math.abs(v).toFixed(1)} s/km/sem.`,
     absent: () => "une seule séance sur la période, rien à comparer",
   },
   {
     id: "freq",
     tab: "📅 Machine",
     title: "La Machine",
-    desc: "Le rythme : nombre de séances par semaine. Le décompte part de sa propre première sortie et non du début de la période, pour que rejoindre en retard ne coûte rien.",
-    score: (runs) => {
-      const s = chrono(runs);
-      if (s.length < 2) return null;
-      const jours = (new Date(s[s.length - 1].date) - new Date(s[0].date)) / 864e5 + 1;
-      return (s.length / jours) * 7;
-    },
+    desc: "Le rythme : nombre de séances par semaine de présence sur la période. Le décompte part de sa propre première sortie et court jusqu'à la fin de la période : trois sorties d'affilée puis plus rien ne font pas une machine.",
+    score: (runs, name, season) => (runs.length ? runs.length / weeksIn(season, name) : null),
     fmt: (v) => `${v.toFixed(1)} séances/sem.`,
-    absent: () => "une seule séance sur la période, pas encore de rythme",
   },
   {
     id: "avg-dist",
@@ -833,8 +950,8 @@ const FUN_CATEGORIES = [
     id: "pr-hunter",
     tab: "🏅 Chasseur de records",
     title: "Le Chasseur de records",
-    desc: "Le nombre de séances qui ont battu le meilleur chrono de la période. Attention au piège : plus le record est haut, plus le suivant est difficile à décrocher.",
-    score: (runs) => {
+    desc: "Les séances qui ont battu le meilleur chrono de la période, par semaine de présence. Attention au piège : plus le record est haut, plus le suivant est difficile à décrocher.",
+    score: (runs, name, season) => {
       const s = chrono(runs);
       if (!s.length) return null;
       let best = Infinity;
@@ -843,9 +960,9 @@ const FUN_CATEGORIES = [
         if (i > 0 && r.paceSec < best) n += 1;
         best = Math.min(best, r.paceSec);
       });
-      return n;
+      return n / weeksIn(season, name);
     },
-    fmt: (v) => `${v} record${v > 1 ? "s" : ""}`,
+    fmt: (v) => `${v.toFixed(1)} record${v >= 2 ? "s" : ""}/sem.`,
   },
   {
     id: "coldheart",
@@ -864,9 +981,9 @@ const FUN_CATEGORIES = [
     id: "burner",
     tab: "🔥 Lance-flammes",
     title: "Le Lance-flammes",
-    desc: "Le plus de calories actives brûlées sur la période. Ça dépend au moins autant du gabarit que de l'effort, mais personne n'a jamais refusé un trophée pour ce motif.",
-    score: (runs) => (runs.length ? sum(runs.map((r) => r.activeCal)) : null),
-    fmt: (v) => `${Math.round(v).toLocaleString("fr-FR")} cal`,
+    desc: "Les calories actives brûlées par semaine de présence sur la période. Ça dépend au moins autant du gabarit que de l'effort, mais personne n'a jamais refusé un trophée pour ce motif.",
+    score: (runs, name, season) => (runs.length ? sum(runs.map((r) => r.activeCal)) / weeksIn(season, name) : null),
+    fmt: (v) => `${Math.round(v).toLocaleString("fr-FR")} cal/sem.`,
   },
 ];
 
@@ -962,7 +1079,7 @@ function podiumSlot(entry, cat, index, total) {
   return `
     <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
       <div class="podium-stars">${starsHtml(entry.stars)}</div>
-      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${entry.name[0]}</div>
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${miiBadge(entry.name, "podium-face")}${entry.name === fighter ? `<span class="podium-you" title="C'est toi">1P</span>` : ""}</div>
       <div class="podium-name">${entry.name}</div>
       <div class="podium-value">${cat.fmt(entry.value)}</div>
       <div class="podium-block"><span class="podium-rank">${entry.rank + 1}</span></div>
@@ -1200,7 +1317,7 @@ function runPodiumSlot(name, entry, cat, index, total) {
   const order = total >= 3 ? [2, 1, 3][index] || index + 1 : index + 1;
   return `
     <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
-      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${name[0]}</div>
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${miiBadge(name, "podium-face")}</div>
       <div class="podium-name">${entry.run.distance.toFixed(2)} km</div>
       <div class="podium-sub">${fmtDate(entry.run.date)}</div>
       <div class="podium-value">${cat.fmt(entry.value)}</div>
@@ -1888,6 +2005,13 @@ function buildMultiSwitch(elId, allLabel, options, onChange) {
   });
 
   paint();
+  // Réglage depuis l'extérieur : c'est l'écran de sélection qui coche le
+  // coureur choisi, exactement comme l'aurait fait un clic.
+  return (values) => {
+    selected = keys.filter((k) => values.includes(k));
+    paint();
+    onChange(selected);
+  };
 }
 
 // Tout ce qui dépend des deux filtres globaux, y compris le décompte du pied
@@ -1906,8 +2030,10 @@ function renderAll() {
   document.getElementById("totalRuns").textContent = sum(viewRunners.map((n) => runsOf(n).length));
 }
 
+let setRunnerFilter = () => {};
+
 function renderFilters() {
-  buildMultiSwitch("runnerFilter", "Tous", RUNNERS.map((n) => [n, n]), (sel) => {
+  setRunnerFilter = buildMultiSwitch("runnerFilter", "Tous", RUNNERS.map((n) => [n, n]), (sel) => {
     viewRunners = sel.length ? sel : [...RUNNERS];
     runnerFilterOn = sel.length > 0;
     resetBlocks();
@@ -1917,6 +2043,185 @@ function renderFilters() {
     viewBuckets = sel;
     renderAll();
   });
+}
+
+// ---------- Sélection du personnage ----------
+// L'écran d'accueil façon Smash Bros : « Qui êtes-vous ? ». Le choix règle le
+// filtre coureur, donc tout ce qui est personnel — carte, courbes, leaderboard
+// personnel, trophées, et la dernière analyse dépliée dans le tableau. Il
+// s'affiche à chaque arrivée sur l'adresse nue ; `#Pefi` le saute, ce qui fait
+// de l'adresse après un choix un lien personnel à mettre en favori ou à envoyer.
+const FIGHTER_KEY = "runs.fighter";
+const EVERYONE = "tous";
+const norm = (s) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+const selectScreen = document.getElementById("selectScreen");
+const selectGrid = document.getElementById("selectGrid");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+// Le stockage peut être refusé (navigation privée, données bloquées) : le
+// souvenir du dernier choix est un confort, jamais une condition.
+const remember = (v) => {
+  try {
+    localStorage.setItem(FIGHTER_KEY, v);
+  } catch {
+    /* rien à faire */
+  }
+};
+const recall = () => {
+  try {
+    return localStorage.getItem(FIGHTER_KEY);
+  } catch {
+    return null;
+  }
+};
+
+// `#Pefi`, `#anais`, `#tous` → le coureur, null pour tout le monde, undefined
+// si l'adresse ne désigne personne (l'écran de sélection s'affiche alors).
+function fighterFromHash() {
+  const h = norm(decodeURIComponent(location.hash.slice(1)));
+  if (!h) return undefined;
+  if (h === EVERYONE) return null;
+  return RUNNERS.find((n) => norm(n) === h);
+}
+
+// Un nouveau venu porte le bandeau pendant deux semaines après sa première sortie.
+const isNewChallenger = (name) =>
+  FIRST_RUN[name] && (Date.parse(LAST_DATE) - Date.parse(FIRST_RUN[name])) / 864e5 < 14;
+
+// Le blason du personnage : le Pokémon de sa dernière séance, comme l'emblème
+// de série dans le coin d'une case de Smash.
+function emblemOf(name) {
+  const last = RUNS[name].map((r) => r.date).sort().pop();
+  const a = last && ANALYSES[name] && ANALYSES[name][last];
+  const p = a && POKEDEX[a.pokemon];
+  return p ? `<img class="fighter-emblem" src="assets/pokemon/${p.id}.png" alt="" title="${a.pokemon} ${a.pokemonAdj}" />` : "";
+}
+
+function fighterTile(name) {
+  const color = RUNNER_COLORS[name] || "#8e8e93";
+  const n = RUNS[name].length;
+  const meta = n ? `${n} séance${n > 1 ? "s" : ""}` : "Pas encore couru";
+  return `
+    <button type="button" class="fighter" data-fighter="${name}" style="--c:${color};--c-light:${shade(color, 0.5)}">
+      <span class="fighter-art">${miiSvg(name)}</span>
+      ${emblemOf(name)}
+      ${isNewChallenger(name) ? `<span class="fighter-new">Nouveau challenger !</span>` : ""}
+      <span class="fighter-plate"><span class="fighter-name${name.length > 8 ? " long" : ""}">${name}</span><span class="fighter-meta">${meta}</span></span>
+      <span class="fighter-token" aria-hidden="true">1P</span>
+    </button>`;
+}
+
+function renderSelect() {
+  selectGrid.innerHTML =
+    RUNNERS.map(fighterTile).join("") +
+    `<button type="button" class="fighter fighter-all" data-fighter="${EVERYONE}" style="--c:#8e8e93;--c-light:#d1d1d6">
+      <span class="fighter-art fighter-random" aria-hidden="true">?</span>
+      <span class="fighter-plate"><span class="fighter-name long">Spectateur</span><span class="fighter-meta">Voir tout le monde</span></span>
+      <span class="fighter-token" aria-hidden="true">1P</span>
+    </button>`;
+}
+
+// Le bouton du hero rappelle qui l'on est, et rouvre l'écran.
+function renderFighterBadge() {
+  document.getElementById("switchFighter").innerHTML = `
+    ${fighter ? miiBadge(fighter, "switch-mii") : `<span class="switch-mii switch-all" aria-hidden="true">?</span>`}
+    <span class="switch-name">${fighter || "Spectateur"}</span>
+    <span class="switch-hint">Changer</span>`;
+}
+
+// Le sous-titre se déduit des données : un coureur de plus, et son nom apparaît.
+function renderSubtitle() {
+  const names = RUNNERS.map((n) => `<b style="color:${RUNNER_COLORS[n]}">${n}</b>`);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} &amp; ${names[names.length - 1]}` : names.join("");
+  document.getElementById("subtitle").innerHTML = `Suivi des sessions de course — ${list}`;
+}
+
+const pageParts = () => document.querySelectorAll("body > header, body > main, body > footer");
+
+function openSelect() {
+  renderSelect();
+  const last = fighter !== null ? fighter : recall();
+  const cursor =
+    selectGrid.querySelector(`[data-fighter="${CSS.escape(last || "")}"]`) || selectGrid.querySelector(".fighter");
+  cursor.classList.add("cursor");
+  selectScreen.classList.remove("ready", "closing");
+  selectScreen.classList.add("open");
+  document.documentElement.classList.add("selecting");
+  // Le reste de la page sort du parcours clavier tant que l'écran est ouvert.
+  pageParts().forEach((el) => (el.inert = true));
+  cursor.focus({ preventScroll: true });
+}
+
+function closeSelect() {
+  selectScreen.classList.remove("open", "ready", "closing");
+  document.documentElement.classList.remove("selecting", "skip-select");
+  pageParts().forEach((el) => (el.inert = false));
+}
+
+// Applique un choix : null = tout le monde.
+function applyFighter(name) {
+  fighter = name;
+  setRunnerFilter(name ? [name] : []);
+  renderLeaderboard();
+  renderFighterBadge();
+}
+
+function choose(value) {
+  const name = value === EVERYONE ? null : value;
+  remember(value);
+  history.replaceState(null, "", `#${encodeURIComponent(name || EVERYONE)}`);
+  applyFighter(name);
+  window.scrollTo(0, 0);
+  if (reduceMotion.matches) {
+    closeSelect();
+    document.getElementById("switchFighter").focus({ preventScroll: true });
+    return;
+  }
+  // « À vos marques… Partez ! » : le temps de lire le bandeau, puis fondu.
+  selectScreen.classList.add("ready");
+  setTimeout(() => selectScreen.classList.add("closing"), 750);
+  setTimeout(() => {
+    closeSelect();
+    document.getElementById("switchFighter").focus({ preventScroll: true });
+  }, 1100);
+}
+
+selectGrid.addEventListener("click", (e) => {
+  const tile = e.target.closest(".fighter");
+  if (tile && !selectScreen.classList.contains("ready")) choose(tile.dataset.fighter);
+});
+
+// Flèches pour déplacer le curseur, Échap pour garder la vue en cours.
+selectScreen.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !selectScreen.classList.contains("ready")) {
+    closeSelect();
+    return;
+  }
+  const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+  if (!step) return;
+  e.preventDefault();
+  const tiles = [...selectGrid.querySelectorAll(".fighter")];
+  const i = tiles.indexOf(document.activeElement);
+  tiles[(i + step + tiles.length) % tiles.length].focus();
+});
+selectGrid.addEventListener("focusin", (e) => {
+  selectGrid.querySelectorAll(".cursor").forEach((t) => t.classList.remove("cursor"));
+  e.target.closest(".fighter")?.classList.add("cursor");
+});
+
+document.getElementById("switchFighter").addEventListener("click", openSelect);
+
+function initSelect() {
+  renderSubtitle();
+  const fromHash = fighterFromHash();
+  if (fromHash === undefined) {
+    renderFighterBadge();
+    openSelect();
+  } else {
+    applyFighter(fromHash);
+    closeSelect();
+  }
 }
 
 // ---------- Init ----------
@@ -1929,6 +2234,7 @@ initPersonal();
 initTrophies();
 resetBlocks();
 renderAll();
+initSelect();
 // En dernier : les panneaux sont rendus à leur taille naturelle, donc Chart.js
 // mesure un conteneur réel avant qu'on replie quoi que ce soit. Tout est
 // synchrone, rien n'est peint entre-temps.

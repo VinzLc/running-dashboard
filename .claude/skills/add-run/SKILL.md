@@ -178,8 +178,10 @@ séance. Inutile de mentionner le recalage ou la valeur brute de la montre.
 Ajoute l'objet à la fin du tableau du bon coureur (`RUNS.Vincent`,
 `RUNS["Anaïs"]`, `RUNS.Didi`…), en gardant l'ordre chronologique et l'alignement
 des colonnes existant. Un nouveau coureur a besoin en plus d'une entrée dans
-`RUNNER_COLORS`, d'un bloc dans `ANALYSES` et d'une ligne dans
-`.claude/runners.sh`. Avec splits, le bloc passe sur plusieurs lignes :
+`RUNNER_COLORS`, d'un avatar dans `RUNNER_MII` (cheveux, yeux, coupe — demande
+à Vincent s'il ne les a pas donnés), d'un bloc dans `ANALYSES` et d'une ligne
+dans `.claude/runners.sh` ; puis relance `.claude/watcher/install.sh` après le
+commit. Rien à toucher dans `index.html` ni `styles.css`. Avec splits, le bloc passe sur plusieurs lignes :
 
 ```js
 { date: "2026-08-09", duration: 2345, distance: 6.01, activeCal: 463, totalCal: 531, elevation: 4,  cadence: 144, paceSec: 390, hr: 158,

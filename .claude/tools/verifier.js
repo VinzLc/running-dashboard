@@ -37,7 +37,7 @@ function loadGlobals(file, names) {
   return ctx.__out;
 }
 
-const { RUNS, RUNNER_COLORS, ANALYSES } = loadGlobals("data.js", ["RUNS", "RUNNER_COLORS", "ANALYSES"]);
+const { RUNS, RUNNER_COLORS, RUNNER_MII, ANALYSES } = loadGlobals("data.js", ["RUNS", "RUNNER_COLORS", "RUNNER_MII", "ANALYSES"]);
 const { POKEDEX, POKEMON_ADJECTIFS } = loadGlobals("pokemon.js", ["POKEDEX", "POKEMON_ADJECTIFS"]);
 
 const fmtPace = (s) => `${Math.floor(s / 60)}'${String(Math.round(s % 60)).padStart(2, "0")}"`;
@@ -45,9 +45,26 @@ const strip = (s) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "");
 
 // ---------- Structure générale ----------
 const runners = Object.keys(RUNS);
+// Les coupes de Mii sont dessinées dans app.js : on relit leurs noms là-bas
+// plutôt que d'en tenir une deuxième liste ici.
+const appSrc = fs.readFileSync(path.join(ROOT, "app.js"), "utf8");
+const blocCoupes = (appSrc.split("const MII_COIFFURES = {")[1] || "").split("\n};")[0];
+const COUPES = [...blocCoupes.matchAll(/^ {2}"?([a-z-]+)"?: \{/gm)].map((m) => m[1]);
+const HEX = /^#[0-9a-f]{6}$/i;
+
 runners.forEach((name) => {
   if (!RUNNER_COLORS[name]) err(`${name} : pas de couleur dans RUNNER_COLORS`);
   if (!ANALYSES[name]) err(`${name} : pas de bloc dans ANALYSES`);
+  const mii = (RUNNER_MII || {})[name];
+  if (!mii) {
+    err(`${name} : pas de Mii dans RUNNER_MII — l'écran de sélection lui dessinerait un inconnu`);
+    return;
+  }
+  ["cheveux", "yeux"].forEach((k) => {
+    if (!HEX.test(mii[k] || "")) err(`${name} : RUNNER_MII.${k} doit être une couleur #rrggbb`);
+  });
+  if (mii.peau && !HEX.test(mii.peau)) err(`${name} : RUNNER_MII.peau doit être une couleur #rrggbb`);
+  if (!COUPES.includes(mii.coiffure)) err(`${name} : coiffure « ${mii.coiffure} » inconnue (${COUPES.join(", ")})`);
 });
 Object.keys(ANALYSES)
   .filter((n) => !RUNS[n])

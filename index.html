@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🏃 Running Dashboard — Anaïs, Vincent, Didi, Ju & Pefi</title>
+  <title>🏃 Running Dashboard</title>
+  <!-- Une adresse qui nomme déjà quelqu'un (#Pefi) saute l'écran de sélection :
+       on le masque avant le premier rendu plutôt que de le faire clignoter. -->
+  <script>if (location.hash.length > 1) document.documentElement.classList.add("skip-select");</script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=54" />
+  <link rel="stylesheet" href="styles.css?v=55" />
 </head>
 <body>
   <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
@@ -19,9 +22,22 @@
     </symbol>
   </svg>
 
+  <!-- Écran d'accueil façon Smash Bros. Ouvert d'office : app.js le ferme
+       quand l'adresse désigne déjà quelqu'un, ou une fois le choix fait. -->
+  <div class="select-screen open" id="selectScreen" role="dialog" aria-modal="true" aria-labelledby="selectTitle">
+    <div class="select-stage">
+      <h2 class="select-title" id="selectTitle">Qui êtes-vous ?</h2>
+      <p class="select-sub">Choisis ton coureur</p>
+      <div class="select-grid" id="selectGrid"></div>
+      <p class="select-hint">Flèches pour choisir · Entrée pour valider</p>
+    </div>
+    <div class="select-banner" aria-hidden="true"><span>À vos marques… Partez !</span></div>
+  </div>
+
   <header class="hero">
     <h1>🏃 Running Dashboard</h1>
-    <p class="subtitle">Suivi des sessions de course — <span class="anais">Anaïs</span>, <span class="vincent">Vincent</span>, <span class="didi">Didi</span>, <span class="ju">Ju</span> &amp; <span class="pefi">Pefi</span></p>
+    <p class="subtitle" id="subtitle"></p>
+    <button type="button" class="switch-fighter" id="switchFighter" aria-haspopup="dialog"></button>
   </header>
 
   <main>
@@ -132,8 +148,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=54"></script>
-  <script src="pokemon.js?v=54"></script>
-  <script src="app.js?v=54"></script>
+  <script src="data.js?v=55"></script>
+  <script src="pokemon.js?v=55"></script>
+  <script src="app.js?v=55"></script>
 </body>
 </html>

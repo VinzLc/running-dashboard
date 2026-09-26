@@ -12,6 +12,9 @@ pas renseigner, plutôt que de les afficher à zéro.
 
 ## Fonctionnalités
 
+- **Écran de sélection façon Smash Bros** à l'arrivée : « Qui êtes-vous ? », un
+  avatar façon Mii par coureur. Le choix règle le filtre coureur, et l'adresse
+  devient un lien personnel (`#Pefi`) qui saute l'écran — `#tous` pour tout le monde
 - **Cartes récap** par coureur (distance totale, allure moyenne/meilleure, FC, calories…)
 - **Graphique d'évolution** interactif : distance, allure, fréquence cardiaque, cadence, calories ou durée
 - **Radar comparatif** des performances moyennes (normalisées)
@@ -53,10 +56,10 @@ une seule.
 
 Pour ajouter un coureur : une ligne dans [`.claude/runners.sh`](.claude/runners.sh)
 (lu par le hook de détection, le watcher et son installateur), plus une entrée
-dans `RUNS`, `RUNNER_COLORS` et `ANALYSES` de `data.js`, et une couleur
-`--prenom` / `.prenom` dans `styles.css` pour le sous-titre de `index.html`.
-Puis relancer `.claude/watcher/install.sh` : le watcher fige la liste des
-dossiers surveillés à l'installation.
+dans `RUNS`, `RUNNER_COLORS`, `RUNNER_MII` (son avatar) et `ANALYSES` de
+`data.js`. Rien d'autre : sous-titre, écran de sélection, filtres et classements
+se déduisent des données. Puis relancer `.claude/watcher/install.sh` : le
+watcher fige la liste des dossiers surveillés à l'installation.
 
 À la main, ajoutez une entrée dans le tableau du coureur concerné dans
 [`data.js`](data.js) :
