@@ -124,6 +124,15 @@ const RUNS = {
         { km: 5, sec: 367, paceSec: 367, hr: 171, cadence: 144 },
         { km: 6, sec: 358, paceSec: 358, hr: 172, cadence: 149 },
       ] },
+    { date: "2026-09-26", duration: 2133, distance: 6.00, activeCal: 451, totalCal: 514, elevation: 3,  cadence: 147, paceSec: 356, hr: 165,
+      splits: [
+        { km: 1, sec: 368, paceSec: 368, hr: 147, cadence: 155 },
+        { km: 2, sec: 354, paceSec: 354, hr: 162, cadence: 149 },
+        { km: 3, sec: 358, paceSec: 358, hr: 167, cadence: 143 },
+        { km: 4, sec: 344, paceSec: 344, hr: 171, cadence: 146 },
+        { km: 5, sec: 369, paceSec: 369, hr: 170, cadence: 142 },
+        { km: 6, sec: 340, paceSec: 340, hr: 178, cadence: 150 },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -519,6 +528,16 @@ const ANALYSES = {
       ],
       pokemon: "Ptéra", pokemonAdj: "Ressuscité",
       pokemonPhrase: "Ptéra : rendu à la vie à partir d'un éclat d'ambre, et d'une humeur de chien depuis. Ton quatrième kilomètre était fossilisé à 143 spm depuis le 21 août ; il ressort aujourd'hui en 5'47\" à 150 spm. Ressuscité, parce que ce kilomètre-là, tu l'avais enterré trois fois en mettant ça sur le compte de la fatigue — il lui manquait sept pas par minute." },
+    "2026-09-26": { trend: "flat", verdict: "Premier negative split sur 6 km",
+      text: [
+        { titre: "36 secondes derrière le 17", texte: "6 km en 35:33, soit 5'56\"/km. Trente-six secondes derrière le record du 17 septembre (34:57 à 5'50\"), trois secondes au kilomètre devant le 11 (5'59\") : c'est ton deuxième meilleur 6 km. FC moyenne à 165 bpm, deux battements sous la dernière fois, cadence moyenne à 147 spm, et un effort ressenti « Hard », comme le 17." },
+        { titre: "18:00, puis 17:33", texte: "Coupe la séance en deux : 18:00 sur les trois premiers kilomètres, 17:33 sur les trois derniers. C'est la première fois qu'un de tes 6 km va plus vite dans sa seconde moitié — tous les autres penchaient dans l'autre sens, de 5 secondes le 11 septembre, de 47 le 17, de 155 le 21 août. Et cette seconde moitié, à 5'51\"/km, vaut à une seconde près l'allure moyenne de ton record." },
+        { titre: "Départ sage, cinquième inchangé", texte: "Le 17, je t'écrivais que la tenue du cinquième kilomètre se jouait au départ : 5'40\" et 5'36\", et déjà 168 bpm au deuxième. Tu as fait l'expérience inverse — 6'08\" et 5'54\", 162 bpm au deuxième, quarante-six secondes laissées sur les deux premières bornes. Le cinquième tombe pourtant en 6'09\" à 142 spm, contre 6'07\" à 144 le 17. Le départ n'y était pour rien : l'hypothèse est réfutée, et c'est une vraie information." },
+        { titre: "150 spm, troisième démonstration", texte: "Au cinquième, ta FC ne bouge pas — 171 bpm au quatrième, 170 au cinquième — pendant que tu perds vingt-cinq secondes. C'est la cadence qui lâche, de 146 à 142 spm, son minimum du jour. Puis tu remets 150 sur le sixième, et il tombe en 5'40\", ton meilleur kilomètre. Troisième fois que le même geste donne le même résultat : 152 spm et 5'32\" au sixième le 11 septembre, 150 spm et 5'47\" au quatrième le 17, 150 spm et 5'40\" aujourd'hui." },
+        { titre: "À 24 minutes, 150 spm", texte: "La consigne du 17 était de repasser à 150 au cinquième. Tu l'as fait au sixième, un kilomètre trop tard, exactement comme le 11 septembre. Le calcul est simple : ce cinquième couru comme ton quatrième, à 5'44\", et le chrono tombait à 35:08, à onze secondes du record malgré le départ prudent. Pour la prochaine, un repère plus facile à tenir qu'un numéro de borne : ton quatrième kilomètre se termine vers 24 minutes. À 24 minutes, regarde la montre et remets 150." },
+      ],
+      pokemon: "Carapuce", pokemonAdj: "Prudent",
+      pokemonPhrase: "Carapuce : chez La Fontaine, rien ne sert de courir, il faut partir à point, et tu as couru la morale à la lettre — 6'08 au départ, 5'40 à l'arrivée. Seul accroc à la fable : le lièvre, c'est toi le 17 septembre, et il garde 36 secondes d'avance. Prudent, parce qu'au cinquième tu as fait ce que fait tout Carapuce à la première alerte : Repli, la tête rentrée dans la carapace, 142 spm." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
