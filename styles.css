@@ -8,6 +8,7 @@
   --anais: #ff375f;
   --didi: #30d158;
   --ju: #bf5af2;
+  --pefi: #ff9f0a;
   --green: #30d158;
   --yellow: #ffd60a;
   --radius: 18px;
@@ -45,6 +46,7 @@ body {
 .anais { color: var(--anais); font-weight: 700; }
 .didi { color: var(--didi); font-weight: 700; }
 .ju { color: var(--ju); font-weight: 700; }
+.pefi { color: var(--pefi); font-weight: 700; }
 
 main {
   max-width: 1000px;
@@ -120,6 +122,11 @@ main {
    laisseraient un blanc entre le libellé et sa valeur. */
 .cards.single { grid-template-columns: 1fr; }
 .cards.single .stat-grid { grid-template-columns: repeat(4, 1fr); }
+/* Même logique pour la dernière carte d'un nombre impair (cinq coureurs depuis
+   l'arrivée de Pefi, ou trois cochés dans le filtre) : elle n'a pas de voisine,
+   donc elle occupe toute la ligne plutôt que de laisser la colonne de droite vide. */
+.cards > .runner-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.cards > .runner-card:last-child:nth-child(odd) .stat-grid { grid-template-columns: repeat(4, 1fr); }
 .runner-card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -854,7 +861,8 @@ footer {
   .panel { padding: 14px; border-radius: 14px; }
   .runner-card { padding: 16px; }
   .cards, .cards.single { grid-template-columns: 1fr; gap: 12px; }
-  .cards.single .stat-grid { grid-template-columns: 1fr 1fr; }
+  .cards.single .stat-grid,
+  .cards > .runner-card:last-child:nth-child(odd) .stat-grid { grid-template-columns: 1fr 1fr; }
   .stat-grid { gap: 12px; }
   .stat .value { font-size: 19px; }
   .chart-wrap { height: 280px; }

@@ -16,7 +16,8 @@
 RUNNERS_SPEC='Vincent|Vincent
 Anais|Ana*
 Didi|Didi
-Ju|Ju'
+Ju|Ju
+Pefi|Pefi'
 
 # Imprime « clé<TAB>dossier » pour chaque dossier de coureur réellement présent.
 # $1 : racine du dépôt (défaut : répertoire courant).

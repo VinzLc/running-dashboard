@@ -1,6 +1,6 @@
 ---
 name: add-run
-description: Ajoute une (ou plusieurs) nouvelle(s) séance(s) de course au dashboard à partir des captures d'appli de course déposées dans les dossiers Vincent/, Anaïs/, Didi/ ou Ju/. À utiliser quand l'utilisateur dit "nouvelle run", "nouvelle séance", "ajoute la course", ou /add-run.
+description: Ajoute une (ou plusieurs) nouvelle(s) séance(s) de course au dashboard à partir des captures d'appli de course déposées dans les dossiers Vincent/, Anaïs/, Didi/, Ju/ ou Pefi/. À utiliser quand l'utilisateur dit "nouvelle run", "nouvelle séance", "ajoute la course", ou /add-run.
 ---
 
 # Ajouter une séance de course au dashboard
@@ -37,6 +37,7 @@ avant de supposer quoi que ce soit :
 | Didi | **Garmin Connect** depuis le 9 sept. 2026 | **1 à 6** — une par onglet | tout, FC et cadence comprises ; + longueur de foulée et zones |
 | Didi | adidas Running jusqu'au 5 sept. 2026 | **1** | ni FC, ni cadence, ni dénivelé ; en plus : vitesse de pointe |
 | Ju | — | pas encore de séance | — |
+| Pefi | Apple Fitness (réglée en français) | **1 ou 2** — le récapitulatif montre souvent les splits en dessous | tout ; FC par km mais **pas de cadence par km** ; + puissance (non stockée) |
 
 Pour Vincent et Anaïs, depuis août 2026 :
 
@@ -169,8 +170,8 @@ séance. Inutile de mentionner le recalage ou la valeur brute de la montre.
 
 > Règle appliquée **à partir des séances traitées le 18 septembre 2026 et après**.
 > Les séances déjà en base gardent leurs valeurs brutes — ne les retouche pas, les
-> analyses écrites s'appuient dessus. Elle ne concerne que Vincent : Anaïs, Didi
-> et Ju sont saisis à la distance affichée.
+> analyses écrites s'appuient dessus. Elle ne concerne que Vincent : Anaïs, Didi,
+> Ju et Pefi sont saisis à la distance affichée.
 
 ## 4. Mettre à jour `data.js`
 

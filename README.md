@@ -1,10 +1,10 @@
-# 🏃 Running Dashboard — Anaïs, Vincent, Didi & Ju
+# 🏃 Running Dashboard — Anaïs, Vincent, Didi, Ju & Pefi
 
 Dashboard statique pour suivre l'évolution des sessions de course du groupe.
 Données extraites des résumés d'entraînement de chacun.
 
 Chaque coureur n'utilise pas la même appli, et donc ne mesure pas la même chose :
-Apple Fitness (Vincent, Anaïs) donne FC, cadence, dénivelé et splits au
+Apple Fitness (Vincent, Anaïs, Pefi) donne FC, cadence, dénivelé et splits au
 kilomètre ; adidas Running (Didi) donne une vitesse de pointe mais pas de FC.
 Seules `date`, `duration`, `distance` et `paceSec` sont garanties — le dashboard
 retire les statistiques, les courbes et les axes de radar qu'un coureur ne peut
@@ -45,7 +45,7 @@ python3 -m http.server 8000
 ## Mettre à jour les données
 
 Le plus simple : déposer les captures dans le dossier du coureur (`Vincent/`,
-`Anaïs/`, `Didi/`, `Ju/`) puis lancer la skill `add-run`, qui fait le reste
+`Anaïs/`, `Didi/`, `Ju/`, `Pefi/`) puis lancer la skill `add-run`, qui fait le reste
 (extraction, analyse, Pokémon, commit). Un watcher launchd la déclenche même
 automatiquement. Sur Apple Fitness, une séance produit **deux** captures — le
 récapitulatif « Workout Details » et le détail des splits ; sur adidas Running,
@@ -53,7 +53,10 @@ une seule.
 
 Pour ajouter un coureur : une ligne dans [`.claude/runners.sh`](.claude/runners.sh)
 (lu par le hook de détection, le watcher et son installateur), plus une entrée
-dans `RUNS`, `RUNNER_COLORS` et `ANALYSES` de `data.js`.
+dans `RUNS`, `RUNNER_COLORS` et `ANALYSES` de `data.js`, et une couleur
+`--prenom` / `.prenom` dans `styles.css` pour le sous-titre de `index.html`.
+Puis relancer `.claude/watcher/install.sh` : le watcher fige la liste des
+dossiers surveillés à l'installation.
 
 À la main, ajoutez une entrée dans le tableau du coureur concerné dans
 [`data.js`](data.js) :

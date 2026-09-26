@@ -4,7 +4,7 @@
 //
 // SEULES `date`, `duration`, `distance` et `paceSec` sont garanties. Tout le
 // reste dépend de l'appli et de la montre du coureur, et le dashboard doit
-// composer avec : Vincent et Anaïs sont sur Apple Fitness (FC, cadence,
+// composer avec : Vincent, Anaïs et Pefi sont sur Apple Fitness (FC, cadence,
 // dénivelé, calories actives + totales), Didi sur adidas Running, qui ne donne
 // ni FC, ni cadence, ni dénivelé, mais une vitesse de pointe (`maxSpeed`, km/h).
 // Une clé absente n'est jamais remplacée par un zéro — un 0 bpm se lit comme une
@@ -225,6 +225,27 @@ const RUNS = {
   // vide lui réserve sa place (carte, filtre, couleur) au lieu de la faire
   // apparaître au milieu de la première séance.
   Ju: [],
+  // Apple Fitness, comme Vincent et Anaïs, mais l'appli est réglée à la
+  // française (virgule décimale, « Sat 19 Sep ») et affiche en plus une
+  // puissance moyenne, en watts, qu'on ne stocke pas. Les splits ne portent que
+  // la FC, sans la cadence.
+  Pefi: [
+    { date: "2026-09-19", duration: 1534, distance: 4.05, activeCal: 349, totalCal: 391, elevation: 35, cadence: 167, paceSec: 378, hr: 173,
+      splits: [
+        { km: 1, sec: 414, paceSec: 414, hr: 167 },
+        { km: 2, sec: 384, paceSec: 384, hr: 166 },
+        { km: 3, sec: 352, paceSec: 352, hr: 180 },
+        { km: 4, sec: 360, paceSec: 360, hr: 181 },
+        { km: 5, sec: 24,  paceSec: 401, hr: 194, partial: true },
+      ] },
+    { date: "2026-09-26", duration: 1325, distance: 3.49, activeCal: 299, totalCal: 335, elevation: 62, cadence: 156, paceSec: 379, hr: 180,
+      splits: [
+        { km: 1, sec: 373, paceSec: 373, hr: 165 },
+        { km: 2, sec: 394, paceSec: 394, hr: 184 },
+        { km: 3, sec: 377, paceSec: 377, hr: 186 },
+        { km: 4, sec: 178, paceSec: 357, hr: 188, partial: true },
+      ] },
+  ],
 };
 
 const RUNNER_COLORS = {
@@ -232,6 +253,7 @@ const RUNNER_COLORS = {
   "Anaïs": "#ff375f",
   Didi: "#30d158",
   Ju: "#bf5af2",
+  Pefi: "#ff9f0a",
 };
 
 // Analyses « coach » par séance, rédigées en comparant chaque run aux précédentes
@@ -746,4 +768,26 @@ const ANALYSES = {
   },
   // Ju : pas encore de séance, donc pas encore d'analyse.
   Ju: {},
+  // Pefi débute en course : on explique les notions (splits, dérive cardiaque)
+  // au lieu de les supposer connues, et une seule consigne par séance.
+  Pefi: {
+    "2026-09-19": { trend: "start", verdict: "Point de départ, fini en accélérant",
+      text: [
+        { titre: "La ligne de base : 4,05 km", texte: "Première séance enregistrée : 4,05 km en 25:34, soit 6'18\"/km, à 173 bpm de moyenne. C'est ta ligne de base — chaque sortie suivante se mesurera à ces chiffres-là, et à eux seuls. Ta montre remonte tout, fréquence cardiaque au kilomètre et cadence comprises : on aura de quoi voir précisément ce qui progresse, et où." },
+        { titre: "Une minute plus vite au troisième km", texte: "Le détail par kilomètre est la meilleure nouvelle du jour : 6'54\", 6'24\", 5'52\", 6'00\". Ton kilomètre le plus lent est le premier, le plus rapide le troisième, avec une minute et deux secondes d'écart entre les deux. Finir plus vite qu'on n'est parti, c'est ce qu'on appelle un negative split, et c'est l'inverse exact du réflexe du débutant, qui part fort et finit en marchant. Tu l'as trouvé d'instinct, dès ta première sortie." },
+        { titre: "167 pas par minute, à garder", texte: "Autre chiffre qui mérite d'être noté : 167 pas par minute de cadence moyenne. Beaucoup de débutants courent à grandes foulées, bien en dessous de 160 ; tu pars déjà avec des pas courts et rapides, qui freinent moins à chaque appui et coûtent moins d'énergie. C'est un acquis, ne le lâche pas quand la fatigue arrive." },
+        { titre: "Le cœur décroche sous les 6 minutes", texte: "Là où ça se paie, c'est au cardio. Sur les deux premiers kilomètres, à 6'54\" puis 6'24\", ton cœur reste à 167 puis 166 bpm. Dès que tu passes sous les 6'00\", il saute à 180 et 181, et termine à 194 sur les derniers mètres — ta montre classe d'ailleurs la séance « Hard », 7 sur 10. Retiens ce repère : vers 6'20\" ton cœur tient, sous 6'00\" il s'emballe. Pour la prochaine, repars aussi prudemment, et tiens les 6'20\" un kilomètre de plus avant d'accélérer." },
+      ],
+      pokemon: "Ptitard", pokemonAdj: "Frétillant",
+      pokemonPhrase: "Ptitard : d'après le Pokédex, ses pattes viennent tout juste de pousser et ne lui permettent pas encore de courir. Il a quand même bouclé 4,05 km, ce qui en dit long sur la fiabilité du Pokédex. Frétillant, parce qu'un têtard qui gagne une minute entre son premier et son troisième kilomètre, c'est une queue qui s'agite d'autant plus vite qu'elle vient de découvrir qu'elle pouvait." },
+    "2026-09-26": { trend: "flat", verdict: "Même allure, deux fois plus de côte",
+      text: [
+        { titre: "62 mètres de montée en 3,49 km", texte: "3,49 km en 22:05, soit 6'19\"/km : à une seconde près ton allure du 19 septembre. Sauf que le terrain n'a plus rien à voir — 62 m de dénivelé positif contre 35, sur une distance plus courte, soit deux fois plus de montée au kilomètre. Tenir la même allure sur un parcours deux fois plus raide, c'est courir plus fort, même si le chrono refuse de le dire. Ta montre, elle, le dit : 222 W de puissance moyenne, contre 204 la semaine dernière." },
+        { titre: "41 secondes plus vite au premier km", texte: "Les splits racontent l'autre différence. Le 19, ton premier kilomètre partait prudemment, en 6'54\". Cette fois il part en 6'13\", 41 secondes plus vite — et le deuxième retombe à 6'34\", le plus lent de la séance, pendant que ton cœur bondit de 165 à 184 bpm. Une partie de la montée se trouvait peut-être là, mais le schéma est classique : le premier kilomètre trop rapide se paie au suivant. Ta FC ne quitte plus les 184-188 bpm jusqu'à l'arrivée." },
+        { titre: "180 bpm, noté 9 sur 10", texte: "180 bpm de moyenne, 7 de plus que le 19, et une séance que ta montre classe « All Out », 9 sur 10. Tu as tout donné, et jusqu'au bout : tu trouves encore de quoi boucler le dernier demi-kilomètre à 5'57\", ton allure la plus rapide du jour. Le souci n'est pas l'effort, c'est le moment où il arrive — dès le deuxième kilomètre, ton cœur dépassait déjà ce qu'il n'avait atteint le 19 qu'au troisième." },
+        { titre: "La recette, tu l'as trouvée le 19", texte: "La bonne consigne, c'est toi qui l'as écrite il y a une semaine : un premier kilomètre à 6'54\" t'avait laissé deux kilomètres à 166-167 bpm, et tes deux kilomètres les plus rapides étaient venus ensuite, à 5'52\" et 6'00\". Refais exactement ça : premier kilomètre vers 6'50\", même si ça te semble ridiculement lent, et n'accélère qu'à partir du troisième. C'est la façon la plus simple d'aller plus loin sans courir moins vite." },
+      ],
+      pokemon: "Têtarte", pokemonAdj: "Fumant",
+      pokemonPhrase: "Têtarte : Ptitard a évolué, et le voilà capable de vivre hors de l'eau — à condition, dit le Pokédex, de transpirer sans arrêt pour garder la peau humide. Même allure qu'il y a une semaine sur un parcours qui grimpe deux fois plus, 180 bpm de moyenne : côté transpiration, le cahier des charges est rempli. Fumant, parce qu'une séance que ta propre montre classe « All Out » et qui se termine à 188 bpm, ça ne refroidit pas en deux minutes." },
+  },
 };

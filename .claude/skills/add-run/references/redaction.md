@@ -83,6 +83,7 @@ Les moyennes cachent l'essentiel. Une séance avec splits se commente sur :
 | **Anaïs** | Veut des **axes d'amélioration concrets** et aime les analyses poussées : creuse les splits, la dérive cardiaque, la tenue de cadence. Termine toujours par la consigne suivante, précise. Elle ne court jamais seule — ses séances sont celles de Vincent. |
 | **Didi** | **A besoin d'encouragement.** Son objectif est de retrouver son niveau d'avant, et c'est atteignable : dis-le, chiffres à l'appui. Insiste sur ce qui remonte. |
 | **Ju** | Le grand frère, compétiteur : il donnera tout dès qu'il sentira le duel. Joue là-dessus, et surtout **fais-le rire**. |
+| **Pefi** | **Débutant** (première séance en septembre 2026). Explique les notions au lieu de les supposer connues — split, dérive cardiaque, cadence — et tiens-t'en à **une seule consigne** par séance, tirée de ses propres chiffres. Sa chaîne Pokémon a commencé par Ptitard → Têtarte. |
 
 Les éléments personnels qui nourrissent les vannes (surnoms, animaux, goûts
 musicaux, références de jeux) sont dans **`.claude/profils-coureurs.local.md`** —
