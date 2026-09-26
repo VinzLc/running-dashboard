@@ -208,6 +208,15 @@ const RUNS = {
         { km: 5, sec: 419, paceSec: 419, hr: 160, cadence: 155 },
         { km: 6, sec: 133, paceSec: 369, hr: 169, cadence: 161, partial: true },
       ] },
+    { date: "2026-09-26", duration: 2162, distance: 5.04, activeCal: 245, totalCal: 289, elevation: 3,  cadence: 150, paceSec: 428, hr: 140,
+      splits: [
+        { km: 1, sec: 423, paceSec: 423, hr: 128, cadence: 151 },
+        { km: 2, sec: 454, paceSec: 454, hr: 134, cadence: 147 },
+        { km: 3, sec: 443, paceSec: 443, hr: 139, cadence: 147 },
+        { km: 4, sec: 421, paceSec: 421, hr: 144, cadence: 155 },
+        { km: 5, sec: 398, paceSec: 398, hr: 154, cadence: 157 },
+        { km: 6, sec: 21,  paceSec: 446, hr: 154, cadence: 126, partial: true },
+      ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
   // une vitesse de pointe, et un seul chiffre de calories (pas de total).
@@ -722,6 +731,16 @@ const ANALYSES = {
       ],
       pokemon: "Dodrio", pokemonAdj: "Unanime",
       pokemonPhrase: "Dodrio : Doduo courait avec deux têtes et aucune notion de l'arrêt, il en a gagné une troisième et une vraie pointe de vitesse. Le premier, le troisième et le cinquième kilomètre bouclés en 6'59 — une tête par chrono, pas une seconde de désaccord. Unanime, parce qu'il aura fallu trois cerveaux pour qu'aucun ne propose de lever le pied au quatrième kilomètre, ce qui, vu les deux séances précédentes, n'allait pas de soi." },
+    "2026-09-26": { trend: "flat", verdict: "Ton meilleur km, malgré la douleur",
+      text: [
+        { titre: "5,04 km, et la douleur revenue", texte: "5,04 km en 36:02, soit 7'08\"/km, et de nouveau une note sur la capture : la même douleur au bas-ventre gauche que le 31 août. Ce n'est donc pas une séance à mettre en face de ton record du 11 septembre, 7'00\"/km sur 5,35 km — et pourtant elle n'a rien d'une séance ratée. C'est ta cinquième sortie au-delà de 5 km, à huit secondes au kilomètre de ton meilleur." },
+        { titre: "Le même creux qu'au 31 août, en léger", texte: "Le déroulé ressemble à celui du 31 août, en beaucoup moins marqué. Ce jour-là : 6'47\", 7'40\", 8'03\", puis 6'55\", avec une cadence tombée de 148 à 136 spm au milieu. Aujourd'hui : 7'03\", 7'34\", 7'23\", puis 7'01\" et 6'38\", et une cadence qui ne descend que de 151 à 147 avant de remonter à 155 puis 157. Même forme de séance, mais ton kilomètre le plus lent passe de 8'03\" à 7'34\"." },
+        { titre: "Ton meilleur kilomètre, au cinquième", texte: "Et puis il y a le cinquième kilomètre : 6'38\", le plus rapide de tout ton historique de splits, une seconde sous le 6'39\" du 26 août. Il arrive après quatre kilomètres à 7'00\" et plus, à 154 bpm et 157 spm, ta cadence la plus haute de la séance. Comme le 31 août, la douleur n'a rien entamé de ta forme : le kilomètre le plus rapide tombe à la fin, et cette fois c'est le plus rapide que tu aies jamais couru." },
+        { titre: "Ton cœur, au plus bas depuis juillet", texte: "140 bpm de moyenne, ta FC la plus basse depuis le 17 juillet. Le détail est encore plus parlant : au quatrième kilomètre, à 7'01\", ton cœur est à 144 ; le 11 septembre, au même kilomètre et à 6'58\", il était à 156. Douze battements de moins pour trois secondes d'écart. Une séance ne suffit pas à conclure — tu as retenu l'allure au milieu —, mais la consigne du 11 septembre, ne pas dépasser 155 avant le cinquième kilomètre, est tenue de bout en bout : tu plafonnes à 154." },
+        { titre: "Deuxième fois : un avis médical", texte: "Le 31 août je t'écrivais que si cette douleur revenait, ce ne serait plus une question de coach. Elle est revenue, la même, au même endroit : deuxième fois en quatre sorties. Une douleur qui revient se montre à un médecin, pas à un tableau de bord. Côté course, la consigne du 11 septembre tient toujours : 6 km, premier kilomètre à 7'30\", FC sous 155 jusqu'au cinquième." },
+      ],
+      pokemon: "Galopa", pokemonAdj: "Tenace",
+      pokemonPhrase: "Galopa : le Pokédex le décrit comme incapable de voir passer quelque chose de rapide sans vouloir faire la course avec. Quatre kilomètres à 7'00 et plus, puis un cinquième en 6'38, le plus rapide que tu aies jamais couru, sorti de nulle part en fin de séance. Tenace, parce que la même douleur que le 31 août est revenue en route et qu'elle n'a pas eu le dernier mot, cette fois non plus." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
