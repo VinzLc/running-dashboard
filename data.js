@@ -282,10 +282,10 @@ const RUNNER_COLORS = {
 // Chacun peut retoucher le sien dans l'Atelier Mii du dashboard, qui produit un
 // lien #mii?… : `node .claude/tools/mii.js '<lien>'` le reporte ici (skill /mii).
 const RUNNER_MII = {
-  Vincent: { cheveux: "#6a4327", coiffure: "meche", yeux: "#3d7fd6" },
+  Vincent: { cheveux: "#9a6a3f", coiffure: "meche", yeux: "#3d7fd6", lunettes: "soleil", barbe: "courte" },
   "Anaïs": { cheveux: "#e3bd6a", coiffure: "longs-raie", yeux: "#6b3f22", cils: true },
   Didi: { cheveux: "#2e1c12", coiffure: "longs-frange", yeux: "#3d9a4f", cils: true },
-  // Le frère de Vincent : mêmes yeux bleus, même couleur de cheveux, autre coupe.
+  // Le frère de Vincent : mêmes yeux bleus, autre coupe.
   Ju: { cheveux: "#6a4327", coiffure: "houppe", yeux: "#3d7fd6" },
   Pefi: { cheveux: "#2a2320", coiffure: "court", yeux: "#6b3f22", lunettes: "carrees" },
 };
