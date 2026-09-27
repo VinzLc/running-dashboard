@@ -8,7 +8,7 @@
        on le masque avant le premier rendu plutôt que de le faire clignoter. -->
   <script>if (location.hash.length > 1) document.documentElement.classList.add("skip-select");</script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=56" />
+  <link rel="stylesheet" href="styles.css?v=57" />
 </head>
 <body>
   <!-- Étoile du leaderboard, définie une fois et réutilisée par <use> : elle est
@@ -34,10 +34,38 @@
     <div class="select-banner" aria-hidden="true"><span>À vos marques… Partez !</span></div>
   </div>
 
+  <!-- L'Atelier Mii : un brouillon qu'on enregistre sur l'appareil, puis qu'on
+       partage en lien pour qu'il soit ajouté au dashboard de tout le monde. -->
+  <div class="mii-editor" id="miiEditor" role="dialog" aria-modal="true" aria-labelledby="miiTitle" hidden>
+    <div class="mii-sheet">
+      <div class="mii-head">
+        <h2 id="miiTitle">Atelier Mii</h2>
+        <button type="button" class="mii-close" data-action="annuler" aria-label="Fermer sans enregistrer">×</button>
+      </div>
+      <div class="mii-who" id="miiWho"></div>
+      <div class="mii-body">
+        <div class="mii-preview" id="miiPreview"></div>
+        <div class="mii-panel">
+          <div class="mii-tabs" id="miiTabs" role="tablist" aria-label="Catégories"></div>
+          <div class="mii-options" id="miiOptions"></div>
+        </div>
+      </div>
+      <p class="mii-note" id="miiNote" aria-live="polite"></p>
+      <div class="mii-actions">
+        <button type="button" data-action="reset">Réinitialiser</button>
+        <button type="button" data-action="partager">Partager</button>
+        <button type="button" class="primary" data-action="enregistrer">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
   <header class="hero">
     <h1>🏃 Running Dashboard</h1>
     <p class="subtitle" id="subtitle"></p>
-    <button type="button" class="switch-fighter" id="switchFighter" aria-haspopup="dialog"></button>
+    <div class="hero-actions">
+      <button type="button" class="switch-fighter" id="switchFighter" aria-haspopup="dialog"></button>
+      <button type="button" class="edit-mii" id="editMii" aria-haspopup="dialog">✏️ Atelier Mii</button>
+    </div>
   </header>
 
   <main>
@@ -148,8 +176,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="data.js?v=56"></script>
-  <script src="pokemon.js?v=56"></script>
-  <script src="app.js?v=56"></script>
+  <script src="data.js?v=57"></script>
+  <script src="pokemon.js?v=57"></script>
+  <script src="app.js?v=57"></script>
 </body>
 </html>

@@ -21,9 +21,12 @@ let fighter = null;
 
 // ---------- Mii ----------
 // Chaque coureur a son avatar façon Mii, dessiné ici en SVG à partir de
-// quelques traits déclarés dans RUNNER_MII (data.js) : couleur des cheveux et
-// des yeux, coupe, lunettes. Un nouveau coureur n'a donc besoin que d'une ligne
-// de données, pas d'un dessin. Le t-shirt prend la couleur du coureur.
+// quelques traits déclarés dans RUNNER_MII (data.js) : coupe, couleurs,
+// lunettes, barbe. Un nouveau coureur n'a donc besoin que d'une ligne de
+// données, pas d'un dessin. Le t-shirt prend la couleur du coureur. Les listes
+// ci-dessous nourrissent aussi l'Atelier Mii (plus bas), et verifier.js comme
+// .claude/tools/mii.js en relisent les clés : une option ajoutée ici est
+// aussitôt proposée, vérifiée et applicable.
 const MII_PEAU = "#f3c9a2";
 
 // Éclaircit (t > 0) ou assombrit (t < 0) une couleur hexadécimale.
@@ -35,50 +38,137 @@ const shade = (hex, t) => {
   return `#${ch.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
 };
 
-// Chaque coupe : `back` passe derrière la tête (cheveux longs, qui cachent
-// aussi les oreilles), `front` par-dessus. Repère : viewBox de 100 × 100, tête
-// centrée en (50, 47).
+const rond = (cx, cy, r) => `M${cx - r} ${cy} a${r} ${r} 0 1 0 ${2 * r} 0 a${r} ${r} 0 1 0 ${-2 * r} 0 Z`;
+
+// Dégagé : le front sans frange, pour les coupes attachées.
+const DEGAGE = "M26 47 C24.5 28 35.5 17.5 50 17.5 C64.5 17.5 75.5 28 74 47 C72.5 39 65 31.5 50 31 C35 31.5 27.5 39 26 47 Z";
+
+// Chaque coupe : `back` passe derrière la tête, `front` par-dessus. `longs`
+// cache les oreilles, `attache` place l'élastique des coupes attachées.
+// Repère : viewBox de 100 × 100, tête centrée en (50, 47).
 const MII_COIFFURES = {
-  // Courte, mèche balayée vers la droite.
   meche: {
+    label: "Mèche",
     front: "M25.5 49 C23 28 35 16 51 16 C67.5 16 78 28 74.5 49 C73.6 43 72.2 39 69.8 35.6 C61 35.5 51.5 33 43.5 29 C39.5 33.5 33 36.5 29.2 38.6 C27.4 41.6 26.2 45 25.5 49 Z",
   },
-  // Courte, en épis.
   houppe: {
+    label: "Épis",
     front: "M25.5 49 C23.4 33 28 23 35 18.6 L34.6 12.6 L41.6 15.6 L45 9.6 L50.4 14.4 L56.4 9.8 L58.8 15.8 L65.6 13.2 L65 19.4 C72.6 24 77.6 33 74.5 49 C73.6 43.2 72 39.4 69.6 36.6 L64.4 34.8 L60.6 37.2 L56 33.8 L51.4 36.6 L46.8 33.6 L42 36.8 L37.4 34.4 L33.2 37.6 L29.4 37.6 C27.6 40.8 26.3 44.6 25.5 49 Z",
   },
-  // Courte et nette, petite frange droite.
   court: {
+    label: "Court",
     front: "M26 48 C24.2 28.5 35.5 17.5 50 17.5 C64.5 17.5 75.8 28.5 74 48 C73.2 43 71.8 39.6 69.8 37.2 C63.5 37.4 57.5 36 52.5 33.6 C46.5 36.4 37.5 38 30.6 37.2 C28.6 40.2 27 43.6 26 48 Z",
   },
-  // Longs, frange droite.
+  rase: {
+    label: "Rasé",
+    front: "M26.8 45 C26 29.5 36 20 50 20 C64 20 74 29.5 73.2 45 C71 38 64 33.2 50 33 C36 33.2 29 38 26.8 45 Z",
+    opacite: 0.78,
+  },
+  chauve: { label: "Chauve", brillant: true },
+  boucles: {
+    label: "Bouclés",
+    front: [
+      [28, 45, 5.6], [29, 36, 6.6], [34, 27.5, 7.4], [42, 21.5, 8], [50.5, 19.5, 8.2], [59, 21.5, 8], [66.5, 27.5, 7.4], [71, 36, 6.6], [72, 45, 5.6],
+      [37, 33, 6.4], [45, 30.5, 6.6], [55, 30.5, 6.6], [63, 33, 6.4],
+    ].map(([x, y, r]) => rond(x, y, r)).join(" "),
+    boucle: true,
+  },
   "longs-frange": {
+    label: "Longs, frange",
+    longs: true,
     back: "M23.5 46 C21.5 24 35 14 50 14 C65 14 78.5 24 76.5 46 L80 82 Q66 88 50 87 Q34 88 20 82 Z",
     front: "M25.6 48 C24.2 27.5 35.5 17 50 17 C64.5 17 75.8 27.5 74.4 48 C73.2 43 71.6 39.4 70 37 C62 37.8 38 37.8 30 37 C28.4 39.4 26.8 43 25.6 48 Z",
   },
-  // Longs, raie sur le côté et mèche balayée sur le front.
   "longs-raie": {
+    label: "Longs, raie",
+    longs: true,
     back: "M23.5 46 C21.5 24 35 14 50 14 C65 14 78.5 24 76.5 46 L80 82 Q66 88 50 87 Q34 88 20 82 Z",
     front: "M25.6 50 C24 29 35.5 17 50 17 C65 17 76 29 74.4 50 C73 42.5 69.4 36.4 62.6 33.2 C54.6 30.6 46.4 28.4 40.6 23.6 C37 30.4 31.6 37.2 28.4 43.6 C27 46.2 26.2 48.2 25.6 50 Z",
   },
+  queue: {
+    label: "Queue-de-cheval",
+    back: "M64 20.5 C78 16 90 28 87.5 47 C86.2 58 80.5 66 74 69.5 C78.6 60 80.4 50.5 78 41.5 C76.2 34.5 72 29 66 26.5 Z",
+    attache: [69.5, 22.8],
+    front: DEGAGE,
+  },
+  chignon: {
+    label: "Chignon",
+    back: rond(50, 13.5, 9.5),
+    attache: [50, 21.6],
+    front: DEGAGE,
+  },
 };
 
-// Sans Mii déclaré, un avatar neutre plutôt qu'une case vide.
-const MII_DEFAUT = { cheveux: "#4a4a4f", coiffure: "court", yeux: "#5b4a3a" };
+const MII_LUNETTES = {
+  carrees: {
+    label: "Carrées",
+    dessin: `<g fill="rgba(255,255,255,0.12)" stroke="#1d1d1f" stroke-width="1.7">
+      <rect x="34" y="43.6" width="14" height="11.6" rx="3.6"/><rect x="52" y="43.6" width="14" height="11.6" rx="3.6"/>
+      <path d="M48 48.4 Q50 46.8 52 48.4 M34 47.6 L27.4 46.4 M66 47.6 L72.6 46.4" fill="none"/></g>`,
+  },
+  rondes: {
+    label: "Rondes",
+    dessin: `<g fill="rgba(255,255,255,0.12)" stroke="#8a6a2e" stroke-width="1.5">
+      <circle cx="41" cy="49.6" r="6.6"/><circle cx="59" cy="49.6" r="6.6"/>
+      <path d="M47.6 48.6 Q50 46.8 52.4 48.6 M34.4 48.4 L27.4 46.6 M65.6 48.4 L72.6 46.6" fill="none"/></g>`,
+  },
+  soleil: {
+    label: "Solaires",
+    dessin: `<g stroke="#111" stroke-width="1.2">
+      <path d="M31.5 44.4 C38 42.6 46 42.8 49 44.6 L48.4 50.4 C47.4 55.4 36 56.4 33.4 51.6 Z M68.5 44.4 C62 42.6 54 42.8 51 44.6 L51.6 50.4 C52.6 55.4 64 56.4 66.6 51.6 Z" fill="#1c1c24"/>
+      <path d="M49 45.4 Q50 44.4 51 45.4 M31.6 45.6 L27.2 46.4 M68.4 45.6 L72.8 46.4" fill="none"/></g>
+      <path d="M35.5 46 L39.5 45.2 M55 46 L59 45.2" stroke="#fff" stroke-opacity="0.5" stroke-width="1.4" stroke-linecap="round"/>`,
+  },
+};
 
-// `tete` recadre sur le visage, pour les médaillons ronds (podium, cartes).
-function miiSvg(name, { tete = false } = {}) {
-  const mii = RUNNER_MII[name] || MII_DEFAUT;
-  const color = RUNNER_COLORS[name] || "#8e8e93";
+const MII_BARBES = {
+  courte: {
+    label: "Naissante",
+    dessous: (c) => `<path d="M27.6 52 C28 66.5 37.5 75 50 75 C62.5 75 72 66.5 72.4 52 C70 60.5 65 63 60 62.4 C56 60.4 44 60.4 40 62.4 C35 63 30 60.5 27.6 52 Z" fill="${c}" opacity="0.28"/>`,
+  },
+  complete: {
+    label: "Barbe",
+    dessous: (c) => `<path d="M27 50 C26.6 68 37 78.5 50 78.5 C63 78.5 73.4 68 73 50 C71 59 66.5 63.4 61 63.6 C57 60.2 43 60.2 39 63.6 C33.5 63.4 29 59 27 50 Z" fill="${c}"/>`,
+    dessus: (c) => `<path d="M41.6 61.2 C44.6 57.8 48.4 58 50 59.6 C51.6 58 55.4 57.8 58.4 61.2 C55 60.4 52 60.8 50 61.6 C48 60.8 45 60.4 41.6 61.2 Z" fill="${c}"/>`,
+  },
+  moustache: {
+    label: "Moustache",
+    dessus: (c) => `<path d="M41.6 61.4 C44.6 57.6 48.4 57.8 50 59.6 C51.6 57.8 55.4 57.6 58.4 61.4 C55 60.4 52 60.8 50 61.8 C48 60.8 45 60.4 41.6 61.4 Z" fill="${c}"/>`,
+  },
+};
+
+// Les nuanciers de l'Atelier. Une couleur hors nuancier reste possible (le
+// sélecteur « Autre »), ils ne servent qu'à proposer des teintes qui marchent.
+const MII_NUANCIERS = {
+  cheveux: [
+    ["#1f1a17", "Noir"], ["#2e1c12", "Brun foncé"], ["#4a2e1c", "Brun"], ["#6a4327", "Châtain"],
+    ["#9a6a3f", "Châtain clair"], ["#b5532a", "Roux"], ["#e3bd6a", "Blond"], ["#efe0b0", "Blond platine"],
+    ["#9a9aa0", "Gris"], ["#e8e8ea", "Blanc"],
+  ],
+  yeux: [
+    ["#2b2220", "Noirs"], ["#6b3f22", "Marron"], ["#8a6a2e", "Noisette"], ["#3d9a4f", "Verts"],
+    ["#3d7fd6", "Bleus"], ["#7d8a96", "Gris"],
+  ],
+  peau: [
+    ["#fde3c8", "Très clair"], ["#f3c9a2", "Clair"], ["#e0ac7e", "Doré"], ["#c68a5c", "Mat"],
+    ["#9a6440", "Foncé"], ["#6e4428", "Très foncé"],
+  ],
+};
+
+function miiDessin(mii, color, { tete = false } = {}) {
   const peau = mii.peau || MII_PEAU;
   const peauOmbre = shade(peau, -0.1);
   const peauTrait = shade(peau, -0.3);
   const coupe = MII_COIFFURES[mii.coiffure] || MII_COIFFURES.court;
-  const sourcils = mii.sourcils || shade(mii.cheveux, -0.15);
-  const contour = shade(mii.cheveux, -0.35);
+  const cheveux = mii.cheveux;
+  const sourcils = mii.sourcils || shade(cheveux, -0.15);
+  const contour = shade(cheveux, -0.35);
+  const lunettes = MII_LUNETTES[mii.lunettes === true ? "carrees" : mii.lunettes];
+  const barbe = MII_BARBES[mii.barbe];
+  const trait = `stroke="${contour}" stroke-width="0.8" stroke-opacity="0.5"`;
 
   const oeil = (x) => {
-    const ext = x < 50 ? -1 : 1; // coin extérieur
+    const ext = x < 50 ? -1 : 1;
     return `
       <ellipse cx="${x}" cy="49.4" rx="4.3" ry="4.9" fill="#fff"/>
       <circle cx="${x}" cy="50" r="3.4" fill="${mii.yeux}"/>
@@ -88,32 +178,55 @@ function miiSvg(name, { tete = false } = {}) {
       ${mii.cils ? `<path d="M${x + ext * 4.4} 47.9 l${ext * 2} -1.6" stroke="#2a1a14" stroke-width="1.2" stroke-linecap="round"/>` : ""}`;
   };
 
-  const lunettes = mii.lunettes
-    ? `<g fill="rgba(255,255,255,0.12)" stroke="#1d1d1f" stroke-width="1.7">
-        <rect x="34" y="43.6" width="14" height="11.6" rx="3.6"/>
-        <rect x="52" y="43.6" width="14" height="11.6" rx="3.6"/>
-        <path d="M48 48.4 Q50 46.8 52 48.4" fill="none"/>
-        <path d="M34 47.6 L27.4 46.4 M66 47.6 L72.6 46.4" fill="none"/>
-      </g>`
+  const bandeau = mii.bandeau
+    ? `<path d="M27.4 36.4 C35 29.4 65 29.4 72.6 36.4 L73.4 41 C65 34 35 34 26.6 41 Z" fill="#fff"/>
+       <path d="M27 38.7 C35 31.7 65 31.7 73 38.7" fill="none" stroke="${color}" stroke-width="1.7"/>`
     : "";
 
   return `<svg viewBox="${tete ? "17 12 66 66" : "0 0 100 100"}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-    ${coupe.back ? `<path d="${coupe.back}" fill="${mii.cheveux}" stroke="${contour}" stroke-width="0.8" stroke-opacity="0.5"/>` : ""}
+    ${coupe.back ? `<path d="${coupe.back}" fill="${cheveux}" ${trait}/>` : ""}
     <path d="M14 100 C15 87 29 80.5 50 80.5 C71 80.5 85 87 86 100 Z" fill="${color}"/>
     <path d="M43 64 L43 81 Q50 86.5 57 81 L57 64 Z" fill="${peauOmbre}"/>
-    ${coupe.back ? "" : `<ellipse cx="26.8" cy="51" rx="4.4" ry="6" fill="${peau}"/><ellipse cx="73.2" cy="51" rx="4.4" ry="6" fill="${peau}"/>`}
+    ${coupe.longs ? "" : `<ellipse cx="26.8" cy="51" rx="4.4" ry="6" fill="${peau}"/><ellipse cx="73.2" cy="51" rx="4.4" ry="6" fill="${peau}"/>`}
     <path d="M50 21 C65 21 73.6 32 73.6 47 C73.6 63.5 63 74.5 50 74.5 C37 74.5 26.4 63.5 26.4 47 C26.4 32 35 21 50 21 Z" fill="${peau}"/>
+    ${coupe.brillant ? `<ellipse cx="41" cy="28" rx="7" ry="3.4" transform="rotate(-18 41 28)" fill="#fff" opacity="0.28"/>` : ""}
     <circle cx="36.5" cy="59" r="3.6" fill="#ff7a7a" opacity="0.22"/>
     <circle cx="63.5" cy="59" r="3.6" fill="#ff7a7a" opacity="0.22"/>
+    ${barbe && barbe.dessous ? barbe.dessous(cheveux) : ""}
     ${oeil(41)}${oeil(59)}
     <path d="M35.6 41.6 Q40.4 38.6 45.6 40.4 M54.4 40.4 Q59.6 38.6 64.4 41.6" fill="none" stroke="${sourcils}" stroke-width="2.4" stroke-linecap="round"/>
     <path d="M50.6 52.6 Q48 57.2 50.9 57.9" fill="none" stroke="${peauTrait}" stroke-width="1.3" stroke-linecap="round"/>
     <path d="M43.6 62 Q50 70 56.4 62 Q50 63.6 43.6 62 Z" fill="#8e2f3a"/>
     <path d="M44.8 62.4 Q50 63.9 55.2 62.4 L54.4 63.6 Q50 64.8 45.6 63.6 Z" fill="#fff"/>
-    <path d="${coupe.front}" fill="${mii.cheveux}"${coupe.back ? "" : ` stroke="${contour}" stroke-width="0.8" stroke-opacity="0.5"`}/>
-    ${lunettes}
+    ${barbe && barbe.dessus ? barbe.dessus(cheveux) : ""}
+    ${coupe.front ? `<path d="${coupe.front}" fill="${cheveux}"${coupe.opacite ? ` fill-opacity="${coupe.opacite}"` : ""}${coupe.longs ? "" : ` ${trait}`}/>` : ""}
+    ${coupe.attache ? `<circle cx="${coupe.attache[0]}" cy="${coupe.attache[1]}" r="2.3" fill="${color}" stroke="#fff" stroke-width="0.8"/>` : ""}
+    ${bandeau}
+    ${lunettes ? lunettes.dessin : ""}
   </svg>`;
 }
+
+// Sans Mii déclaré, un avatar neutre plutôt qu'une case vide.
+const MII_DEFAUT = { cheveux: "#4a4a4f", coiffure: "court", yeux: "#5b4a3a" };
+
+// Les Mii retouchés dans l'Atelier sur cet appareil passent par-dessus ceux de
+// data.js. `MII_DATA` garde la version publiée, pour « Réinitialiser ». Lecture
+// protégée : sans stockage (navigation privée), on reste sur data.js.
+const MII_KEY = "runs.mii";
+const MII_DATA = JSON.parse(JSON.stringify(RUNNER_MII));
+const miiLocaux = () => {
+  try {
+    return JSON.parse(localStorage.getItem(MII_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+Object.entries(miiLocaux()).forEach(([n, m]) => {
+  if (RUNS[n] && m && m.cheveux && m.yeux) RUNNER_MII[n] = m;
+});
+
+// `tete` recadre sur le visage, pour les médaillons ronds (podium, cartes).
+const miiSvg = (name, opts) => miiDessin(RUNNER_MII[name] || MII_DEFAUT, RUNNER_COLORS[name] || "#8e8e93", opts);
 
 // Médaillon rond : le visage sur un fond pastel de la couleur du coureur.
 const miiBadge = (name, cls = "mii-badge") =>
@@ -2128,6 +2241,7 @@ function renderFighterBadge() {
     ${fighter ? miiBadge(fighter, "switch-mii") : `<span class="switch-mii switch-all" aria-hidden="true">?</span>`}
     <span class="switch-name">${fighter || "Spectateur"}</span>
     <span class="switch-hint">Changer</span>`;
+  document.getElementById("editMii").textContent = fighter ? "✏️ Modifier mon Mii" : "✏️ Atelier Mii";
 }
 
 // Le sous-titre se déduit des données : un coureur de plus, et son nom apparaît.
@@ -2214,6 +2328,16 @@ document.getElementById("switchFighter").addEventListener("click", openSelect);
 
 function initSelect() {
   renderSubtitle();
+  const recu = miiDepuisLien(location.hash);
+  if (recu) {
+    // Un Mii reçu par lien : on garde la vue habituelle de ce lecteur et on
+    // ouvre l'Atelier dessus, sans repasser par l'écran de sélection.
+    const moi = RUNNERS.includes(recall()) ? recall() : null;
+    applyFighter(moi);
+    closeSelect();
+    openAtelier(recu.name, { mii: recu.mii, recu: true });
+    return;
+  }
   const fromHash = fighterFromHash();
   if (fromHash === undefined) {
     renderFighterBadge();
@@ -2223,6 +2347,240 @@ function initSelect() {
     closeSelect();
   }
 }
+
+// ---------- Atelier Mii ----------
+// Le Mii Maker du dashboard. Le site est statique : rien de ce qu'on y choisit
+// ne peut s'écrire tout seul dans data.js. Le choix vit donc en deux temps —
+// enregistré sur l'appareil, où il s'affiche aussitôt, puis partagé sous forme
+// de lien #mii?… que Vincent fait reporter dans data.js (skill /mii), et qui
+// l'installe alors chez tout le monde.
+const miiEditor = document.getElementById("miiEditor");
+let atelier = null; // { name, mii (brouillon), onglet, recu }
+
+// Les onglets : `choix` pour une option dessinée (la vignette montre ton Mii
+// avec l'option), `nuancier` pour une couleur, `details` pour les bascules.
+const MII_ONGLETS = [
+  { id: "coiffure", label: "💇 Coupe", choix: MII_COIFFURES },
+  { id: "cheveux", label: "🎨 Cheveux", nuancier: "cheveux" },
+  { id: "yeux", label: "👁️ Yeux", nuancier: "yeux" },
+  { id: "peau", label: "🙂 Teint", nuancier: "peau" },
+  { id: "lunettes", label: "👓 Lunettes", choix: MII_LUNETTES, sans: "Sans" },
+  { id: "barbe", label: "🧔 Barbe", choix: MII_BARBES, sans: "Rasé de près" },
+  { id: "details", label: "✨ Détails" },
+];
+const MII_DETAILS = [
+  ["cils", "Cils"],
+  ["bandeau", "Bandeau"],
+];
+
+const copieMii = (m) => JSON.parse(JSON.stringify(m || MII_DEFAUT));
+const memeMii = (a, b) => miiLien("x", a) === miiLien("x", b);
+
+// Le lien de partage : lisible, et relu tel quel par .claude/tools/mii.js.
+function miiLien(name, m) {
+  const q = new URLSearchParams({ nom: name, coiffure: m.coiffure, cheveux: m.cheveux.slice(1), yeux: m.yeux.slice(1) });
+  // Le teint par défaut n'a pas besoin d'être écrit : un lien plus court, et un
+  // Mii « revenu au défaut » reconnu comme identique à celui de data.js.
+  if (m.peau && m.peau.toLowerCase() !== MII_PEAU) q.set("peau", m.peau.slice(1));
+  if (m.lunettes) q.set("lunettes", m.lunettes === true ? "carrees" : m.lunettes);
+  if (m.barbe) q.set("barbe", m.barbe);
+  if (m.cils) q.set("cils", "1");
+  if (m.bandeau) q.set("bandeau", "1");
+  return `${location.origin}${location.pathname}#mii?${q}`;
+}
+
+// L'inverse : un lien reçu, filtré sur ce que l'Atelier sait dessiner.
+function miiDepuisLien(hash) {
+  const i = hash.indexOf("mii?");
+  if (i < 0) return null;
+  const q = new URLSearchParams(hash.slice(i + 4));
+  const name = RUNNERS.find((n) => norm(n) === norm(q.get("nom") || ""));
+  const hex = (k) => (/^[0-9a-f]{6}$/i.test(q.get(k) || "") ? `#${q.get(k).toLowerCase()}` : null);
+  if (!name || !hex("cheveux") || !hex("yeux")) return null;
+  const m = { cheveux: hex("cheveux"), coiffure: MII_COIFFURES[q.get("coiffure")] ? q.get("coiffure") : "court", yeux: hex("yeux") };
+  if (hex("peau")) m.peau = hex("peau");
+  if (q.get("cils") === "1") m.cils = true;
+  if (MII_LUNETTES[q.get("lunettes")]) m.lunettes = q.get("lunettes");
+  if (MII_BARBES[q.get("barbe")]) m.barbe = q.get("barbe");
+  if (q.get("bandeau") === "1") m.bandeau = true;
+  return { name, mii: m };
+}
+
+// « le Mii de Pefi », « le Mii d'Anaïs ».
+const deNom = (name) => (/^[aeiouyàâäéèêëîïôöùûüh]/i.test(name) ? `d'${name}` : `de ${name}`);
+
+const vignette = (m, name) =>
+  `<span class="mii-vignette" style="--mii-bg:${shade(RUNNER_COLORS[name] || "#8e8e93", 0.6)}">${miiDessin(m, RUNNER_COLORS[name] || "#8e8e93", { tete: true })}</span>`;
+
+function renderAtelier() {
+  const { name, mii, onglet } = atelier;
+  const color = RUNNER_COLORS[name] || "#8e8e93";
+  miiEditor.style.setProperty("--c", color);
+
+  document.getElementById("miiWho").innerHTML = RUNNERS.map(
+    (n) => `<button type="button" class="mii-who-btn" data-who="${n}" aria-pressed="${n === name}">${miiBadge(n, "mii-who-face")}${n}</button>`,
+  ).join("");
+
+  document.getElementById("miiPreview").innerHTML =
+    `<div class="mii-bubble" style="--mii-bg:${shade(color, 0.55)}">${miiDessin(mii, color)}</div><p class="mii-preview-name">${name}</p>`;
+
+  document.getElementById("miiTabs").innerHTML = MII_ONGLETS.map(
+    (o) => `<button type="button" role="tab" data-onglet="${o.id}" aria-selected="${o.id === onglet}">${o.label}</button>`,
+  ).join("");
+
+  const o = MII_ONGLETS.find((x) => x.id === onglet);
+  let html;
+  if (o.choix) {
+    const opts = [...(o.sans ? [["", { label: o.sans }]] : []), ...Object.entries(o.choix)];
+    html = opts
+      .map(([k, v]) => {
+        const essai = { ...mii, [o.id]: k || undefined };
+        const on = (mii[o.id] === true ? "carrees" : mii[o.id] || "") === k;
+        return `<button type="button" class="mii-opt" data-set="${o.id}" data-value="${k}" aria-pressed="${on}">${vignette(essai, name)}<span>${v.label}</span></button>`;
+      })
+      .join("");
+  } else if (o.nuancier) {
+    const actuelle = o.id === "peau" ? mii.peau || MII_PEAU : mii[o.id];
+    html =
+      MII_NUANCIERS[o.nuancier]
+        .map(
+          ([hex, label]) =>
+            `<button type="button" class="mii-swatch" data-set="${o.id}" data-value="${hex}" aria-pressed="${hex === actuelle}" title="${label}" aria-label="${label}" style="--sw:${hex}"></button>`,
+        )
+        .join("") +
+      `<label class="mii-swatch mii-autre" title="Autre couleur"><input type="color" data-set="${o.id}" value="${actuelle}" aria-label="Autre couleur" /><span>Autre</span></label>`;
+  } else {
+    html = MII_DETAILS.map(
+      ([k, label]) =>
+        `<button type="button" class="mii-opt" data-set="${k}" data-value="${mii[k] ? "" : "1"}" aria-pressed="${!!mii[k]}">${vignette({ ...mii, [k]: true }, name)}<span>${label}</span></button>`,
+    ).join("");
+  }
+  document.getElementById("miiOptions").innerHTML = html;
+  document.getElementById("miiOptions").className = `mii-options ${o.nuancier ? "is-swatches" : ""}`;
+}
+
+function noteAtelier(html, ton = "") {
+  const el = document.getElementById("miiNote");
+  el.className = `mii-note ${ton}`;
+  el.innerHTML = html;
+}
+
+const NOTE_DEFAUT =
+  "Enregistrer l'affiche sur cet appareil. Pour que tout le monde le voie, partage le lien avec Vincent : c'est lui qui l'ajoute au dashboard.";
+
+function openAtelier(name, { mii, recu = false } = {}) {
+  atelier = { name, mii: copieMii(mii || RUNNER_MII[name]), onglet: "coiffure", recu };
+  renderAtelier();
+  noteAtelier(
+    recu
+      ? `Mii reçu pour <b>${name}</b> — c'est un aperçu. Enregistre-le pour le voir sur cet appareil ; il n'arrive chez tout le monde qu'une fois ajouté au dashboard.`
+      : NOTE_DEFAUT,
+  );
+  miiEditor.hidden = false;
+  document.documentElement.classList.add("selecting");
+  pageParts().forEach((el) => (el.inert = true));
+  miiEditor.querySelector('[aria-selected="true"]').focus({ preventScroll: true });
+}
+
+function closeAtelier() {
+  miiEditor.hidden = true;
+  atelier = null;
+  document.documentElement.classList.remove("selecting");
+  pageParts().forEach((el) => (el.inert = false));
+  if (location.hash.includes("mii?")) history.replaceState(null, "", `#${encodeURIComponent(fighter || EVERYONE)}`);
+  document.getElementById("editMii").focus({ preventScroll: true });
+}
+
+// Tout ce qui dessine un Mii, redessiné d'un coup après un enregistrement.
+function redessinerMii() {
+  renderAll();
+  renderLeaderboard();
+  renderFighterBadge();
+}
+
+function enregistrerMii() {
+  const { name, mii } = atelier;
+  const locaux = miiLocaux();
+  // Revenu à la version publiée : on efface la retouche plutôt que de la garder.
+  if (MII_DATA[name] && memeMii(mii, MII_DATA[name])) delete locaux[name];
+  else locaux[name] = mii;
+  try {
+    localStorage.setItem(MII_KEY, JSON.stringify(locaux));
+  } catch {
+    noteAtelier("Impossible d'enregistrer sur cet appareil (stockage bloqué). Le lien de partage, lui, fonctionne.", "warn");
+    return;
+  }
+  RUNNER_MII[name] = copieMii(mii);
+  redessinerMii();
+  renderAtelier();
+  noteAtelier(
+    MII_DATA[name] && memeMii(mii, MII_DATA[name])
+      ? "✓ Retour au Mii du dashboard."
+      : "✓ Enregistré sur cet appareil. Dernière étape pour que tout le monde le voie : <b>Partager</b>, et envoie le lien à Vincent.",
+    "ok",
+  );
+}
+
+async function partagerMii() {
+  const { name, mii } = atelier;
+  const url = miiLien(name, mii);
+  try {
+    if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+      await navigator.share({ title: `Mii ${deNom(name)}`, text: `Nouveau Mii pour ${name} sur le Running Dashboard`, url });
+      noteAtelier("✓ Lien envoyé. Vincent n'a plus qu'à l'ajouter au dashboard.", "ok");
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+    noteAtelier("✓ Lien copié ! Envoie-le à Vincent : il l'ajoutera au dashboard.", "ok");
+  } catch (e) {
+    if (e && e.name === "AbortError") return; // partage annulé
+    noteAtelier(`Copie ce lien et envoie-le à Vincent :<input class="mii-link" readonly value="${url}" />`, "warn");
+    document.querySelector(".mii-link").select();
+  }
+}
+
+miiEditor.addEventListener("click", (e) => {
+  const t = e.target.closest("button");
+  if (!t || !atelier) return;
+  if (t.dataset.who) {
+    openAtelier(t.dataset.who);
+  } else if (t.dataset.onglet) {
+    atelier.onglet = t.dataset.onglet;
+    renderAtelier();
+    miiEditor.querySelector(`[data-onglet="${t.dataset.onglet}"]`).focus();
+  } else if (t.dataset.set) {
+    const { set, value } = t.dataset;
+    const bascule = MII_DETAILS.some(([k]) => k === set);
+    atelier.mii[set] = bascule ? value === "1" : value;
+    if (!atelier.mii[set]) delete atelier.mii[set];
+    renderAtelier();
+    miiEditor.querySelector(`[data-set="${set}"][data-value="${CSS.escape(bascule ? (value === "1" ? "" : "1") : value)}"]`)?.focus();
+  } else if (t.dataset.action === "annuler") {
+    closeAtelier();
+  } else if (t.dataset.action === "reset") {
+    atelier.mii = copieMii(MII_DATA[atelier.name]);
+    renderAtelier();
+    noteAtelier("Le Mii du dashboard est revenu dans l'Atelier. <b>Enregistrer</b> pour effacer la retouche de cet appareil.");
+  } else if (t.dataset.action === "enregistrer") {
+    enregistrerMii();
+  } else if (t.dataset.action === "partager") {
+    partagerMii();
+  }
+});
+// Le sélecteur « Autre » : couleur libre, appliquée en direct.
+miiEditor.addEventListener("input", (e) => {
+  const t = e.target;
+  if (!atelier || t.type !== "color") return;
+  atelier.mii[t.dataset.set] = t.value;
+  document.getElementById("miiPreview").innerHTML = `<div class="mii-bubble" style="--mii-bg:${shade(RUNNER_COLORS[atelier.name] || "#8e8e93", 0.55)}">${miiDessin(atelier.mii, RUNNER_COLORS[atelier.name] || "#8e8e93")}</div><p class="mii-preview-name">${atelier.name}</p>`;
+});
+miiEditor.addEventListener("change", (e) => {
+  if (atelier && e.target.type === "color") renderAtelier();
+});
+miiEditor.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeAtelier();
+});
+document.getElementById("editMii").addEventListener("click", () => openAtelier(fighter || RUNNERS[0]));
 
 // ---------- Init ----------
 Chart.defaults.color = "#98989d";

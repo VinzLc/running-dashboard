@@ -179,7 +179,8 @@ Ajoute l'objet à la fin du tableau du bon coureur (`RUNS.Vincent`,
 `RUNS["Anaïs"]`, `RUNS.Didi`…), en gardant l'ordre chronologique et l'alignement
 des colonnes existant. Un nouveau coureur a besoin en plus d'une entrée dans
 `RUNNER_COLORS`, d'un avatar dans `RUNNER_MII` (cheveux, yeux, coupe — demande
-à Vincent s'il ne les a pas donnés), d'un bloc dans `ANALYSES` et d'une ligne
+à Vincent s'il ne les a pas donnés, ou invite la personne à passer par l'Atelier
+Mii du dashboard puis la skill `/mii`), d'un bloc dans `ANALYSES` et d'une ligne
 dans `.claude/runners.sh` ; puis relance `.claude/watcher/install.sh` après le
 commit. Rien à toucher dans `index.html` ni `styles.css`. Avec splits, le bloc passe sur plusieurs lignes :
 

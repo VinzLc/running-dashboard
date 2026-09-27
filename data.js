@@ -275,17 +275,19 @@ const RUNNER_COLORS = {
 };
 
 // L'avatar façon Mii de chaque coureur : écran de sélection, podiums, cartes.
-// `coiffure` est l'une des coupes dessinées dans app.js (MII_COIFFURES) :
-// meche, houppe, court, longs-frange, longs-raie. Couleurs en hexadécimal ;
-// `peau` est facultative (teint par défaut du Mii), `cils` et `lunettes` aussi.
-// Le t-shirt prend la couleur du coureur, comme la couleur favorite d'un Mii.
+// Les options sont dessinées dans app.js : `coiffure` parmi MII_COIFFURES,
+// `lunettes` parmi MII_LUNETTES, `barbe` parmi MII_BARBES ; `cils` et
+// `bandeau` sont des booléens, les couleurs en hexadécimal, `peau` facultative
+// (teint par défaut du Mii). Le t-shirt prend la couleur du coureur.
+// Chacun peut retoucher le sien dans l'Atelier Mii du dashboard, qui produit un
+// lien #mii?… : `node .claude/tools/mii.js '<lien>'` le reporte ici (skill /mii).
 const RUNNER_MII = {
   Vincent: { cheveux: "#6a4327", coiffure: "meche", yeux: "#3d7fd6" },
   "Anaïs": { cheveux: "#e3bd6a", coiffure: "longs-raie", yeux: "#6b3f22", cils: true },
   Didi: { cheveux: "#2e1c12", coiffure: "longs-frange", yeux: "#3d9a4f", cils: true },
   // Le frère de Vincent : mêmes yeux bleus, même couleur de cheveux, autre coupe.
   Ju: { cheveux: "#6a4327", coiffure: "houppe", yeux: "#3d7fd6" },
-  Pefi: { cheveux: "#2a2320", coiffure: "court", yeux: "#6b3f22", lunettes: true },
+  Pefi: { cheveux: "#2a2320", coiffure: "court", yeux: "#6b3f22", lunettes: "carrees" },
 };
 
 // Analyses « coach » par séance, rédigées en comparant chaque run aux précédentes

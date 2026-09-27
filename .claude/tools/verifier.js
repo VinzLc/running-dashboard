@@ -48,8 +48,13 @@ const runners = Object.keys(RUNS);
 // Les coupes de Mii sont dessinées dans app.js : on relit leurs noms là-bas
 // plutôt que d'en tenir une deuxième liste ici.
 const appSrc = fs.readFileSync(path.join(ROOT, "app.js"), "utf8");
-const blocCoupes = (appSrc.split("const MII_COIFFURES = {")[1] || "").split("\n};")[0];
-const COUPES = [...blocCoupes.matchAll(/^ {2}"?([a-z-]+)"?: \{/gm)].map((m) => m[1]);
+const optionsMii = (nom) => {
+  const bloc = (appSrc.split(`const ${nom} = {`)[1] || "").split("\n};")[0];
+  return [...bloc.matchAll(/^ {2}"?([a-z-]+)"?: \{/gm)].map((m) => m[1]);
+};
+const COUPES = optionsMii("MII_COIFFURES");
+const LUNETTES = optionsMii("MII_LUNETTES");
+const BARBES = optionsMii("MII_BARBES");
 const HEX = /^#[0-9a-f]{6}$/i;
 
 runners.forEach((name) => {
@@ -65,6 +70,13 @@ runners.forEach((name) => {
   });
   if (mii.peau && !HEX.test(mii.peau)) err(`${name} : RUNNER_MII.peau doit être une couleur #rrggbb`);
   if (!COUPES.includes(mii.coiffure)) err(`${name} : coiffure « ${mii.coiffure} » inconnue (${COUPES.join(", ")})`);
+  if (mii.lunettes != null && !LUNETTES.includes(mii.lunettes)) {
+    err(`${name} : lunettes « ${mii.lunettes} » inconnues (${LUNETTES.join(", ")})`);
+  }
+  if (mii.barbe != null && !BARBES.includes(mii.barbe)) err(`${name} : barbe « ${mii.barbe} » inconnue (${BARBES.join(", ")})`);
+  ["cils", "bandeau"].forEach((k) => {
+    if (mii[k] != null && typeof mii[k] !== "boolean") err(`${name} : RUNNER_MII.${k} doit valoir true ou être absent`);
+  });
 });
 Object.keys(ANALYSES)
   .filter((n) => !RUNS[n])
