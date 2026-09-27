@@ -2,6 +2,14 @@
 
 const RUNNERS = Object.keys(RUNS);
 
+// ---------- Fonctionnalités en pause ----------
+// Les Mii (avatars dessinés et leur Atelier) sont éteints : sans serveur, une
+// retouche ne peut pas se publier toute seule, et le circuit par lien restait
+// trop manuel. Le code reste en place ; `?mii` dans l'adresse le rallume le
+// temps d'une visite, pour l'essayer. Éteints, chaque coureur a pour avatar le
+// dernier Pokémon qu'on lui a attribué.
+const FEATURES = { mii: new URLSearchParams(location.search).has("mii") };
+
 // Coureurs actuellement affichés (pilote cartes, graphiques et tableau).
 // Les deux filtres sont multi-sélection ; rien de coché vaut « tout », ce qui
 // évite un état où le dashboard se vide sans que rien à l'écran ne l'explique.
@@ -232,6 +240,33 @@ const miiSvg = (name, opts) => miiDessin(RUNNER_MII[name] || MII_DEFAUT, RUNNER_
 const miiBadge = (name, cls = "mii-badge") =>
   `<span class="${cls}" style="--mii-bg:${shade(RUNNER_COLORS[name] || "#8e8e93", 0.55)}">${miiSvg(name, { tete: true })}</span>`;
 
+// ---------- Avatar ----------
+// Le dernier Pokémon attribué à un coureur : celui de sa séance la plus récente.
+function lastPokemon(name) {
+  const last = RUNS[name].map((r) => r.date).sort().pop();
+  const a = last && ANALYSES[name] && ANALYSES[name][last];
+  const p = a && POKEDEX[a.pokemon];
+  return p ? { nom: a.pokemon, adj: a.pokemonAdj, id: p.id } : null;
+}
+
+// Pas encore de séance, pas encore de Pokémon : une Poké Ball fermée.
+const POKEBALL = `<svg class="pokeball" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+  <circle cx="50" cy="50" r="43" fill="#f2f2f7" stroke="#1c1c1e" stroke-width="6"/>
+  <path d="M7 50 A43 43 0 0 1 93 50 Z" fill="#e3350d" stroke="#1c1c1e" stroke-width="6"/>
+  <circle cx="50" cy="50" r="13" fill="#f2f2f7" stroke="#1c1c1e" stroke-width="6"/>
+  <circle cx="50" cy="50" r="5.5" fill="#fff" stroke="#1c1c1e" stroke-width="2.5"/>
+</svg>`;
+
+const pokeSprite = (p) => `<img class="poke-sprite" src="assets/pokemon/${p.id}.png" alt="" />`;
+
+// Le médaillon d'un coureur, partout où il apparaît (cartes, podiums, bouton
+// du hero) : son Mii si les Mii sont allumés, son dernier Pokémon sinon.
+function avatarBadge(name, cls) {
+  if (FEATURES.mii) return miiBadge(name, cls);
+  const p = lastPokemon(name);
+  return `<span class="${cls} poke-badge" style="--mii-bg:${shade(RUNNER_COLORS[name] || "#8e8e93", 0.55)}" title="${p ? `${p.nom} ${p.adj}` : "Pas encore de Pokémon"}">${p ? pokeSprite(p) : POKEBALL}</span>`;
+}
+
 // ---------- Filtre de distance ----------
 // Comparer ce qui est comparable : une séance appartient au seau de son
 // kilométrage entier (5,39 km → « 5 km »), et tout ce qui est sous 5 km tient
@@ -362,7 +397,7 @@ function renderCards() {
     if (!runs.length) {
       return `
       <div class="runner-card empty">
-        <h3>${miiBadge(name, "card-mii")}${name}</h3>
+        <h3>${avatarBadge(name, "card-avatar")}${name}</h3>
         <p class="empty-note">${emptyMessage()}</p>
       </div>`;
     }
@@ -397,7 +432,7 @@ function renderCards() {
 
     return `
       <div class="runner-card">
-        <h3>${miiBadge(name, "card-mii")}${name}</h3>
+        <h3>${avatarBadge(name, "card-avatar")}${name}</h3>
         <div class="stat-grid">
           ${stats
             .map(([label, value]) => `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`)
@@ -1192,7 +1227,7 @@ function podiumSlot(entry, cat, index, total) {
   return `
     <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
       <div class="podium-stars">${starsHtml(entry.stars)}</div>
-      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${miiBadge(entry.name, "podium-face")}${entry.name === fighter ? `<span class="podium-you" title="C'est toi">1P</span>` : ""}</div>
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${avatarBadge(entry.name, "podium-face")}${entry.name === fighter ? `<span class="podium-you" title="C'est toi">1P</span>` : ""}</div>
       <div class="podium-name">${entry.name}</div>
       <div class="podium-value">${cat.fmt(entry.value)}</div>
       <div class="podium-block"><span class="podium-rank">${entry.rank + 1}</span></div>
@@ -1430,7 +1465,7 @@ function runPodiumSlot(name, entry, cat, index, total) {
   const order = total >= 3 ? [2, 1, 3][index] || index + 1 : index + 1;
   return `
     <div class="podium-slot rank-${place}" style="--c:${color};--glow:${color}55;order:${order}">
-      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${miiBadge(name, "podium-face")}</div>
+      <div class="podium-avatar">${place === 1 ? `<span class="podium-crown">👑</span>` : ""}${avatarBadge(name, "podium-face")}</div>
       <div class="podium-name">${entry.run.distance.toFixed(2)} km</div>
       <div class="podium-sub">${fmtDate(entry.run.date)}</div>
       <div class="podium-value">${cat.fmt(entry.value)}</div>
@@ -2202,23 +2237,25 @@ function fighterFromHash() {
 const isNewChallenger = (name) =>
   FIRST_RUN[name] && (Date.parse(LAST_DATE) - Date.parse(FIRST_RUN[name])) / 864e5 < 14;
 
-// Le blason du personnage : le Pokémon de sa dernière séance, comme l'emblème
-// de série dans le coin d'une case de Smash.
+// Avec les Mii, le dernier Pokémon se glisse en blason dans le coin de la case,
+// comme l'emblème de série de Smash. Sans eux, c'est lui le portrait.
 function emblemOf(name) {
-  const last = RUNS[name].map((r) => r.date).sort().pop();
-  const a = last && ANALYSES[name] && ANALYSES[name][last];
-  const p = a && POKEDEX[a.pokemon];
-  return p ? `<img class="fighter-emblem" src="assets/pokemon/${p.id}.png" alt="" title="${a.pokemon} ${a.pokemonAdj}" />` : "";
+  const p = lastPokemon(name);
+  return p ? `<img class="fighter-emblem" src="assets/pokemon/${p.id}.png" alt="" title="${p.nom} ${p.adj}" />` : "";
 }
 
 function fighterTile(name) {
   const color = RUNNER_COLORS[name] || "#8e8e93";
   const n = RUNS[name].length;
-  const meta = n ? `${n} séance${n > 1 ? "s" : ""}` : "Pas encore couru";
+  const p = lastPokemon(name);
+  let meta = n ? `${n} séance${n > 1 ? "s" : ""}` : "Pas encore couru";
+  if (!FEATURES.mii && p) meta = `${p.nom} ${p.adj}`;
+  const art = FEATURES.mii
+    ? `<span class="fighter-art">${miiSvg(name)}</span>${emblemOf(name)}`
+    : `<span class="fighter-art poke-art">${p ? pokeSprite(p) : POKEBALL}</span>`;
   return `
     <button type="button" class="fighter" data-fighter="${name}" style="--c:${color};--c-light:${shade(color, 0.5)}">
-      <span class="fighter-art">${miiSvg(name)}</span>
-      ${emblemOf(name)}
+      ${art}
       ${isNewChallenger(name) ? `<span class="fighter-new">Nouveau challenger !</span>` : ""}
       <span class="fighter-plate"><span class="fighter-name${name.length > 8 ? " long" : ""}">${name}</span><span class="fighter-meta">${meta}</span></span>
       <span class="fighter-token" aria-hidden="true">1P</span>
@@ -2238,10 +2275,12 @@ function renderSelect() {
 // Le bouton du hero rappelle qui l'on est, et rouvre l'écran.
 function renderFighterBadge() {
   document.getElementById("switchFighter").innerHTML = `
-    ${fighter ? miiBadge(fighter, "switch-mii") : `<span class="switch-mii switch-all" aria-hidden="true">?</span>`}
+    ${fighter ? avatarBadge(fighter, "switch-avatar") : `<span class="switch-avatar switch-all" aria-hidden="true">?</span>`}
     <span class="switch-name">${fighter || "Spectateur"}</span>
     <span class="switch-hint">Changer</span>`;
-  document.getElementById("editMii").textContent = fighter ? "✏️ Modifier mon Mii" : "✏️ Atelier Mii";
+  const edit = document.getElementById("editMii");
+  edit.hidden = !FEATURES.mii;
+  edit.textContent = fighter ? "✏️ Modifier mon Mii" : "✏️ Atelier Mii";
 }
 
 // Le sous-titre se déduit des données : un coureur de plus, et son nom apparaît.
@@ -2261,6 +2300,7 @@ function openSelect() {
   cursor.classList.add("cursor");
   selectScreen.classList.remove("ready", "closing");
   selectScreen.classList.add("open");
+  document.documentElement.classList.remove("skip-select");
   document.documentElement.classList.add("selecting");
   // Le reste de la page sort du parcours clavier tant que l'écran est ouvert.
   pageParts().forEach((el) => (el.inert = true));
@@ -2328,7 +2368,7 @@ document.getElementById("switchFighter").addEventListener("click", openSelect);
 
 function initSelect() {
   renderSubtitle();
-  const recu = miiDepuisLien(location.hash);
+  const recu = FEATURES.mii && miiDepuisLien(location.hash);
   if (recu) {
     // Un Mii reçu par lien : on garde la vue habituelle de ce lecteur et on
     // ouvre l'Atelier dessus, sans repasser par l'écran de sélection.

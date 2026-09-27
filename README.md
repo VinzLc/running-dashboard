@@ -12,10 +12,12 @@ pas renseigner, plutôt que de les afficher à zéro.
 
 ## Fonctionnalités
 
-- **Écran de sélection façon Smash Bros** à l'arrivée : « Qui êtes-vous ? », un
-  avatar façon Mii par coureur. Le choix règle le filtre coureur, et l'adresse
+- **Écran de sélection façon Smash Bros** à l'arrivée : « Qui êtes-vous ? », avec
+  pour portrait le dernier Pokémon attribué à chacun (une Poké Ball tant qu'il
+  n'a pas couru). Le choix règle le filtre coureur, et l'adresse
   devient un lien personnel (`#Pefi`) qui saute l'écran — `#tous` pour tout le monde
-- **Atelier Mii** : chacun retouche son avatar (coupe, couleurs, teint,
+- **Atelier Mii** — *en pause*, derrière `FEATURES.mii` en tête d'`app.js` ;
+  `?mii` dans l'adresse le rallume le temps d'une visite. Chacun y retouche son avatar (coupe, couleurs, teint,
   lunettes, barbe, bandeau). Enregistré sur l'appareil, il s'y affiche aussitôt ;
   le bouton **Partager** donne un lien `#mii?…` à envoyer à Vincent, que la skill
   `/mii` (ou `node .claude/tools/mii.js '<lien>'`) reporte dans `data.js` pour

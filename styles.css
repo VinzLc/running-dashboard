@@ -259,7 +259,7 @@ html.selecting { overflow: hidden; }
   cursor: pointer;
 }
 .switch-fighter:hover { border-color: rgba(255,255,255,0.3); }
-.switch-mii {
+.switch-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -268,14 +268,14 @@ html.selecting { overflow: hidden; }
   display: grid;
   place-items: center;
 }
-.switch-mii svg { width: 100%; height: 100%; display: block; }
+.switch-avatar svg { width: 100%; height: 100%; display: block; }
 .switch-all { font-weight: 900; font-style: italic; color: var(--text-dim); }
 .switch-name { font-weight: 700; font-size: 14px; }
 .switch-hint { font-size: 12px; color: var(--text-dim); }
 .switch-hint::before { content: "· "; }
 
-/* Médaillons Mii : cartes récap et podiums. */
-.card-mii {
+/* Médaillons des coureurs : cartes récap et podiums. */
+.card-avatar {
   flex: none;
   width: 36px;
   height: 36px;
@@ -283,7 +283,30 @@ html.selecting { overflow: hidden; }
   overflow: hidden;
   background: var(--mii-bg);
 }
-.card-mii svg { width: 100%; height: 100%; display: block; }
+.card-avatar svg { width: 100%; height: 100%; display: block; }
+
+/* Avatar Pokémon : les sprites font 96 px avec beaucoup de marge autour du
+   dessin, on zoome donc dedans pour qu'il remplisse le médaillon. Pixels nets,
+   comme sur la Game Boy. */
+.poke-badge { display: grid; place-items: center; }
+.poke-badge .poke-sprite {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  transform: scale(1.5);
+}
+.poke-badge .pokeball { width: 62%; height: 62%; }
+.poke-art { display: grid; place-items: center; }
+.poke-art .poke-sprite {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  transform: scale(1.45);
+  filter: drop-shadow(0 6px 6px rgba(0,0,0,0.3));
+}
+.poke-art .pokeball { width: 52%; height: 52%; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.35)); }
 
 .edit-mii {
   padding: 0 15px;

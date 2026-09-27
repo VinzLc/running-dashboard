@@ -5,6 +5,12 @@ description: Reporte dans le dashboard un Mii créé dans l'Atelier Mii — un l
 
 # Reporter un Mii de l'Atelier dans le dashboard
 
+> **Les Mii sont en pause** (`FEATURES.mii` en tête d'`app.js`) : le dashboard
+> affiche à la place le dernier Pokémon de chacun. Reporter un Mii reste utile —
+> il sera prêt le jour où on les rallume, et `?mii` dans l'adresse permet de le
+> voir dès maintenant — mais dis-le à l'utilisateur plutôt que de laisser
+> croire qu'il apparaît déjà.
+
 L'Atelier Mii du dashboard enregistre les retouches sur l'appareil de la
 personne, et c'est tout ce qu'il peut faire : le site est statique. Pour que
 tout le monde voie le nouveau Mii, il faut l'écrire dans `RUNNER_MII` de
