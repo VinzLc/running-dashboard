@@ -114,9 +114,10 @@ traite et 5 km en trois morceaux ne sont pas le même effort.
 
 **Vérification** : `paceSec` ≈ `duration / distance`. Si l'écart est important, relis l'image.
 
-> **Vincent ne court que des distances rondes** (5, 6, 7 km…), mais sa montre ne
-> coupe pas toute seule : l'écran affiche 6,03 km ou 4,97 km. On ne saisit pas ce
-> brut, on le recale — voir « Recaler Vincent sur la distance ronde », plus bas.
+> **Vincent et Anaïs ne courent que des distances rondes** (5, 6, 7 km…), mais
+> leur montre ne coupe pas toute seule : l'écran affiche 6,03 km ou 4,97 km. On
+> ne saisit pas ce brut, on le recale — voir « Recaler sur la distance ronde »,
+> plus bas.
 
 ## 3. Lire les splits (Apple Fitness uniquement)
 
@@ -142,13 +143,13 @@ splits: [
 - **Vérification** : la somme des `sec` doit tomber à quelques secondes de
   `duration` (Apple arrondit chaque ligne).
 
-### Recaler Vincent sur la distance ronde (OBLIGATOIRE pour Vincent)
+### Recaler sur la distance ronde (OBLIGATOIRE pour Vincent et Anaïs)
 
-Vincent vise toujours une distance ronde : 5, 6, 7 km. Sa montre, elle, ne coupe
-pas la séance au bon endroit — elle enregistre quelques mètres de trop (6,03 km)
-ou s'arrête un peu avant (4,97 km). Ces mètres parasites décalent le chrono et
-l'allure, et rendent ses séances incomparables entre elles. On saisit donc la
-séance **à la distance visée**, pas à celle affichée :
+Vincent et Anaïs visent toujours une distance ronde : 5, 6, 7 km. Leur montre,
+elle, ne coupe pas la séance au bon endroit — elle enregistre quelques mètres de
+trop (6,03 km) ou s'arrête un peu avant (4,97 km). Ces mètres parasites décalent
+le chrono et l'allure, et rendent les séances incomparables entre elles. On
+saisit donc la séance **à la distance visée**, pas à celle affichée :
 
 1. **`distance`** = la distance ronde visée, c'est-à-dire l'entier le plus proche
    de la valeur affichée (6,03 → 6 ; 4,97 → 5).
@@ -168,10 +169,10 @@ repris tel quel : quelques dizaines de mètres ne le déplacent pas.
 Dans l'analyse, on écrit ces chiffres recalés sans commentaire : ce sont eux, la
 séance. Inutile de mentionner le recalage ou la valeur brute de la montre.
 
-> Règle appliquée **à partir des séances traitées le 18 septembre 2026 et après**.
-> Les séances déjà en base gardent leurs valeurs brutes — ne les retouche pas, les
-> analyses écrites s'appuient dessus. Elle ne concerne que Vincent : Anaïs, Didi,
-> Ju et Pefi sont saisis à la distance affichée.
+> Règle appliquée chez Vincent **à partir des séances traitées le 18 septembre
+> 2026**, chez Anaïs **à partir de sa séance du 7 octobre 2026**. Les séances déjà
+> en base gardent leurs valeurs brutes — ne les retouche pas, les analyses écrites
+> s'appuient dessus. Didi, Ju et Pefi sont saisis à la distance affichée.
 
 ## 4. Mettre à jour `data.js`
 
