@@ -217,6 +217,16 @@ const RUNS = {
         { km: 5, sec: 398, paceSec: 398, hr: 154, cadence: 157 },
         { km: 6, sec: 21,  paceSec: 446, hr: 154, cadence: 126, partial: true },
       ] },
+    { date: "2026-10-07", duration: 2621, distance: 6.05, activeCal: 298, totalCal: 351, elevation: 9,  cadence: 150, paceSec: 433, hr: 149,
+      splits: [
+        { km: 1, sec: 417, paceSec: 417, hr: 128, cadence: 150 },
+        { km: 2, sec: 413, paceSec: 413, hr: 146, cadence: 155 },
+        { km: 3, sec: 447, paceSec: 447, hr: 149, cadence: 146 },
+        { km: 4, sec: 440, paceSec: 440, hr: 156, cadence: 152 },
+        { km: 5, sec: 447, paceSec: 447, hr: 154, cadence: 150 },
+        { km: 6, sec: 431, paceSec: 431, hr: 159, cadence: 150 },
+        { km: 7, sec: 23,  paceSec: 432, hr: 166, cadence: 147, partial: true },
+      ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
   // une vitesse de pointe, et un seul chiffre de calories (pas de total).
@@ -743,6 +753,16 @@ const ANALYSES = {
       ],
       pokemon: "Galopa", pokemonAdj: "Tenace",
       pokemonPhrase: "Galopa : le Pokédex le décrit comme incapable de voir passer quelque chose de rapide sans vouloir faire la course avec. Quatre kilomètres à 7'00 et plus, puis un cinquième en 6'38, le plus rapide que tu aies jamais couru, sorti de nulle part en fin de séance. Tenace, parce que la même douleur que le 31 août est revenue en route et qu'elle n'a pas eu le dernier mot, cette fois non plus." },
+    "2026-10-07": { trend: "up", verdict: "Premier 6 km 🎉",
+      text: [
+        { titre: "700 m de plus que ton record", texte: "6,05 km en 43:41, soit 7'13\"/km, et l'objectif de 6 km réglé sur la montre est atteint. C'est 700 mètres de plus que ta plus longue sortie, les 5,35 km du 11 septembre, ta séance la plus longue en temps (43:41 contre 39:52 le 9 août) et la plus dépensière (298 cal actives, ton maximum était à 262). Le parallèle qui parle : ton premier 5 km, le 9 août, s'était couru à 7'29\"/km. Ton premier 6 km passe à 7'13\", seize secondes plus vite au kilomètre sur 730 mètres de plus. Et pas de note de douleur sur la capture, cette fois." },
+        { titre: "33 secondes trop vite au départ", texte: "La consigne, donnée le 11 septembre et répétée le 26, tenait en deux chiffres : premier kilomètre à 7'30\", FC sous 155 jusqu'au cinquième. Le premier est passé en 6'57\", trente-trois secondes plus vite, et le deuxième en 6'53\", ton kilomètre le plus rapide de la journée. Puis 7'27\" au troisième : trente-quatre secondes perdues d'un kilomètre à l'autre. C'est le schéma exact du 3 septembre, la cartouche tirée au deuxième kilomètre et payée au milieu de la séance." },
+        { titre: "Ce que les deux premiers km ont coûté", texte: "La facture est dans la FC : 128, 146, 149, 156, 154, 159, puis 166 bpm sur les derniers mètres. Le gros saut tombe au deuxième kilomètre, dix-huit battements pour courir en 6'53\", et le cœur ne redescend plus. Le plafond de 155 saute au quatrième, d'un battement. Compare avec le 26 septembre, où tu avais retenu le début : au quatrième kilomètre, 7'01\" à 144 bpm. Aujourd'hui, 7'20\" à 156 — dix-neuf secondes plus lent avec douze battements de plus." },
+        { titre: "Mais la fin tient, cette fois", texte: "Ce qui sépare cette séance du 9 août, c'est la fin. Ce jour-là, après un départ en 6'46\", tes deux derniers kilomètres complets passaient en 7'49\" et 7'58\". Aujourd'hui, après un départ du même genre, le sixième passe en 7'11\", plus vite que les trois précédents. La cadence suit : 150, 155, 146, puis 152, 150, 150. Un seul creux, au troisième kilomètre, juste après le plus rapide, et la foulée revient à 150 pour ne plus en bouger. L'endurance pour 6 km est là ; c'est la répartition qui reste à régler." },
+        { titre: "Refaire 6 km, partir à 7'20", texte: "Refais cette distance, et ne passe aucun des deux premiers kilomètres sous 7'20\". Ce n'est pas un chiffre au hasard : c'est l'allure que tu as tenue du troisième au cinquième kilomètre, donc ta vraie allure sur 6 km aujourd'hui. Le plafond de 155 bpm jusqu'au cinquième kilomètre reste la seconde consigne — tu l'as manqué d'un battement avec un départ à 6'55\" de moyenne, sans ce départ il est largement à ta portée. Et ton sixième kilomètre passera plus vite que les 7'11\" d'aujourd'hui." },
+      ],
+      pokemon: "Draco", pokemonAdj: "Impatient",
+      pokemonPhrase: "Draco : Minidraco avait salué ton record de distance du 30 mai, 3,88 km. Il évolue pile pour ton premier 6 km, 2,17 km plus loin et 1'06 plus vite au kilomètre, et Dracolosse reste en réserve pour la suite. Impatient, parce qu'un dragon qui a mis quatre mois à évoluer n'a pas su attendre une minute de plus sur ses deux premiers kilomètres : 6'57 et 6'53, là où on lui demandait 7'30 chacun." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
