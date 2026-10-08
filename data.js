@@ -282,6 +282,17 @@ const RUNS = {
         { km: 3, sec: 377, paceSec: 377, hr: 186 },
         { km: 4, sec: 178, paceSec: 357, hr: 188, partial: true },
       ] },
+    // Le tronçon final (480 m) sort du cadre de la capture : son temps est
+    // déduit de la durée totale, et sa FC reste inconnue.
+    { date: "2026-10-08", duration: 2050, distance: 5.48, activeCal: 461, totalCal: 516, elevation: 55, cadence: 157, paceSec: 374, hr: 179,
+      splits: [
+        { km: 1, sec: 358, paceSec: 358, hr: 172 },
+        { km: 2, sec: 387, paceSec: 387, hr: 178 },
+        { km: 3, sec: 375, paceSec: 375, hr: 180 },
+        { km: 4, sec: 376, paceSec: 376, hr: 180 },
+        { km: 5, sec: 381, paceSec: 381, hr: 182 },
+        { km: 6, sec: 173, paceSec: 360, partial: true },
+      ] },
   ],
 };
 
@@ -883,5 +894,14 @@ const ANALYSES = {
       ],
       pokemon: "Têtarte", pokemonAdj: "Fumant",
       pokemonPhrase: "Têtarte : Ptitard a évolué, et le voilà capable de vivre hors de l'eau — à condition, dit le Pokédex, de transpirer sans arrêt pour garder la peau humide. Même allure qu'il y a une semaine sur un parcours qui grimpe deux fois plus, 180 bpm de moyenne : côté transpiration, le cahier des charges est rempli. Fumant, parce qu'une séance que ta propre montre classe « All Out » et qui se termine à 188 bpm, ça ne refroidit pas en deux minutes." },
+    "2026-10-08": { trend: "up", verdict: "Premier 5 km, et ta meilleure allure",
+      text: [
+        { titre: "1,43 km de plus, 4 s/km plus vite", texte: "5,48 km en 34:10, soit 6'14\"/km. C'est 1,43 km de plus que ta plus longue sortie jusqu'ici, les 4,05 km du 19 septembre : un bon tiers de distance en plus, et pour la première fois cinq kilomètres complets au compteur. D'habitude, quand on allonge, on ralentit. Toi, tu as fait l'inverse : c'est aussi ton allure moyenne la plus rapide, 4 s/km de mieux que le 19 et 5 de mieux que le 26, sur un parcours qui grimpe un peu plus que celui du 19 (55 m de dénivelé, environ 10 m par kilomètre contre 9)." },
+        { titre: "Trois kilomètres à six secondes près", texte: "Le split, c'est le temps de chaque kilomètre pris séparément : c'est lui qui montre comment la course s'est construite. Les tiens : 5'58\", 6'27\", 6'15\", 6'16\", 6'21\". Mets les deux premiers de côté et regarde les trois suivants : six secondes d'écart entre le plus rapide et le plus lent. Tenir une allure aussi stable aussi longtemps, c'est avoir trouvé son allure de croisière — la tienne, aujourd'hui, tourne autour de 6'15\". Et il te restait de quoi relancer : les 480 derniers mètres repartent vers 6'00\"." },
+        { titre: "Un cœur qui ne dérive presque plus", texte: "Ta fréquence cardiaque, kilomètre par kilomètre : 172, 178, 180, 180, 182 bpm. Quand le cœur continue de monter alors que l'allure, elle, ne bouge pas, on parle de dérive cardiaque : c'est le signe que le même effort coûte de plus en plus cher. Entre le troisième et le cinquième kilomètre, la tienne tient en 2 bpm. Ta montre le voit aussi : elle note la séance « Moderate », 6 sur 10, contre « All Out », 9 sur 10, il y a douze jours. Pour ta sortie la plus longue et la plus rapide, c'est la meilleure note qu'elle t'ait donnée." },
+        { titre: "Le premier kilomètre, encore trop pressé", texte: "Un seul point résiste : le départ. La consigne du 26 était de partir vers 6'50\" ; ton premier kilomètre est sorti en 5'58\", le plus rapide de la journée et 15 secondes plus vite que le 26. Et comme le 26, le deuxième rembourse : 6'27\", ton kilomètre le plus lent, pendant que ton cœur passe déjà de 172 à 178 bpm. Ta séance donne maintenant un repère plus juste que 6'50\" : la prochaine fois, premier kilomètre à 6'15\", ton allure de croisière, et pas plus vite. Le chrono n'y perdra presque rien — 5'58\" puis 6'27\", ou deux fois 6'15\", c'est le même total à cinq secondes près — mais ton cœur n'aura pas à encaisser le départ." },
+      ],
+      pokemon: "Tartard", pokemonAdj: "Incorrigible",
+      pokemonPhrase: "Tartard : Têtarte a évolué une dernière fois, et le Pokédex jure que ses muscles ne se fatiguent jamais, quel que soit l'effort. Ta plus longue sortie, 5,48 km, ta montre ne l'a classée que « Moderate », 6 sur 10 : pour une fois, le Pokédex ne bluffe pas. Incorrigible, parce qu'on t'avait conseillé un premier kilomètre vers 6'50\" et que tu l'as avalé en 5'58\"." },
   },
 };
