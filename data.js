@@ -263,6 +263,14 @@ const RUNS = {
         { km: 5, sec: 447, paceSec: 447, hr: 154, cadence: 150 },
         { km: 6, sec: 431, paceSec: 431, hr: 159, cadence: 150 },
       ] },
+    { date: "2026-10-21", duration: 2004, distance: 5.00, activeCal: 254, totalCal: 296, elevation: 6,  cadence: 153, paceSec: 401, hr: 154,
+      splits: [
+        { km: 1, sec: 384, paceSec: 384, hr: 146, cadence: 157 },
+        { km: 2, sec: 410, paceSec: 410, hr: 152, cadence: 151 },
+        { km: 3, sec: 400, paceSec: 400, hr: 156, cadence: 154 },
+        { km: 4, sec: 402, paceSec: 402, hr: 161, cadence: 155 },
+        { km: 5, sec: 408, paceSec: 408, hr: 155, cadence: 152 },
+      ] },
   ],
   // adidas Running : pas de FC, pas de cadence, pas de dénivelé. En revanche
   // une vitesse de pointe, et un seul chiffre de calories (pas de total).
@@ -871,6 +879,18 @@ const ANALYSES = {
       ],
       pokemon: "Draco", pokemonAdj: "Impatient",
       pokemonPhrase: "Draco : Minidraco avait salué ton record de distance du 30 mai, 3,88 km. Il évolue pile pour ton premier 6 km, 2,12 km plus loin et 1'06 plus vite au kilomètre, et Dracolosse reste en réserve pour la suite. Impatient, parce qu'un dragon qui a mis quatre mois à évoluer n'a pas su attendre une minute de plus sur ses deux premiers kilomètres : 6'57 et 6'53, là où on lui demandait 7'30 chacun." },
+    "2026-10-21": { trend: "up", verdict: "Record : 5 km en 33:24",
+      plus: [
+        "5 km en 33:24, soit 6'41\"/km : 1'47 de mieux que ton meilleur 5 km (35:11 le 11 septembre), et ta première sortie sous les 7'00\"/km — dix-neuf secondes au kilomètre d'un coup.",
+        "Les cinq kilomètres passent sous les 7'00\", et le premier, 6'24\", devient ton meilleur kilomètre, quatorze secondes sous le 6'38\" du 26 septembre. Du deuxième au cinquième, dix secondes d'écart seulement.",
+        "Les deux consignes du 7 octobre ont sauté — 6'24\" au départ au lieu de 7'20\", 161 bpm au quatrième au lieu de 155 au plus — et c'est ta meilleure course. Elles étaient trop prudentes : on les range.",
+      ],
+      moins: [
+        "Le deuxième kilomètre reste le trou : 6'50\" à 151 spm, ta cadence la plus basse du jour. Il est plus lent que le premier sur huit de tes dix sorties détaillées.",
+        "La fin se relâche : 6'48\" au cinquième contre 6'42\", et ta FC redescend de 161 à 155 bpm — il restait de la marge. La prochaine fois, au bip du quatrième, remonte à 157 spm, ta cadence du premier kilomètre.",
+      ],
+      pokemon: "Dracolosse", pokemonAdj: "Désobéissant",
+      pokemonPhrase: "Dracolosse : le Draco du 7 octobre a fini d'évoluer, et le Pokédex lui prête le tour de la Terre en seize heures. Ton record du 5 km, lui, a pris 1'47 dans la vue, avec chaque kilomètre sous les 7'. Désobéissant, parce qu'on te demandait 7'20 pour démarrer : tu as ouvert en 6'24, et c'est toi qui avais raison." },
   },
   // adidas Running ne remonte ni FC ni cadence : les analyses de Didi s'appuient
   // sur ce qui est mesuré — allure, régularité, temps de pause, vitesse de pointe.
