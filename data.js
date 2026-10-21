@@ -143,6 +143,14 @@ const RUNS = {
         { km: 6, sec: 382, paceSec: 382, hr: 171, cadence: 149 },
         { km: 7, sec: 374, paceSec: 374, hr: 174, cadence: 150 },
       ] },
+    { date: "2026-10-18", duration: 1737, distance: 5.00, activeCal: 374, totalCal: 425, elevation: 7,  cadence: 150, paceSec: 347, hr: 172,
+      splits: [
+        { km: 1, sec: 326, paceSec: 326, hr: 163, cadence: 160 },
+        { km: 2, sec: 331, paceSec: 331, hr: 177, cadence: 158 },
+        { km: 3, sec: 346, paceSec: 346, hr: 176, cadence: 152 },
+        { km: 4, sec: 378, paceSec: 378, hr: 171, cadence: 139 },
+        { km: 5, sec: 356, paceSec: 356, hr: 175, cadence: 147 },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -615,6 +623,16 @@ const ANALYSES = {
       ],
       pokemon: "Carabaffe", pokemonAdj: "Patient",
       pokemonPhrase: "Carabaffe : le Carapuce du 26 septembre a évolué, et le Pokédex en fait un symbole de longévité — on dit qu'il vit dix mille ans. Pour ta plus longue sortie à ce jour, 44 minutes de course, le choix s'imposait. Patient, parce que le 9 août l'Électrode Impatient avait ouvert ton premier 6 km en 6'00 et explosé au troisième ; pour ton premier 7 km, tu ouvres en 6'38 et tu finis en 6'14." },
+    "2026-10-18": { trend: "up", verdict: "Record : le 5 km en 28:57",
+      text: [
+        { titre: "Sous les 29 minutes, pour de bon", texte: "5 km en 28:57, soit 5'47\"/km : ton record d'allure toutes distances, trois secondes au kilomètre devant les 5'50\" du 17 septembre, et ta première sortie de 5 km bouclée sous les 29 minutes. Ta meilleure jusqu'ici, le 31 août, passait la cinquième borne en 29:12 : quinze secondes reprises. Les 28:59 des cinq premiers kilomètres du 17 septembre tombent, eux, de deux secondes. FC moyenne à 172 bpm, cinq battements au-dessus de ton précédent sommet, effort ressenti « Hard »." },
+        { titre: "Le départ du 31 août, à une seconde près", texte: "5'26\" puis 5'31\" : 10:57 pour les deux premiers kilomètres, contre 10:58 le 31 août, et déjà 177 bpm au deuxième. Ton premier kilomètre est le plus rapide de tout l'historique, douze secondes devant ton précédent meilleur. Je t'écrivais ce jour-là que les 29 minutes ne demandaient qu'un deuxième kilomètre moins pressé. Tu as gardé le départ et trouvé la différence au milieu : 5'46\" au troisième contre 6'07\", 6'18\" au quatrième contre 6'28\". Trente et une secondes gagnées là, dix-sept rendues au cinquième." },
+        { titre: "139 spm, ton plancher", texte: "Le quatrième tombe en 6'18\" à 139 spm : la cadence la plus basse de tous tes kilomètres complets, sous les 140 des 9 et 21 août. Et ce n'est toujours pas le moteur — ta FC descend de 176 à 171 bpm pendant que tu perds trente-deux secondes sur le troisième. Classe tes cinq kilomètres par cadence, 160, 158, 152, 147 puis 139 spm, et tu les as classés par allure, sans une seule exception. Le 7 octobre, l'ordre était presque respecté ; aujourd'hui il l'est à la lettre." },
+        { titre: "Un kilomètre avant la fin", texte: "Le 7 octobre, je te disais de garder 155 spm à la fin du quatrième kilomètre, parce que le creux arrivait au cinquième pour la troisième fois de suite. Sur 5 km, il ne t'a pas attendu. Et ce n'est pas nouveau : sur tes cinq 5 km relevés au kilomètre, le quatrième n'a été dépassé en lenteur qu'une fois, par un premier kilomètre d'échauffement le 19 août. Sur 5 km le quatrième, sur tes deux derniers 6 km le cinquième : le creux ne suit pas une borne, il tombe un kilomètre avant la fin. Le dernier, lui, repart toujours — douze séances sur douze." },
+        { titre: "À l'entrée du quatrième, 150 spm", texte: "La consigne est celle du 11 septembre, qui t'avait réussi le 17 : la cadence se remet au début du kilomètre qui lâche, pas à sa fin. Sur 5 km, c'est donc quand la montre annonce le troisième kilomètre que tu regardes ton poignet et remets 150. Le 17 septembre, ce même quatrième à 150 spm passait en 5'47\". Couru comme ça à la place du 6'18\" d'aujourd'hui, ton 5 km tombait en 28:26." },
+      ],
+      pokemon: "Tortank", pokemonAdj: "Impétueux",
+      pokemonPhrase: "Tortank : le Carabaffe du 7 octobre a fini d'évoluer, et le Pokédex précise qu'il s'alourdit exprès pour encaisser le recul de ses canons. Deux salves en ouverture, 5'26 et 5'31, et le recul t'a cueilli au quatrième kilomètre, 6'18 à 139 spm. Impétueux, parce que cette carapace s'appelait Prudent le 26 septembre et Patient le 7 octobre : il a suffi d'une évolution pour qu'elle oublie les deux." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",
