@@ -21,7 +21,7 @@ Deux compagnons à cette procédure :
 
 - Le dossier détermine le coureur. La liste des coureurs vit dans
   `.claude/runners.sh` — **c'est le seul endroit à modifier pour en ajouter un**
-  (le hook de détection, le watcher et son installateur la lisent tous de là).
+  (le hook de détection la lit de là).
 - **`.claude/captures-integrees.txt` est la source de vérité** : toute capture qui
   n'y figure pas reste à traiter. Compare le contenu des dossiers à ce manifeste
   (le hook `detect-new-runs.sh` fait déjà ce diff et te donne la liste).
@@ -182,8 +182,7 @@ des colonnes existant. Un nouveau coureur a besoin en plus d'une entrée dans
 `RUNNER_COLORS`, d'un avatar dans `RUNNER_MII` (cheveux, yeux, coupe — demande
 à Vincent s'il ne les a pas donnés, ou invite la personne à passer par l'Atelier
 Mii du dashboard puis la skill `/mii`), d'un bloc dans `ANALYSES` et d'une ligne
-dans `.claude/runners.sh` ; puis relance `.claude/watcher/install.sh` après le
-commit. Rien à toucher dans `index.html` ni `styles.css`. Avec splits, le bloc passe sur plusieurs lignes :
+dans `.claude/runners.sh`. Rien à toucher dans `index.html` ni `styles.css`. Avec splits, le bloc passe sur plusieurs lignes :
 
 ```js
 { date: "2026-08-09", duration: 2345, distance: 6.01, activeCal: 463, totalCal: 531, elevation: 4,  cadence: 144, paceSec: 390, hr: 158,

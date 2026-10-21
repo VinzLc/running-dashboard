@@ -56,17 +56,21 @@ python3 -m http.server 8000
 
 Le plus simple : déposer les captures dans le dossier du coureur (`Vincent/`,
 `Anaïs/`, `Didi/`, `Ju/`, `Pefi/`) puis lancer la skill `add-run`, qui fait le reste
-(extraction, analyse, Pokémon, commit). Un watcher launchd la déclenche même
-automatiquement. Sur Apple Fitness, une séance produit **deux** captures — le
+(extraction, analyse, Pokémon, commit). Rien ne se déclenche tout seul : le hook
+de détection signale les captures en attente, et c'est à vous de lancer la skill.
+Sur Apple Fitness, une séance produit **deux** captures — le
 récapitulatif « Workout Details » et le détail des splits ; sur adidas Running,
 une seule.
 
 Pour ajouter un coureur : une ligne dans [`.claude/runners.sh`](.claude/runners.sh)
-(lu par le hook de détection, le watcher et son installateur), plus une entrée
+(lu par le hook de détection), plus une entrée
 dans `RUNS`, `RUNNER_COLORS`, `RUNNER_MII` (son avatar) et `ANALYSES` de
 `data.js`. Rien d'autre : sous-titre, écran de sélection, filtres et classements
-se déduisent des données. Puis relancer `.claude/watcher/install.sh` : le
-watcher fige la liste des dossiers surveillés à l'installation.
+se déduisent des données.
+
+Le watcher launchd de `.claude/watcher/` (qui lançait `add-run` en tâche de fond
+à chaque dépôt) est désinstallé depuis le 21 octobre 2026. Les scripts restent
+dans le dépôt ; `.claude/watcher/install.sh` le réinstallerait.
 
 À la main, ajoutez une entrée dans le tableau du coureur concerné dans
 [`data.js`](data.js) :

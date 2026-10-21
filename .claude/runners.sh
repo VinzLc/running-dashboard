@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Source de vérité pour la liste des coureurs du dashboard, partagée par le hook
-# de détection, le watcher launchd et son installateur. Ajouter un coureur =
+# de détection et l'installateur du watcher launchd (désinstallé depuis le
+# 21 octobre 2026). Ajouter un coureur =
 # ajouter une ligne ici, rien d'autre côté scripts.
 #
 # Une ligne par coureur : <clé>|<glob du dossier>

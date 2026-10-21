@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Détecte les captures Apple Fitness déposées dans Vincent/ ou Anaïs/ qui ne sont
-# pas encore intégrées au dashboard, et demande à Claude de lancer la skill add-run.
+# pas encore intégrées au dashboard, et les signale à Claude — sans lui demander de
+# lancer add-run : depuis le 21 octobre 2026, Vincent déclenche lui-même chaque
+# intégration, et le watcher launchd est désinstallé.
 #
 # « Pas encore intégrée » = la capture n'est pas listée dans le manifeste
 # .claude/captures-integrees.txt, que la skill add-run complète à chaque séance
@@ -12,9 +14,6 @@
 # une image avant que ses données ne soient dans data.js, et la séance passerait
 # alors à la trappe pour toujours.
 #
-# Le manifeste dit exactement QUELLES captures restent à traiter, mais pas à
-# quelle séance elles appartiennent : on demande donc à Claude de lire la date
-# dans chaque image avant de l'ajouter.
 #
 # Usage : detect-new-runs.sh <NomDeLEvenementHook>   (défaut : SessionStart)
 
@@ -32,7 +31,7 @@ root="${CLAUDE_PROJECT_DIR:-}"
 cd "$root" 2>/dev/null || exit 0
 [ -f data.js ] || exit 0
 
-# La liste des coureurs vit dans un seul fichier, partagé avec le watcher.
+# La liste des coureurs vit dans un seul fichier, partagé avec install.sh.
 # shellcheck source=../runners.sh
 . .claude/runners.sh 2>/dev/null || exit 0
 
@@ -94,14 +93,8 @@ RUNNERS
 
 emit "${total} capture(s) Apple Fitness non intégrée(s) au dashboard :
 
-${report}Lance la skill \`add-run\` (outil Skill, skill: \"add-run\") pour les traiter
-maintenant, sans demander confirmation à l'utilisateur. Le dossier détermine le
-coureur.
-
-Une séance produit normalement DEUX captures : le récapitulatif « Workout
-Details » et le détail des splits par kilomètre. Elles n'arrivent pas forcément
-ensemble, et une séance ancienne peut n'en avoir qu'une. Lis chaque capture pour
-savoir de quelle date et de quel type elle relève, puis vérifie dans data.js si
-la séance y figure déjà : si oui, complète-la (splits, analyse) au lieu de créer
-un doublon. Dans tous les cas, ajoute les captures traitées au manifeste
-${manifest}."
+${report}Ne lance PAS la skill \`add-run\` de toi-même : l'utilisateur déclenche chaque
+intégration explicitement. Mentionne ces captures en une ligne si c'est utile,
+puis réponds à ce qu'il a demandé. S'il demande de les traiter, suis la skill
+add-run (la séance peut déjà figurer dans data.js : complète-la plutôt que de
+créer un doublon)."
