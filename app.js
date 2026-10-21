@@ -748,6 +748,24 @@ function coachHtml(text) {
     .join("")}</div>`;
 }
 
+// Depuis le 21 octobre 2026, l'analyse tient en deux colonnes — ce qui a marché,
+// ce qui reste à corriger — d'une phrase par point. Les analyses d'avant gardent
+// leurs paragraphes titrés : `coachHtml` les affiche toujours.
+function bilanHtml(a) {
+  const col = (cls, titre, items) =>
+    items && items.length
+      ? `<section class="bilan-col ${cls}"><h4>${titre}</h4><ul>${items.map((t) => `<li>${t}</li>`).join("")}</ul></section>`
+      : "";
+  return `<div class="bilan">${col("plus", "Les plus", a.plus)}${col("moins", "Les moins", a.moins)}</div>`;
+}
+
+// La carte du trajet, découpée dans le récapitulatif Apple par
+// .claude/tools/trajet.sh. En tête de carte, comme sur l'écran d'origine.
+function trajetHtml(r, a) {
+  if (!a || !a.trajet) return "";
+  return `<img class="trajet" src="${a.trajet}" alt="Trajet du ${fmtDate(r.date)}" width="900" height="408" loading="lazy" />`;
+}
+
 function analysisHtml(r) {
   const m = INSIGHTS[r.name][r.date];
   const a = (typeof ANALYSES !== "undefined" && ANALYSES[r.name]) ? ANALYSES[r.name][r.date] : null;
@@ -801,15 +819,18 @@ function analysisHtml(r) {
   const verdict = a ? a.verdict : "Analyse à venir";
   const text = a ? a.text : [{ titre: "", texte: "Analyse non disponible pour cette séance." }];
 
+  const bilan = a && (a.plus || a.moins);
+
   return `
     <div class="analysis">
+      ${trajetHtml(r, a)}
       <div class="analysis-head">
         <span class="verdict trend-${trend}">${verdict}</span>
         ${prBadges}
       </div>
       <div class="delta-row">${deltaLabel ? `<span class="delta-label">${deltaLabel}</span>` : ""}${deltas}</div>
       ${splitsHtml(r)}
-      ${coachHtml(text)}
+      ${bilan ? bilanHtml(a) : coachHtml(text)}
       ${pokemonHtml(a)}
     </div>`;
 }

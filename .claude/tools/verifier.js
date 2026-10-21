@@ -155,6 +155,7 @@ function verifierSplits(at, r) {
 
 // ---------- Analyses ----------
 const TRENDS = ["up", "flat", "down", "start"];
+const FORMAT_BILAN = "2026-10-21";
 const mots = (s) => s.toLowerCase().replace(/[^a-zà-ÿ0-9 ]/g, " ").split(/\s+/).filter(Boolean);
 
 runners.forEach((name) => {
@@ -180,9 +181,35 @@ runners.forEach((name) => {
     if (i === 0 && a.trend !== "start") warn(`${at} : première séance, trend "start" attendu`);
     if (!a.verdict || !String(a.verdict).trim()) err(`${at} : verdict vide`);
 
-    // `text` : tableau de paragraphes titrés. Le pavé sans titres reste lisible
-    // par le dashboard, mais c'est précisément ce qu'on cherche à éviter.
-    if (!Array.isArray(a.text) || !a.text.length) {
+    // Depuis le 21 octobre 2026, `plus` / `moins` : une phrase par point. Les
+    // paragraphes titrés de `text` restent valides pour les séances d'avant.
+    const bilan = a.plus != null || a.moins != null;
+    if (r.date >= FORMAT_BILAN && !bilan) {
+      err(`${at} : depuis le ${FORMAT_BILAN}, l'analyse s'écrit en plus / moins, plus en paragraphes text`);
+    }
+    if (a.trajet != null) {
+      if (typeof a.trajet !== "string" || !fs.existsSync(path.join(ROOT, a.trajet))) {
+        err(`${at} : trajet « ${a.trajet} » introuvable — .claude/tools/trajet.sh <capture> ${r.date}`);
+      }
+    } else if (bilan) {
+      warn(`${at} : pas de trajet — si le récapitulatif montre une carte, .claude/tools/trajet.sh <capture> ${r.date}`);
+    }
+
+    if (bilan) {
+      if (a.text != null) err(`${at} : text ET plus / moins — un seul format par analyse`);
+      [["plus", a.plus], ["moins", a.moins]].forEach(([cle, points]) => {
+        if (!Array.isArray(points) || !points.length) {
+          return err(`${at} : ${cle} doit être un tableau de phrases, non vide`);
+        }
+        if (points.length > 4) warn(`${at} : ${points.length} points dans ${cle} — trois suffisent, garde les meilleurs`);
+        points.forEach((t, k) => {
+          if (typeof t !== "string" || !t.trim()) return err(`${at} : ${cle}[${k}] vide ou pas une chaîne`);
+          if (t.length > 260) warn(`${at} : ${cle}[${k}] — ${t.length} caractères, c'est un paragraphe, pas un point`);
+        });
+      });
+    } else if (!Array.isArray(a.text) || !a.text.length) {
+      // `text` : tableau de paragraphes titrés. Le pavé sans titres reste lisible
+      // par le dashboard, mais c'est précisément ce qu'on cherche à éviter.
       err(`${at} : text doit être un tableau de paragraphes { titre, texte }`);
     } else {
       a.text.forEach((p, k) => {

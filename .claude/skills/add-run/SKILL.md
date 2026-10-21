@@ -194,20 +194,25 @@ dans `.claude/runners.sh`. Rien à toucher dans `index.html` ni `styles.css`. Av
 ## 5. Rédiger l'analyse « coach » et attribuer le Pokémon (OBLIGATOIRE)
 
 > **Lis d'abord [`references/redaction.md`](references/redaction.md)** — le
-> savoir-faire d'écriture y est au complet : structure en paragraphes, ton à
+> savoir-faire d'écriture y est au complet : format plus / moins, ton à
 > viser selon la personne, exploitation des splits, règles du gag Pokémon.
 > N'écris pas une analyse sans l'avoir lu, le résultat s'en ressent.
 
-Une analyse par séance, dans `ANALYSES[coureur][date]` de `data.js` :
+Une analyse par séance, dans `ANALYSES[coureur][date]` de `data.js`. **Depuis le
+21 octobre 2026, elle tient en trois parties** : les plus, les moins, le Pokémon —
+plus la carte du trajet en tête :
 
 ```js
-"2026-08-09": { trend: "up", verdict: "Premier 6 km 🎉",
-  text: [
-    { titre: "Sorti de la boucle des 5 km", texte: "Le constat chiffré du jour." },
-    { titre: "Le départ payé sur quatre km", texte: "Ce que racontent les splits." },
-    { titre: "La sortie lente, troisième rappel", texte: "Le conseil pour la prochaine." },
+"2026-10-21": { trend: "up", verdict: "Double record : 5 et 6 km",
+  trajet: "assets/trajets/vincent-2026-10-21.jpg",
+  plus: [
+    "Le 6 km en 33:59, 58 s sous les 34:57 du 17 septembre.",
+    "Départ maîtrisé : quatre kilomètres dans un mouchoir de 6 s.",
   ],
-  pokemon: "Électrode", pokemonAdj: "Impatient",
+  moins: [
+    "Le cinquième, encore : 5'56\" à 147 spm. Couru comme le quatrième, 33:37.",
+  ],
+  pokemon: "Miaouss", pokemonAdj: "Vantard",
   pokemonPhrase: "..." },
 ```
 
@@ -215,7 +220,9 @@ Une analyse par séance, dans `ANALYSES[coureur][date]` de `data.js` :
 |---|---|
 | `trend` | `"up"` (vrai progrès), `"flat"` (stable / séance facile assumée / reprise), `"down"` (en retrait), `"start"` (première séance uniquement) |
 | `verdict` | Titre court et accrocheur (« Record d'allure », « Reprise après coupure ») |
-| `text` | **Tableau de `{ titre, texte }`**, jamais une chaîne. Une idée par entrée, titre de 2 à 6 mots qui dit quelque chose |
+| `trajet` | Chemin de la carte découpée (voir ci-dessous). Facultatif, mais à faire dès que le récapitulatif montre une carte |
+| `plus` | **Tableau de phrases**, 2 ou 3 points : ce qui a marché, chiffré |
+| `moins` | **Tableau de phrases**, 1 à 3 points : ce qui coince, et la consigne pour la prochaine sortie dans l'un d'eux |
 | `pokemon` | Nom français exact de `pokemon.js`, **une seule fois par coureur** |
 | `pokemonAdj` | L'adjectif (« Impatient »), masculin, **une seule fois par coureur** |
 | `pokemonPhrase` | La vanne, qui justifie le Pokémon **et** son adjectif |
@@ -229,6 +236,24 @@ node .claude/tools/pokedex.js Vincent
 
 **Compare uniquement aux séances précédentes du MÊME coureur.** Jamais Vincent
 contre Anaïs : ce dashboard n'est pas un classement.
+
+Les analyses d'avant le 21 octobre 2026 gardent leur ancien format,
+`text: [{ titre, texte }, …]` : le dashboard affiche les deux, ne les convertis
+pas. `verifier.js` refuse en revanche l'ancien format sur une séance plus récente.
+
+### La carte du trajet
+
+Le récapitulatif Apple Fitness montre le tracé de la sortie sur une carte. On la
+découpe — sans les boutons du haut ni le nom du lieu, le dépôt est public :
+
+```bash
+.claude/tools/trajet.sh Vincent/IMG_0216.jpeg 2026-10-21
+# → assets/trajets/vincent-2026-10-21.jpg, à mettre dans `trajet`
+```
+
+**Ouvre l'image avant de la référencer** : la bande est calée sur l'écran d'un
+iPhone en 1290×2796, un autre format d'écran peut couper le tracé ou laisser
+dépasser un bouton.
 
 ## 6. Compléter le manifeste (OBLIGATOIRE)
 

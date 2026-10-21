@@ -161,6 +161,15 @@ const RUNS = {
         { km: 4, sec: 378, paceSec: 378, hr: 171, cadence: 139 },
         { km: 5, sec: 356, paceSec: 356, hr: 175, cadence: 147 },
       ] },
+    { date: "2026-10-21", duration: 2039, distance: 6.00, activeCal: 461, totalCal: 521, elevation: 6,  cadence: 152, paceSec: 340, hr: 172,
+      splits: [
+        { km: 1, sec: 333, paceSec: 333, hr: 158, cadence: 159 },
+        { km: 2, sec: 333, paceSec: 333, hr: 173, cadence: 155 },
+        { km: 3, sec: 339, paceSec: 339, hr: 174, cadence: 152 },
+        { km: 4, sec: 334, paceSec: 334, hr: 177, cadence: 154 },
+        { km: 5, sec: 356, paceSec: 356, hr: 175, cadence: 147 },
+        { km: 6, sec: 344, paceSec: 344, hr: 177, cadence: 151 },
+      ] },
   ],
   "Anaïs": [
     { date: "2026-05-17", duration: 1856, distance: 3.76, activeCal: 173, totalCal: 211, elevation: 5,  cadence: 129, paceSec: 493, hr: 131 },
@@ -659,6 +668,19 @@ const ANALYSES = {
       ],
       pokemon: "Tortank", pokemonAdj: "Impétueux",
       pokemonPhrase: "Tortank : le Carabaffe du 7 octobre a fini d'évoluer, et le Pokédex précise qu'il s'alourdit exprès pour encaisser le recul de ses canons. Deux salves en ouverture, 5'26 et 5'31, et le recul t'a cueilli au quatrième kilomètre, 6'18 à 139 spm. Impétueux, parce que cette carapace s'appelait Prudent le 26 septembre et Patient le 7 octobre : il a suffi d'une évolution pour qu'elle oublie les deux." },
+    "2026-10-21": { trend: "up", verdict: "Double record : 5 et 6 km",
+      trajet: "assets/trajets/vincent-2026-10-21.jpg",
+      plus: [
+        "Le 6 km en 33:59, 58 s sous les 34:57 du 17 septembre. Le 5 km tombe en route en 28:15 (28:13 pour la médaille Apple), 42 s sous celui du 18 octobre.",
+        "5'40\"/km, record d'allure toutes distances, pour la même FC moyenne (172 bpm) et le même effort ressenti (7/10) que les 5'47\" du 18 octobre — avec un kilomètre de plus.",
+        "Départ maîtrisé : 5'33\", 5'33\", 5'39\", 5'34\", quatre kilomètres dans un mouchoir de 6 s. Le 18, l'ouverture en 5'26\" se payait 6'18\" au quatrième ; cette fois il reste à 154 spm.",
+      ],
+      moins: [
+        "Le cinquième, encore : 5'56\" à 147 spm, 22 s de plus que le quatrième. Ta cadence y plonge sur chacune de tes cinq dernières sorties de 6 km et plus. Couru comme le quatrième, le chrono tombait à 33:37.",
+        "Le bip du quatrième ne suffit plus : tu y étais à 154 spm, c'est pendant le cinquième qu'elle retombe. La prochaine fois, un second coup d'œil à mi-kilomètre, et 152 jusqu'au bip suivant.",
+      ],
+      pokemon: "Miaouss", pokemonAdj: "Vantard",
+      pokemonPhrase: "Miaouss : une pièce d'or sur le front, et une attaque signature qui s'appelle Jackpot. Deux records d'un coup et une médaille dorée d'Apple en prime, la machine à sous a sonné. Vantard, parce que sur cinquante captures envoyées depuis mai, c'est la première fois qu'une capture de trophée se glisse entre le récapitulatif et les splits." },
   },
   "Anaïs": {
     "2026-05-17": { trend: "start", verdict: "Point de départ",

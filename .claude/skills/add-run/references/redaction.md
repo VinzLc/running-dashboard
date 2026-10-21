@@ -5,12 +5,44 @@ soit dans `ANALYSES` — la procédure d'intégration, elle, est dans `SKILL.md`
 
 Une analyse réussie tient en deux qualités : elle est **juste** (chaque chiffre
 est vérifiable dans `RUNS`, chaque conseil découle des données) et elle est
-**lue** (paragraphes courts, ton adapté à la personne, une vanne pour finir).
+**lue** (points courts, ton adapté à la personne, une vanne pour finir).
 
-## 1. La forme : des paragraphes titrés, jamais un pavé
+## 1. La forme : les plus, les moins, le Pokémon
 
-`text` est un **tableau** de `{ titre, texte }` — une entrée = un intertitre et
-son paragraphe :
+Depuis le 21 octobre 2026, Vincent veut des analyses **plus concises**, en trois
+parties. Le dashboard les affiche en deux colonnes sous les splits, puis le
+Pokémon, avec la carte du trajet en tête de carte :
+
+```js
+plus: [
+  "Le 6 km en 33:59, 58 s sous les 34:57 du 17 septembre. Le 5 km tombe en route en 28:15, 42 s sous celui du 18 octobre.",
+  "Départ maîtrisé : 5'33\", 5'33\", 5'39\", 5'34\". Le 18, l'ouverture en 5'26\" se payait 6'18\" au quatrième.",
+],
+moins: [
+  "Le cinquième, encore : 5'56\" à 147 spm, 22 s de plus que le quatrième. Couru comme lui, le chrono tombait à 33:37.",
+  "Le bip du quatrième ne suffit plus : la cadence retombe pendant le cinquième. Un second coup d'œil à mi-kilomètre.",
+],
+```
+
+- **Une phrase ou deux par point**, 260 caractères au plus (`verifier.js`
+  prévient au-delà). Pas de titre : c'est le premier membre de phrase qui en
+  tient lieu (« Départ maîtrisé : … », « Le cinquième, encore : … »).
+- **2 ou 3 plus, 1 à 3 moins.** Au-delà, c'est qu'on recopie les splits : choisis
+  les points qui disent quelque chose.
+- **Chaque point porte un chiffre** et, si possible, la comparaison qui le rend
+  parlant (la même distance la dernière fois, le record d'avant).
+- **La consigne pour la prochaine sortie va dans les moins**, accrochée au
+  défaut qu'elle corrige, applicable pendant la course.
+- Une séance sans défaut notable garde quand même un « moins » : le point le plus
+  faible du jour, dit franchement. Une séance ratée garde un « plus ».
+- Tout le savoir-faire sur le fond (§2), le ton (§3) et le Pokémon (§4) reste
+  valable : seule la mise en forme change.
+
+### L'ancien format, pour mémoire
+
+Les analyses d'avant le 21 octobre 2026 sont en paragraphes titrés, et restent
+telles quelles. `text` y est un **tableau** de `{ titre, texte }` — une entrée =
+un intertitre et son paragraphe :
 
 ```js
 text: [
@@ -28,7 +60,7 @@ text: [
 - Une analyse de deux phrases reste un tableau à un seul élément — titré quand
   même.
 
-### Écrire les titres
+#### Écrire les titres (ancien format)
 
 Le titre est ce qu'on lit en diagonale : il doit **dire quelque chose**, pas
 étiqueter. « Le point à surveiller » vaut mieux que « Analyse » ; « 45 secondes

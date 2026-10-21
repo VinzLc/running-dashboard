@@ -1292,6 +1292,51 @@ tbody tr:last-child { border-bottom: none; }
 .coach p { margin: 0; }
 .coach > *:first-child::before { content: "🧠 "; }
 
+/* Le trajet, découpé dans le récapitulatif Apple : en tête de carte, comme sur
+   l'écran d'origine. Les attributs width/height réservent la place avant
+   chargement, `height: auto` garde les proportions à toute largeur. */
+.trajet {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+/* Bilan (depuis le 21 octobre 2026) : les plus, les moins, une phrase par
+   point. Deux colonnes côte à côte, empilées sur mobile. */
+.bilan {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.bilan-col {
+  padding: 12px 14px;
+  background: var(--surface);
+  border-radius: 12px;
+}
+.bilan-col h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.bilan-col.plus h4 { color: var(--green); }
+.bilan-col.moins h4 { color: #ff9f0a; }
+.bilan-col ul { margin: 0; padding: 0; list-style: none; }
+.bilan-col li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.bilan-col li + li { margin-top: 8px; }
+.bilan-col li::before { position: absolute; left: 0; font-weight: 700; }
+.bilan-col.plus li::before { content: "+"; color: var(--green); }
+.bilan-col.moins li::before { content: "−"; color: #ff9f0a; }
+
 /* Pokémon de la séance — section purement humoristique */
 .pokemon {
   display: grid;
@@ -1396,6 +1441,10 @@ footer {
   .analysis-head { gap: 6px; margin-bottom: 10px; }
   .verdict, .pr { font-size: 12px; }
   .coach { font-size: 13.5px; line-height: 1.65; }
+  .trajet { margin-bottom: 10px; border-radius: 10px; }
+  .bilan { grid-template-columns: 1fr; gap: 10px; }
+  .bilan-col { padding: 10px 11px; }
+  .bilan-col li { font-size: 13.5px; }
 
   .splits { padding: 10px 11px 8px; }
   /* FC et cadence par km passent à la ligne plutôt que d'écraser la barre. */
