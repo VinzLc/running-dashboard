@@ -322,6 +322,12 @@ const RUNS = {
         { km: 5, sec: 381, paceSec: 381, hr: 182 },
         { km: 6, sec: 173, paceSec: 360, partial: true },
       ] },
+    // Ni dénivelé ni puissance sur ce récapitulatif, et la carte « Splits »
+    // s'arrête au km 5 : 427 s / 140 bpm, 432 / 148, 427 / 158, 423 / 160,
+    // 433 / 159. Les km 6 et 7 sortent du cadre et ne se déduisent pas un par un
+    // (seulement ensemble : 877 s pour 2,03 km), d'où l'absence de `splits`. À
+    // compléter si l'écran Splits complet arrive.
+    { date: "2026-10-15", duration: 3019, distance: 7.03, activeCal: 521, totalCal: 603,                cadence: 159, paceSec: 429, hr: 155 },
   ],
 };
 
@@ -961,5 +967,15 @@ const ANALYSES = {
       ],
       pokemon: "Psykokwak", pokemonAdj: "Placide",
       pokemonPhrase: "Psykokwak : après trois séances dans la lignée des têtards, de Ptitard à Tartard, tu es allé courir à la Mare au Canard, et dans une mare, c'est le canard qui mange les têtards. Le Pokédex lui prête des pouvoirs mystérieux dont il ne garde jamais le souvenir, de quoi expliquer ta plus longue sortie, 5,48 km, courue à ta meilleure allure, 6'14. Placide, parce qu'il a tout du canard sur l'eau : rien ne bouge en surface, effort noté « Moderate », pendant qu'en dessous ça pédale à 179 bpm." },
+    "2026-10-15": { trend: "up", verdict: "Premier 7 km, l'allure tenue de bout en bout",
+      text: [
+        { titre: "1,55 km de plus que ton record", texte: "7,03 km en 50:19, soit 7'09\"/km. Ta plus longue sortie jusqu'ici faisait 5,48 km, le 8 octobre : tu viens d'y ajouter 1,55 km, près de 30 % de distance en plus. En temps, c'est 50 minutes de course, quatorze de plus que ta séance la plus longue (36:12, le 30 septembre). L'allure, elle, est celle de ce 30 septembre à deux secondes près (7'11\") : ton allure d'endurance, celle qui permet d'aller loin. Ce jour-là, elle t'avait mené à 5 km ; aujourd'hui, deux kilomètres plus loin." },
+        { titre: "Dix secondes d'écart en cinq km", texte: "Rappel : un split, c'est le temps d'un kilomètre pris isolément. Les tiens : 7'07\", 7'12\", 7'07\", 7'03\", 7'13\" — dix secondes entre le plus rapide et le plus lent. Ta capture s'arrête au cinquième, mais le reste se déduit du total : les 2,03 derniers kilomètres ont pris 14:37, soit 7'12\"/km en moyenne. Ton allure a donc tenu jusqu'au bout, sans craquer sur la fin, ce qui est exactement ce qu'on cherche quand on découvre une distance. Et ta cadence moyenne, 159 pas par minute, est la plus haute depuis ta première sortie (167 le 19 septembre)." },
+        { titre: "Le départ, enfin à la bonne allure", texte: "C'était le point qui résistait depuis le 26 septembre : un premier kilomètre trop rapide, remboursé au deuxième — 6'13\" puis 6'34\" le 26, 5'58\" puis 6'27\" le 8 octobre. La consigne du 8 était de ne pas partir plus vite que ton allure de croisière. C'est fait : 7'07\" au premier kilomètre, deux secondes à peine sous ta moyenne du jour, et le deuxième ne rembourse presque rien (7'12\")." },
+        { titre: "Le cœur monte, puis se pose à 160", texte: "Ta fréquence cardiaque, kilomètre par kilomètre : 140, 148, 158, 160, 159 bpm. Elle prend 20 battements sur les quatre premiers kilomètres alors que l'allure ne bouge pas : c'est la dérive cardiaque, le même effort qui coûte de plus en plus cher. Puis elle s'arrête : d'après ta moyenne de 155 bpm sur l'ensemble, les deux derniers kilomètres tournent eux aussi autour de 160. C'est plus que le 30 septembre (137 bpm à la même allure, sans aucune dérive), et la capture ne dit pas pourquoi. Mais un cœur qui se pose au lieu de grimper jusqu'au bout, c'est un effort tenable : ta montre le note « Moderate », 6 sur 10." },
+        { titre: "La deuxième moitié de la consigne", texte: "Le départ est réglé ; reste l'autre moitié de la consigne du 26 septembre, redite le 30 : accélérer une fois lancé. Tu l'avais fait d'instinct à ta toute première sortie, le 19 (6'54\" au premier kilomètre, 5'52\" au troisième). Ta séance du jour suggère que tu en as la marge : ton cœur s'est posé à 160 dès le quatrième kilomètre et n'en a plus bougé. La prochaine fois, garde ce départ vers 7'10\", puis passe à 6'50\" sur les deux derniers kilomètres." },
+      ],
+      pokemon: "Akwakwak", pokemonAdj: "Métronomique",
+      pokemonPhrase: "Akwakwak : Psykokwak a évolué, et le Pokédex le décrit désormais nageant avec élégance le long des lacs. Contrairement à sa pré-évolution, qui oubliait tout de ses propres pouvoirs, celui-ci a retenu la leçon : premier kilomètre en 7'07, pas une once de précipitation, et 7,03 km au bout. Métronomique, parce que dix secondes seulement séparent ton kilomètre le plus rapide du plus lent sur les cinq qu'affiche ta montre : une palme qui bat la mesure." },
   },
 };
